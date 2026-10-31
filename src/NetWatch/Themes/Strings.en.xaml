@@ -252,7 +252,9 @@
     <sys:String x:Key="banner.flagged">{0} processes show noteworthy behavior (see colored rows and detail panel; hint ≠ confirmed)</sys:String>
     <sys:String x:Key="banner.dns">{0} DNS/config hints (see DNS Safety page and Events)</sys:String>
 
-    <sys:String x:Key="kind.newConn">New conn</sys:String>
+    <sys:String x:Key="kind.largeTransfer">Large transfer</sys:String>
+    <sys:String x:Key="kind.alertRecord">Alert</sys:String>
+<sys:String x:Key="kind.newConn">New conn</sys:String>
     <sys:String x:Key="kind.closed">Closed</sys:String>
     <sys:String x:Key="kind.largeUp">Large upload</sys:String>
     <sys:String x:Key="kind.largeDown">Large download</sys:String>

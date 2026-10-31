@@ -12,8 +12,6 @@ public sealed record SpeedTestResult(string Source, double MbpsAvg, double MbpsP
     public double MBPerSec => MbpsAvg / 8.0;
 }
 
-public sealed record IperfResult(bool Ok, double DownMbps, double UpMbps, string Error);
-
 /// 带宽吞吐测速：从国内公共镜像/CDN 以 HTTP 拉取真实数据采样，
 /// 剔除前 1 秒 TCP 慢启动阶段后计算吞吐；节点可用性随时段变化，由调用方按备选顺序挑选。
 public static class SpeedTestService
@@ -50,29 +48,14 @@ public static class SpeedTestService
         if (uri.Scheme is not ("https" or "http"))
             throw new ArgumentException("仅允许 http/https");
         var host = uri.Host;
-        if (IPAddress.TryParse(host, out var direct) && !IsPublicIp(direct))
+        if (IPAddress.TryParse(host, out var direct) && !Util.IsPublicIp(direct))
             throw new ArgumentException("拒绝 localhost/环回/私有/保留地址");
         if (!IPAddress.TryParse(host, out _))
         {
             var addrs = Dns.GetHostAddressesAsync(host).Result;
-            if (addrs.Length == 0 || addrs.All(a => !IsPublicIp(a)))
+            if (addrs.Length == 0 || addrs.All(a => !Util.IsPublicIp(a)))
                 throw new ArgumentException("主机解析不到公网地址");
         }
-    }
-
-    private static bool IsPublicIp(IPAddress ip)
-    {
-        if (IPAddress.IsLoopback(ip)) return false;
-        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-        {
-            var b = ip.GetAddressBytes();
-            if (b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168)) return false;
-            if (b[0] == 169 && b[1] == 254) return false; // link-local
-            if (b[0] == 0 || b[0] >= 224) return false;   // 保留/组播
-            if (b[0] == 100 && b[1] >= 64 && b[1] <= 127) return false; // CGNAT
-            return true;
-        }
-        return (ip.GetAddressBytes()[0] & 0xFE) != 0xFC; // 排除 ULA fc00::/7
     }
 
     /// 下载吞吐：Range 拉取真实数据，采样后剔除前 1 秒爬坡期

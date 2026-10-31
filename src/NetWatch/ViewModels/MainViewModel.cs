@@ -427,11 +427,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                 using var fs = File.OpenRead(p);
                 return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(fs)).ToLowerInvariant();
             }));
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = $"https://www.virustotal.com/gui/file/{hash}",
-                UseShellExecute = true,
-            });
+            ProcessRunner.ShellOpen($"https://www.virustotal.com/gui/file/{hash}");
         }
         catch (Exception ex)
         {
@@ -480,9 +476,9 @@ public sealed class MainViewModel : VmBase, IDisposable
                     TimeUtc = le.TimeUtc,
                     Kind = le.Kind switch
                     {
-                        EventKind.NewConn => EventKindEx.NewConn,
-                        EventKind.Closed => EventKindEx.Closed,
-                        _ => EventKindEx.LargeTransfer,
+                        EventKind.NewConn => EventKind.NewConn,
+                        EventKind.Closed => EventKind.Closed,
+                        _ => EventKind.LargeTransfer,
                     },
                     Pid = le.Pid,
                     IdentityKey = Entities.GetProcess(le.Pid)?.IdentityKey,
@@ -499,7 +495,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                 while (DnsStream.Count > 400) DnsStream.RemoveAt(0);
                 AddStoreRecord(new EventRecord
                 {
-                    TimeUtc = it.TimeUtc, Kind = EventKindEx.DnsResolve, Pid = it.Pid,
+                    TimeUtc = it.TimeUtc, Kind = EventKind.DnsResolve, Pid = it.Pid,
                     IdentityKey = Entities.GetProcess(it.Pid)?.IdentityKey, Domain = it.Domain, Text = it.AlertText,
                 });
             }
@@ -508,7 +504,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                 AddEvent(EventRowVM.FromAlert(a.Time, a.Level, a.Text, a.Domain));
                 AddStoreRecord(new EventRecord
                 {
-                    TimeUtc = a.Time, Kind = EventKindEx.Alert, Text = a.Text, Level = a.Level, Domain = a.Domain,
+                    TimeUtc = a.Time, Kind = EventKind.Alert, Text = a.Text, Level = a.Level, Domain = a.Domain,
                 });
             }
 
@@ -519,7 +515,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                 AddStoreRecord(new EventRecord
                 {
                     TimeUtc = pe.T,
-                    Kind = pe.Start ? EventKindEx.ProcessStart : EventKindEx.ProcessStop,
+                    Kind = pe.Start ? EventKind.ProcessStart : EventKind.ProcessStop,
                     Pid = pe.Pid,
                     Text = pe.Start ? $"{pe.Image ?? ""} {pe.Cmd ?? ""}".Trim() : pe.Image,
                 });
@@ -534,7 +530,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                 AddStoreRecord(new EventRecord
                 {
                     TimeUtc = b.TimeUtc,
-                    Kind = EventKindEx.Alert,
+                    Kind = EventKind.Alert,
                     Pid = b.Pid,
                     IdentityKey = Entities.GetProcess(b.Pid)?.IdentityKey,
                     RemoteIp = b.RemoteIp,
@@ -598,17 +594,6 @@ public sealed class MainViewModel : VmBase, IDisposable
         var vm = new PingRowVM();
         vm.Update(r, label);
         return vm;
-    }
-
-    private static string FormatLinkSpeed(long bitsPerSecond)
-    {
-        // 双单位：比特（链路协商速率）+ 字节（直观的每秒传输量），方便换算
-        string bits = bitsPerSecond >= 1_000_000_000
-            ? $"{bitsPerSecond / 1_000_000_000.0:0.#} Gbps"
-            : $"{bitsPerSecond / 1_000_000.0:0.#} Mbps";
-        double mbPerSec = bitsPerSecond / 8.0 / 1_000_000;
-        string bytesUnit = mbPerSec >= 1000 ? $"{mbPerSec / 1000:0.#} GB/s" : $"{mbPerSec:0.#} MB/s";
-        return $"{bits}（≈{bytesUnit}）";
     }
 
     /// 流量事件 → (身份, 目的地) 关系记账（域名优先；未解析身份与回环不计）
@@ -911,7 +896,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                                       && n.NetworkInterfaceType != NetworkInterfaceType.Loopback);
             var isWifi = nic?.NetworkInterfaceType == NetworkInterfaceType.Wireless80211;
             LinkTypeText = isWifi ? L10n.T("ncv.wifi") : L10n.T("ncv.eth");
-            LinkSpeedText = nic == null ? "—" : FormatLinkSpeed(nic.Speed);
+            LinkSpeedText = nic == null ? "—" : Util.FormatLinkSpeed(nic.Speed);
             var wifi = isWifi ? WifiProbe.GetConnectedWifi() : null;
             WifiSignalText = wifi == null ? "—" : $"{wifi.SignalPct}%";
             WifiSsidText = wifi == null ? "—" : wifi.Ssid;
@@ -921,7 +906,7 @@ public sealed class MainViewModel : VmBase, IDisposable
             CheckProgressText = "";
             Raise(nameof(CheckProgressText));
             var targets = new List<(string Addr, string Label)>();
-            var gw = Config.Snapshot.Adapters.Where(a => a.Status == "已连接")
+            var gw = Config.Snapshot.Adapters.Where(a => a.Status == AdapterStatus.Connected)
                 .SelectMany(a => a.Gateways)
                 .FirstOrDefault(g => g.Contains('.') && !g.StartsWith("169.254"));
             if (gw != null) targets.Add((gw, L10n.T("ping.gateway")));
@@ -1071,7 +1056,7 @@ public sealed class MainViewModel : VmBase, IDisposable
 
     public void OpenTaskManager()
     {
-        try { Process.Start(new ProcessStartInfo("taskmgr.exe") { UseShellExecute = true }); }
+        try { ProcessRunner.ShellOpen("taskmgr.exe"); }
         catch (Exception ex) { MessageBox.Show(ex.Message, "NetWatch", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
 
@@ -1129,21 +1114,7 @@ public sealed class MainViewModel : VmBase, IDisposable
     }
 
     private static (bool Ok, string Output) RunSc(params string[] args)
-    {
-        try
-        {
-            var psi = new ProcessStartInfo("sc.exe")
-            {
-                UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true,
-            };
-            foreach (var a in args) psi.ArgumentList.Add(a);
-            using var p = Process.Start(psi)!;
-            var output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit(10000);
-            return (p.ExitCode == 0, output);
-        }
-        catch (Exception ex) { Log.Error("sc.exe 执行失败", ex); return (false, ""); }
-    }
+        => ProcessRunner.RunConsole("sc.exe", 10000, args);
 
     /// 进程名是异步解析的：占位名（PID xxx）出现后，回填最近事件/解析行的名字
     private void RefreshRecentNames()
@@ -1629,9 +1600,7 @@ public sealed class MainViewModel : VmBase, IDisposable
         try
         {
             // NTFS 文件名不含双引号，/select 参数无注入面；ArgumentList 避免空格路径被拆
-            var psi = new ProcessStartInfo("explorer.exe");
-            psi.ArgumentList.Add("/select," + path);
-            Process.Start(psi);
+            ProcessRunner.ShellOpen("explorer.exe", "/select," + path);
         }
         catch { }
     }
@@ -1661,12 +1630,7 @@ public sealed class MainViewModel : VmBase, IDisposable
 
     public void OpenHostsFile()
     {
-        try
-        {
-            var psi = new ProcessStartInfo("notepad.exe");
-            psi.ArgumentList.Add(NetConfigService.HostsPath);
-            Process.Start(psi);
-        }
+        try { ProcessRunner.ShellOpen("notepad.exe", NetConfigService.HostsPath); }
         catch { }
     }
 

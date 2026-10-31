@@ -77,7 +77,11 @@ public static class Authenticode
     {
         try
         {
+            // SYSLIB0057 建议改用 X509CertificateLoader，但它只接受证书文件、无法从
+            // Authenticode 签名的 exe 提取证书——此处没有等价替代，保留旧 API 并抑制提示。
+#pragma warning disable SYSLIB0057
             var cert = System.Security.Cryptography.X509Certificates.X509Certificate.CreateFromSignedFile(path);
+#pragma warning restore SYSLIB0057
             var s = cert.Subject ?? "";
             int cn = s.IndexOf("CN=", StringComparison.Ordinal);
             if (cn >= 0)

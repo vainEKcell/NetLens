@@ -251,7 +251,9 @@
     <sys:String x:Key="banner.flagged">{0} 个进程存在值得关注的行为（详见总览标色与详情面板，提示 ≠ 确诊）</sys:String>
     <sys:String x:Key="banner.dns">{0} 条 DNS/配置提示（见 DNS 安全页与事件流）</sys:String>
 
-    <sys:String x:Key="kind.newConn">新连接</sys:String>
+    <sys:String x:Key="kind.largeTransfer">大额传输</sys:String>
+    <sys:String x:Key="kind.alertRecord">提示</sys:String>
+<sys:String x:Key="kind.newConn">新连接</sys:String>
     <sys:String x:Key="kind.closed">断开</sys:String>
     <sys:String x:Key="kind.largeUp">大额上传</sys:String>
     <sys:String x:Key="kind.largeDown">大额下载</sys:String>

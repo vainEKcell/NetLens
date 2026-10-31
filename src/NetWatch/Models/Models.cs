@@ -5,7 +5,11 @@ namespace NetWatch.Models;
 
 public enum NetProto : byte { Tcp, Udp }
 
-public enum EventKind : byte { Traffic, NewConn, Closed, System, DnsAlert, ConfigChange }
+public enum EventKind : byte
+{
+    Traffic, NewConn, Closed, System, DnsAlert, ConfigChange,   // ETW 流事件
+    LargeTransfer, DnsResolve, Alert, ProcessStart, ProcessStop // 记录扩展（EventStore 行）
+}
 
 public enum SignatureState : byte
 {

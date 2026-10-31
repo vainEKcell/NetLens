@@ -13,19 +13,8 @@ public static class WifiProbe
     {
         try
         {
-            var psi = new ProcessStartInfo("netsh.exe")
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-            };
-            psi.ArgumentList.Add("wlan");
-            psi.ArgumentList.Add("show");
-            psi.ArgumentList.Add("interfaces");
-            using var p = Process.Start(psi)!;
-            var output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit(5000);
-            if (p.ExitCode != 0) return null;
+            var (ok, output) = ProcessRunner.RunConsole("netsh.exe", 5000, "wlan", "show", "interfaces");
+            if (!ok) return null;
 
             // 找到"已连接"状态的接口块（按空行分块）
             foreach (var block in Regex.Split(output, @"\r?\n\s*\r?\n"))

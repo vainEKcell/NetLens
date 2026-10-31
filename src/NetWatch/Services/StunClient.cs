@@ -52,20 +52,21 @@ public static class StunClient
             }
         }
 
-        if (attempts.Count == 0)
+        if (attempts.Count == 0 || extIp == null)
             return new NatResult(L10n.T("ncv.nat.fail"), "fail", "", attempts, "");
 
+        var ext = extIp; // 此后非空
         var localIp = udp.Client.LocalEndPoint != null
             ? ((IPEndPoint)udp.Client.LocalEndPoint).Address
             : IPAddress.None;
 
         if (localIp.Equals(extIp))
-            return new NatResult(L10n.T("ncv.nat.direct"), "direct", extIp.ToString() ?? "", attempts, L10n.T("ncv.nat.direct.note"));
+            return new NatResult(L10n.T("ncv.nat.direct"), "direct", ext.ToString(), attempts, L10n.T("ncv.nat.direct.note"));
 
         if (attempts.Count >= 2)
         {
             if (extPort != attempts[1].MappedPort)
-                return new NatResult(L10n.T("ncv.nat.symmetric"), "symmetric", extIp.ToString() ?? "", attempts, "");
+                return new NatResult(L10n.T("ncv.nat.symmetric"), "symmetric", ext.ToString(), attempts, "");
 
             // 端口映射与目标无关（EIM）。过滤行为需 RFC 5780 CHANGE-REQUEST 测试：
             // 服务器须声明 OTHER-ADDRESS 并支持从备用地址回包；找不到此类服务器则如实归入 A/B。
@@ -74,16 +75,16 @@ public static class StunClient
                 var filtering = await ProbeFilteringAsync(udp, otherServer, other.Value, ct);
                 return filtering switch
                 {
-                    "A" => new NatResult(L10n.T("ncv.nat.fullcone"), "cone", extIp.ToString() ?? "", attempts, L10n.T("ncv.nat.a.note")),
-                    "B" => new NatResult(L10n.T("ncv.nat.restrictedcone"), "cone", extIp.ToString() ?? "", attempts, L10n.T("ncv.nat.b.note")),
-                    "C" => new NatResult(L10n.T("ncv.nat.portrestricted"), "cone", extIp.ToString() ?? "", attempts, L10n.T("ncv.nat.c.note")),
-                    _ => new NatResult(L10n.T("ncv.nat.cone"), "cone", extIp.ToString() ?? "", attempts, L10n.T("ncv.nat.cone.note")),
+                    "A" => new NatResult(L10n.T("ncv.nat.fullcone"), "cone", ext.ToString(), attempts, L10n.T("ncv.nat.a.note")),
+                    "B" => new NatResult(L10n.T("ncv.nat.restrictedcone"), "cone", ext.ToString(), attempts, L10n.T("ncv.nat.b.note")),
+                    "C" => new NatResult(L10n.T("ncv.nat.portrestricted"), "cone", ext.ToString(), attempts, L10n.T("ncv.nat.c.note")),
+                    _ => new NatResult(L10n.T("ncv.nat.cone"), "cone", ext.ToString(), attempts, L10n.T("ncv.nat.cone.note")),
                 };
             }
-            return new NatResult(L10n.T("ncv.nat.cone"), "cone", extIp.ToString() ?? "", attempts, L10n.T("ncv.nat.cone.note"));
+            return new NatResult(L10n.T("ncv.nat.cone"), "cone", ext.ToString(), attempts, L10n.T("ncv.nat.cone.note"));
         }
 
-        return new NatResult(L10n.T("ncv.nat.insufficient"), "insufficient", extIp.ToString() ?? "", attempts, "");
+        return new NatResult(L10n.T("ncv.nat.insufficient"), "insufficient", ext.ToString(), attempts, "");
     }
 
     /// RFC 5780 过滤行为测试。changeFlags：0x06 = 要求服务器换 IP+端口回包；0x02 = 仅换端口。

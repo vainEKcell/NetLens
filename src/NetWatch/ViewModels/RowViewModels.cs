@@ -428,7 +428,7 @@ public sealed class AdapterRowVM : VmBase
     public void Update(AdapterInfo a)
     {
         Name = a.Name;
-        Status = a.Status == "已连接" ? L10n.T("adapter.up") : L10n.T("adapter.down");
+        Status = a.Status == AdapterStatus.Connected ? L10n.T("adapter.up") : L10n.T("adapter.down");
         IpsText = a.Ips.Length == 0 ? "—" : string.Join(", ", a.Ips);
         GwText = a.Gateways.Length == 0 ? "—" : string.Join(", ", a.Gateways);
         DnsText = a.Dns.Length == 0 ? "—" : string.Join(", ", a.Dns);

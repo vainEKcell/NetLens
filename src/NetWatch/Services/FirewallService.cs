@@ -6,7 +6,7 @@ public sealed record BlockedRule(string Name, string AppPath);
 public sealed class FirewallService
 {
     public const string Prefix = "NetWatch Block";
-    private dynamic? _policy;
+    private dynamic _policy = null!;
 
     public bool Available { get; private set; } = true;
     public string? LastError { get; private set; }
@@ -15,7 +15,7 @@ public sealed class FirewallService
     {
         if (_policy != null) return;
         _policy = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2")
-            ?? throw new InvalidOperationException("找不到防火墙 COM 组件"));
+            ?? throw new InvalidOperationException("找不到防火墙 COM 组件"))!;
         Available = true;
     }
 
@@ -31,7 +31,7 @@ public sealed class FirewallService
     {
         if (RuleExists(name)) return;
         dynamic rule = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule")
-            ?? throw new InvalidOperationException("找不到防火墙规则 COM 组件"));
+            ?? throw new InvalidOperationException("找不到防火墙规则 COM 组件"))!;
         rule.Name = name;
         rule.Description = "由NetWatch 创建，可在本程序「拦截名单」或 Windows 防火墙中移除";
         rule.ApplicationName = path;

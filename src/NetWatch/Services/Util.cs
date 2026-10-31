@@ -17,6 +17,31 @@ public static class Util
 
     public static bool IsLoopbackIp(IPAddress ip) => IPAddress.IsLoopback(ip);
 
+    /// 可路由公网地址：排除环回、内网/链路本地、0 段、组播/保留段、CGNAT 100.64/10
+    public static bool IsPublicIp(IPAddress ip)
+    {
+        if (IsLoopbackIp(ip) || IsLanIp(ip)) return false;
+        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            var b = ip.GetAddressBytes();
+            if (b[0] == 0 || b[0] >= 224) return false;                    // 保留/组播
+            if (b[0] == 100 && b[1] >= 64 && b[1] <= 127) return false;    // CGNAT
+            return true;
+        }
+        return (ip.GetAddressBytes()[0] & 0xFE) != 0xFF;                   // 排除 IPv6 组播段
+    }
+
+    /// 链路协商速率 → 比特/字节双单位显示（如 "1 Gbps（≈125 MB/s）"）
+    public static string FormatLinkSpeed(long bitsPerSecond)
+    {
+        string bits = bitsPerSecond >= 1_000_000_000
+            ? $"{bitsPerSecond / 1_000_000_000.0:0.#} Gbps"
+            : $"{bitsPerSecond / 1_000_000.0:0.#} Mbps";
+        double mbPerSec = bitsPerSecond / 8.0 / 1_000_000;
+        string bytesUnit = mbPerSec >= 1000 ? $"{mbPerSec / 1000:0.#} GB/s" : $"{mbPerSec:0.#} MB/s";
+        return $"{bits}（≈{bytesUnit}）";
+    }
+
     /// 内网 / 链路本地地址（RFC1918 + 169.254 + IPv6 内网段）
     public static bool IsLanIp(IPAddress ip)
     {

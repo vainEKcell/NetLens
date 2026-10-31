@@ -8,6 +8,13 @@ using NetWatch.Native;
 
 namespace NetWatch.Services;
 
+/// 网卡连接状态：结构化常量，避免服务层产出中文 UI 字面量被上层比较
+public static class AdapterStatus
+{
+    public const string Connected = "up";
+    public const string Disconnected = "down";
+}
+
 public sealed record AdapterInfo(string Name, string Status, string[] Ips, string[] Gateways, string[] Dns);
 public sealed record HostEntry(string Ip, string[] Hosts);
 public sealed record NetConfigSnapshot(
@@ -55,7 +62,7 @@ public sealed class NetConfigService : IDisposable
                 var ipProps = nic.GetIPProperties();
                 adapters.Add(new AdapterInfo(
                     nic.Name,
-                    nic.OperationalStatus == OperationalStatus.Up ? "已连接" : "断开",
+                    nic.OperationalStatus == OperationalStatus.Up ? AdapterStatus.Connected : AdapterStatus.Disconnected,
                     ipProps.UnicastAddresses.Select(a => a.Address.ToString()).ToArray(),
                     ipProps.GatewayAddresses.Select(g => g.Address.ToString()).ToArray(),
                     ipProps.DnsAddresses.Select(d => d.ToString()).ToArray()));
@@ -63,7 +70,7 @@ public sealed class NetConfigService : IDisposable
             catch { }
         }
 
-        var allDns = adapters.Where(a => a.Status == "已连接")
+        var allDns = adapters.Where(a => a.Status == AdapterStatus.Connected)
                              .SelectMany(a => a.Dns)
                              .Distinct(StringComparer.OrdinalIgnoreCase)
                              .ToArray();

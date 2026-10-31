@@ -17,7 +17,7 @@ public sealed class FirewallAuditWatcher : IDisposable
 
     public static (bool Success, bool Failure) QueryAuditState()
     {
-        var (ok, output) = RunAuditpol("/get", "/subcategory:" + SubcategoryGuid);
+        var (ok, output) = ProcessRunner.RunConsole("auditpol.exe", 5000, "/get", "/subcategory:" + SubcategoryGuid);
         if (!ok) return (false, false);
         bool success = output.Contains("成功") || output.Contains("Success", StringComparison.OrdinalIgnoreCase);
         bool failure = output.Contains("失败") || output.Contains("Failure", StringComparison.OrdinalIgnoreCase);
@@ -25,29 +25,8 @@ public sealed class FirewallAuditWatcher : IDisposable
     }
 
     public static bool EnableAudit() =>
-        RunAuditpol("/set", "/subcategory:" + SubcategoryGuid, "/success:enable", "/failure:enable").Item1;
-
-    public static bool DisableAudit() =>
-        RunAuditpol("/set", "/subcategory:" + SubcategoryGuid, "/success:disable", "/failure:disable").Item1;
-
-    private static (bool Ok, string Output) RunAuditpol(params string[] args)
-    {
-        try
-        {
-            var psi = new ProcessStartInfo("auditpol.exe")
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-            };
-            foreach (var a in args) psi.ArgumentList.Add(a);
-            using var p = Process.Start(psi)!;
-            string output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit(5000);
-            return (p.ExitCode == 0, output);
-        }
-        catch (Exception ex) { Log.Error("auditpol 执行失败", ex); return (false, ""); }
-    }
+        ProcessRunner.RunConsole("auditpol.exe", 5000,
+            "/set", "/subcategory:" + SubcategoryGuid, "/success:enable", "/failure:enable").Ok;
 
     /// 订阅安全日志 5157。返回是否成功启动（未启用审计策略时事件不会到达，但订阅本身可先建立）。
     public bool Start(Action<BlockedConnectionEvent> onBlocked)

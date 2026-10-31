@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using NetWatch.Services;
 
 namespace NetWatch.Models;
 
@@ -50,17 +51,12 @@ public sealed class DestinationEntity
     public DateTime LastSeenUtc { get; set; } = DateTime.UtcNow;
 }
 
-public enum EventKindEx : byte
-{
-    NewConn, Closed, LargeTransfer, DnsResolve, ConfigChange, Alert, ProcessStart, ProcessStop
-}
-
 /// 统一事件记录——EventStore 的行，证据链的最小单元
 public sealed record EventRecord
 {
     public long Seq { get; init; }
     public DateTime TimeUtc { get; init; }
-    public EventKindEx Kind { get; init; }
+    public EventKind Kind { get; init; }
     public int Pid { get; init; }
     public string? IdentityKey { get; set; }
     public string? RemoteIp { get; init; }
@@ -71,17 +67,17 @@ public sealed record EventRecord
     public string? Text { get; set; }
     public RiskLevel Level { get; set; }
 
-    public static string KindText(EventKindEx k) => k switch
+    public static string KindText(EventKind k) => k switch
     {
-        EventKindEx.NewConn => "新连接",
-        EventKindEx.Closed => "断开",
-        EventKindEx.LargeTransfer => "大额传输",
-        EventKindEx.DnsResolve => "DNS 解析",
-        EventKindEx.ConfigChange => "配置变更",
-        EventKindEx.Alert => "提示",
-        EventKindEx.ProcessStart => "进程启动",
-        EventKindEx.ProcessStop => "进程退出",
-        _ => "?",
+        EventKind.NewConn => L10n.T("kind.newConn"),
+        EventKind.Closed => L10n.T("kind.closed"),
+        EventKind.LargeTransfer => L10n.T("kind.largeTransfer"),
+        EventKind.DnsResolve => L10n.T("kind.dns"),
+        EventKind.ConfigChange => L10n.T("kind.config"),
+        EventKind.Alert => L10n.T("kind.alertRecord"),
+        EventKind.ProcessStart => L10n.T("kind.procStart"),
+        EventKind.ProcessStop => L10n.T("kind.procStop"),
+        _ => L10n.T("kind.system"),
     };
 }
 
