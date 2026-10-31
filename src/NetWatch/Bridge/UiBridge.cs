@@ -77,6 +77,59 @@ public sealed class UiBridge
                     if (fpid > 0) _vm.FilterEventsByPid(fpid);
                     else _vm.ClearEventsFilter();
                     break;
+                case "unblockApp":
+                    _vm.UnblockAppByPath(root.GetProperty("path").GetString());
+                    _vm.RefreshBlocked();
+                    break;
+                case "refreshBlocked":
+                    _vm.RefreshBlocked();
+                    break;
+                case "removeTrusted":
+                    _vm.RemoveTrustedKey(root.GetProperty("key").GetString() ?? "");
+                    break;
+                case "clearEvents":
+                    _vm.Events.Clear();
+                    break;
+                case "exportEvents":
+                    _vm.ExportEvents();
+                    break;
+                case "cleanupNow":
+                    _vm.RunRetentionCleanup(manual: true);
+                    break;
+                case "enableAudit":
+                    _vm.EnableFirewallAudit();
+                    break;
+                case "setLanguage":
+                    _vm.Settings.Language = root.GetProperty("value").GetString() ?? _vm.Settings.Language;
+                    _vm.Settings.Save();
+                    L10n.Apply(_vm.Settings.Language);
+                    break;
+                case "setTheme":
+                    _vm.Settings.Theme = root.GetProperty("value").GetString() ?? _vm.Settings.Theme;
+                    _vm.Settings.Save();
+                    ThemeService.Apply(_vm.Settings.Theme);
+                    break;
+                case "setBaselineDays":
+                    _vm.SetBaselineRetention(root.GetProperty("value").GetInt32());
+                    break;
+                case "setEvidenceDays":
+                    _vm.SetEvidenceRetention(root.GetProperty("value").GetInt32());
+                    break;
+                case "setEvidenceCap":
+                    _vm.SetEvidenceCap(root.GetProperty("value").GetInt32());
+                    break;
+                case "setBaselinePaused":
+                    _vm.SetBaselinePaused(root.GetProperty("value").GetBoolean());
+                    break;
+                case "setHideLoopback":
+                    _vm.HideLoopback = root.GetProperty("value").GetBoolean();
+                    break;
+                case "setOnlyFlagged":
+                    _vm.OnlyFlagged = root.GetProperty("value").GetBoolean();
+                    break;
+                case "setSearch":
+                    _vm.SearchText = root.GetProperty("value").GetString() ?? "";
+                    break;
                 default:
                     Log.Error($"UiBridge 未知命令：{name}");
                     break;

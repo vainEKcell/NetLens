@@ -36,6 +36,8 @@ const gridOptions: GridOptions = {
   rowData: [],
   defaultColDef: { sortable: false, resizable: true },
   suppressCellFocus: true,
+  cellFlashDuration: 0,
+  cellFadeDuration: 0,
   getRowId: (p) => String(p.data.__i),
 };
 

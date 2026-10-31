@@ -4,22 +4,30 @@ import * as overview from "./pages/overview";
 import * as dns from "./pages/dns";
 import * as netcheck from "./pages/netcheck";
 import * as events from "./pages/events";
+import * as destinations from "./pages/destinations";
+import * as ports from "./pages/ports";
+import * as blocking from "./pages/blocking";
+import * as network from "./pages/network";
+import * as settings from "./pages/settings";
 import * as placeholder from "./pages/placeholder";
 
 // ===== 导航注册 =====
-const NAV: { id: string; icon: string; title: string; sub: string; page: "module" | "ph" }[] = [
-  { id: "overview",     icon: "▤", title: "总览",      sub: "每进程实时流量 · 点击行查看详情与处置", page: "module" },
-  { id: "destinations", icon: "⊕", title: "目的地排行", sub: "按远端地址聚合的流量排行", page: "ph" },
-  { id: "dns",          icon: "◎", title: "DNS 安全",   sub: "解析流为被动监听（零流量）；DNS 体检为主动交叉验证", page: "module" },
-  { id: "ports",        icon: "⇥", title: "监听端口",   sub: "本机监听端口与对外暴露面", page: "ph" },
-  { id: "events",       icon: "≡", title: "事件流",     sub: "连接、传输、DNS 与拦截事件的统一时间线", page: "module" },
-  { id: "blocking",     icon: "⊘", title: "拦截名单",   sub: "防火墙拦截规则与允许名单", page: "ph" },
-  { id: "network",      icon: "⚑", title: "网络配置",   sub: "网卡 / 代理 / hosts 变更历史", page: "ph" },
-  { id: "netcheck",     icon: "✚", title: "网络体检",   sub: "NAT / 延迟 / 带宽一键体检", page: "module" },
-  { id: "settings",     icon: "⚙", title: "设置",       sub: "语言 / 主题 / 数据保留", page: "ph" },
+const NAV: { id: string; icon: string; title: string; sub: string }[] = [
+  { id: "overview",     icon: "▤", title: "总览",      sub: "每进程实时流量 · 点击行查看详情与处置" },
+  { id: "destinations", icon: "⊕", title: "目的地排行", sub: "按远端地址聚合的流量排行" },
+  { id: "dns",          icon: "◎", title: "DNS 安全",   sub: "解析流为被动监听（零流量）；DNS 体检为主动交叉验证" },
+  { id: "ports",        icon: "⇥", title: "监听端口",   sub: "本机监听端口与对外暴露面" },
+  { id: "events",       icon: "≡", title: "事件流",     sub: "连接、传输、DNS 与拦截事件的统一时间线" },
+  { id: "blocking",     icon: "⊘", title: "拦截名单",   sub: "防火墙拦截规则与允许名单" },
+  { id: "network",      icon: "⚑", title: "网络配置",   sub: "网卡 / 代理 / hosts 变更历史" },
+  { id: "netcheck",     icon: "✚", title: "网络体检",   sub: "NAT / 延迟 / 带宽一键体检" },
+  { id: "settings",     icon: "⚙", title: "设置",       sub: "语言 / 主题 / 数据保留" },
 ];
 
-const pageModules: Record<string, typeof overview> = { overview, dns, netcheck, events };
+type PageModule = { render(root: HTMLElement): void; onSnapshot(s: Snapshot): void };
+const pageModules: Record<string, PageModule> = {
+  overview, destinations, dns, ports, events, blocking, network, netcheck, settings,
+};
 
 // ===== 布局 =====
 const nav = document.getElementById("nav")!;
@@ -50,11 +58,7 @@ function navigate(): void {
   pageEl.id = `page-${item.id}`;
   content.appendChild(pageEl);
 
-  if (item.page === "module") {
-    (pageModules[item.id] as typeof overview).render(pageEl);
-  } else {
-    placeholder.render(pageEl, item.title, `${item.sub}（beta 版迁移至此）`);
-  }
+  pageModules[item.id].render(pageEl);
 }
 
 window.addEventListener("hashchange", navigate);
@@ -79,7 +83,18 @@ initBridge();
 initSpark();
 navigate();
 
+const darkMedia = window.matchMedia("(prefers-color-scheme: light)");
+function applyTheme(theme: string): void {
+  const effective = theme === "auto" ? (darkMedia.matches ? "light" : "dark") : theme;
+  document.documentElement.dataset.theme = effective;
+}
+darkMedia.addEventListener("change", () => {
+  const cur = document.documentElement.dataset.theme;
+  if (cur) applyTheme(cur === "light" ? "light" : "dark");
+});
+
 onSnapshot((s: Snapshot) => {
+  applyTheme(s.settings.theme);
   upEl.textContent = fmtSpeed(s.totals.up);
   downEl.textContent = fmtSpeed(s.totals.down);
   sessionEl.textContent = `↑ ${fmtBytes(s.totals.upAll)}　↓ ${fmtBytes(s.totals.downAll)}`;

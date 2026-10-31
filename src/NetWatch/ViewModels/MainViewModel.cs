@@ -690,7 +690,7 @@ public sealed class MainViewModel : VmBase, IDisposable
         RefreshTrustedApps();
     }
 
-    private void RefreshTrustedApps()
+    public void RefreshTrustedApps()
     {
         TrustedApps.Clear();
         foreach (var k in Settings.TrustedIdentityKeys)
@@ -699,6 +699,18 @@ public sealed class MainViewModel : VmBase, IDisposable
                 Key = k,
                 DisplayName = Settings.TrustedIdentityNames.TryGetValue(k, out var n) ? n : k,
             });
+    }
+
+    /// WebUI：按身份键移出允许名单
+    public void RemoveTrustedKey(string key)
+    {
+        if (string.IsNullOrEmpty(key) || !Settings.TrustedIdentityKeys.Contains(key)) return;
+        var name = Settings.TrustedIdentityNames.TryGetValue(key, out var n) ? n : key;
+        Settings.TrustedIdentityKeys.Remove(key);
+        Settings.TrustedIdentityNames.Remove(key);
+        Settings.Save();
+        AddSystemEvent($"已将 {name} 移出允许名单");
+        RefreshTrustedApps();
     }
 
     public void ToggleTrustForSelection()

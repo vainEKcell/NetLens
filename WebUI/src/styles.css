@@ -258,6 +258,8 @@ input[type="text"]:focus, select:focus { border-color: var(--accent); }
 
 /* AG Grid 主题对齐设计系统 */
 .ag-theme-nw {
+  --ag-foreground-color: var(--fg);
+  --ag-data-color: var(--fg);
   --ag-background-color: var(--panel);
   --ag-odd-row-background-color: var(--panel2);
   --ag-header-background-color: var(--panel2);

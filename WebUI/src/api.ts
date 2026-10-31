@@ -107,6 +107,28 @@ export interface Snapshot {
     filterVisible: boolean;
     items: EventRow[];
   };
+  destinations: {
+    Display: string; Scope: string; UpText: string; DownText: string;
+    LastText: string; ProcessesText: string;
+  }[];
+  ports: {
+    ProtoText: string; Port: number; Bind: string; BindText: string;
+    Pid: number; Process: string;
+  }[];
+  blocking: {
+    apps: { DisplayName: string; Path: string; RulesText: string }[];
+    trusted: { Key: string; DisplayName: string }[];
+  };
+  network: {
+    adapters: { Name: string; Status: string; IpsText: string; GwText: string; DnsText: string }[];
+    configHistory: { TimeText: string; What: string; Old: string; New: string; Serious: boolean }[];
+  };
+  settings: {
+    language: string; theme: string;
+    baselineDays: number; evidenceDays: number; evidenceCap: number;
+    baselinePaused: boolean; storageInfo: string; auditEnabled: boolean;
+    hideLoopback: boolean; onlyFlagged: boolean; searchText: string;
+  };
 }
 
 type Listener = (s: Snapshot) => void;

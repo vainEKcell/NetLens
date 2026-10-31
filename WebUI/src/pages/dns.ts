@@ -66,7 +66,9 @@ export function render(root: HTMLElement): void {
   streamApi = createGrid(document.getElementById("dns-stream")!, {
     columnDefs: streamCols, rowData: [],
     defaultColDef: { sortable: false, resizable: true },
-    suppressCellFocus: true, getRowId: (p) => String(p.data.__i),
+    suppressCellFocus: true,
+  cellFlashDuration: 0,
+  cellFadeDuration: 0, getRowId: (p) => String(p.data.__i),
   } as GridOptions);
   dohApi = createGrid(document.getElementById("doh-grid")!, {
     columnDefs: dohCols, rowData: [],

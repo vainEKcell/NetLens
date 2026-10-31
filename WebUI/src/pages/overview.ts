@@ -39,6 +39,8 @@ const gridOptions: GridOptions = {
   defaultColDef: { sortable: true, resizable: true },
   rowSelection: { mode: "singleRow", checkboxes: false },
   suppressCellFocus: true,
+  cellFlashDuration: 0,
+  cellFadeDuration: 0,
   getRowId: (p) => String(p.data.pid),
   onRowClicked: (e) => {
     const row = e.data as OverviewRow | undefined;

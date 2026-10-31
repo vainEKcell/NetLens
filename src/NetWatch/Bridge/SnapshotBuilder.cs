@@ -56,6 +56,32 @@ public sealed class SnapshotBuilder
             dns = BuildDns(),
             netcheck = BuildNetCheck(),
             events = BuildEvents(),
+            destinations = _vm.Destinations.Select(d => new { d.Display, d.Scope, d.UpText, d.DownText, d.LastText, d.ProcessesText }).ToArray(),
+            ports = _vm.Ports.Select(p => new { p.ProtoText, p.Port, p.Bind, p.BindText, p.Pid, p.Process }).ToArray(),
+            blocking = new
+            {
+                apps = _vm.BlockedApps.Select(b => new { b.DisplayName, b.Path, b.RulesText }).ToArray(),
+                trusted = _vm.TrustedApps.Select(t => new { t.Key, t.DisplayName }).ToArray(),
+            },
+            network = new
+            {
+                adapters = _vm.Adapters.Select(a => new { a.Name, a.Status, a.IpsText, a.GwText, a.DnsText }).ToArray(),
+                configHistory = _vm.ConfigHistory.Select(c => new { c.TimeText, c.What, c.Old, c.New, c.Serious }).ToArray(),
+            },
+            settings = new
+            {
+                language = _vm.Settings.Language,
+                theme = _vm.Settings.Theme,
+                baselineDays = _vm.Settings.BaselineRetentionDays,
+                evidenceDays = _vm.Settings.EvidenceRetentionDays,
+                evidenceCap = _vm.Settings.EvidenceMaxSizeMB,
+                baselinePaused = _vm.Settings.BaselinePaused,
+                storageInfo = _vm.StorageInfo,
+                auditEnabled = AuditOn(),
+                hideLoopback = _vm.HideLoopback,
+                onlyFlagged = _vm.OnlyFlagged,
+                searchText = _vm.SearchText,
+            },
         };
         return JsonSerializer.Serialize(payload);
     }
@@ -183,6 +209,12 @@ public sealed class SnapshotBuilder
             verdict = _vm.CheckVerdictText,
             advices = _vm.CheckAdvices.ToArray(),
         };
+    }
+
+    private static bool AuditOn()
+    {
+        var (success, failure) = FirewallAuditWatcher.QueryAuditState();
+        return success || failure;
     }
 
     private object BuildEvents()
