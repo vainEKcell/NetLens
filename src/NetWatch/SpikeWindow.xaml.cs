@@ -13,17 +13,17 @@ public partial class SpikeWindow : Window
 {
     private readonly UiBridge _bridge;
 
-    public SpikeWindow(MainViewModel vm)
+    public SpikeWindow(MainViewModel vm, string initialPage = "")
     {
         InitializeComponent();
         var snapshots = new SnapshotBuilder(vm.Agg, vm.Tracker, vm);
-        // spike 阶段经 TogglePause 控制启停；0.2 由桥直接命令服务层
-        _bridge = new UiBridge(snapshots,
-            () => { if (!vm.Paused) vm.TogglePause(); },
-            () => { if (vm.Paused) vm.TogglePause(); });
+        _bridge = new UiBridge(snapshots, vm);
+        _initialPage = initialPage;
         Loaded += async (_, _) => await InitWeb();
         Closed += (_, _) => _bridge.Detach();
     }
+
+    private readonly string _initialPage;
 
     private async Task InitWeb()
     {
@@ -40,7 +40,6 @@ public partial class SpikeWindow : Window
         Web.CoreWebView2.SetVirtualHostNameToFolderMapping(
             "app.local", dist, CoreWebView2HostResourceAccessKind.Allow);
         Web.CoreWebView2.NavigationCompleted += (_, _) => _bridge.Attach(Web.CoreWebView2);
-        Web.CoreWebView2.OpenDevToolsWindow();
-        Web.Source = new Uri("https://app.local/index.html");
+        Web.Source = new Uri("https://app.local/index.html#/" + _initialPage);
     }
 }

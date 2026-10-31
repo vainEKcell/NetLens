@@ -1,5 +1,5 @@
-// C# ⇄ WebUI 的唯一通道（与 src/NetWatch/Bridge/UiBridge.cs 对应）：
-// C# 每秒 push snapshot；前端仅发送 {name:"pause"|"resume"} 命令。
+// C# ⇄ WebUI 唯一通道（与 src/NetWatch/Bridge/UiBridge.cs、SnapshotBuilder.cs 对应）
+
 export interface OverviewRow {
   pid: number;
   name: string;
@@ -11,24 +11,119 @@ export interface OverviewRow {
   risk: number;
 }
 
+export interface DetailInfo {
+  pid: number;
+  name: string;
+  path: string | null;
+  vendor: string | null;
+  signature: string | null;
+  services: { name: string; displayName: string }[];
+  conns: { Remote: string; Local: string; Proto: string; State: string }[];
+  verdict: {
+    status: string;
+    riskByte: number;
+    evidence: { Statement: string; Basis: string | null; Caveat: string | null; Weight: number }[];
+  } | null;
+}
+
+export interface PingRow {
+  Target: string;
+  TargetIp: string;
+  AvgText: string;
+  JitterText: string;
+  LossText: string;
+  P95Text: string;
+  QualityText: string;
+}
+
+export interface DnsStreamRow {
+  time: string;
+  process: string;
+  domain: string;
+  ips: string;
+  alert: boolean;
+  alertText: string;
+}
+
+export interface DohResult {
+  Domain: string;
+  LocalIps: string;
+  RefIps: string;
+  Verdict: string;
+  RiskByte: number;
+}
+
+export interface EventRow {
+  time: string;
+  kind: string;
+  process: string;
+  detail: string;
+  bytes: string;
+  pid: number;
+  remote: string | null;
+  domain: string | null;
+}
+
 export interface Snapshot {
   type: "snapshot";
-  tick: number;
-  totals: { up: number; down: number };
-  rows: OverviewRow[];
+  paused: boolean;
+  totals: { up: number; down: number; upAll: number; downAll: number };
+  overview: { rows: OverviewRow[]; selectedPid: number };
+  detail: DetailInfo | null;
+  dns: {
+    servers: string;
+    proxy: string;
+    winhttp: string;
+    hosts: string;
+    stream: DnsStreamRow[];
+    doh: {
+      running: boolean;
+      status: string;
+      providerIndex: number;
+      probes: string;
+      results: DohResult[];
+    };
+  };
+  netcheck: {
+    running: boolean;
+    progress: string;
+    nat: string;
+    natExternal: string;
+    natDetail: string;
+    linkType: string;
+    linkSpeed: string;
+    wifiSignal: string;
+    ssid: string;
+    mtu: string;
+    pings: PingRow[];
+    speed: { down: string; up: string; tier: string; node: string; progress: string };
+    scenarios: { Name: string; Verdict: string }[];
+    peak: string;
+    verdict: string;
+    advices: string[];
+  };
+  events: {
+    filterText: string;
+    filterVisible: boolean;
+    items: EventRow[];
+  };
 }
 
 type Listener = (s: Snapshot) => void;
+const listeners = new Set<Listener>();
+let last: Snapshot | null = null;
 
 export function onSnapshot(fn: Listener): void {
-  window.chrome.webview.addEventListener("message", (ev) => {
-    const msg = ev.data as Snapshot;
-    if (msg && msg.type === "snapshot") fn(msg);
-  });
+  listeners.add(fn);
+  if (last) fn(last); // 新注册的页面立即拿到最近一次快照
 }
 
-export function sendCommand(name: "pause" | "resume"): void {
-  window.chrome.webview.postMessage({ name });
+export function sendCommand(name: string, extra: Record<string, unknown> = {}): void {
+  window.chrome.webview.postMessage({ name, ...extra });
+}
+
+export function latestSnapshot(): Snapshot | null {
+  return last;
 }
 
 export function fmtSpeed(bytesPerSec: number): string {
@@ -45,6 +140,21 @@ export function fmtBytes(b: number): string {
   let i = 0;
   while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
   return `${v >= 100 || i === 0 ? Math.round(v) : v.toFixed(1)} ${u[i]}`;
+}
+
+export const riskNames = ["正常", "提示", "关注", "可疑"];
+export const riskClass = ["", "risk-low", "risk-medium", "risk-high"];
+
+export function dispatch(s: Snapshot): void {
+  last = s;
+  listeners.forEach((fn) => fn(s));
+}
+
+export function initBridge(): void {
+  window.chrome.webview.addEventListener("message", (ev) => {
+    const msg = ev.data as Snapshot;
+    if (msg && msg.type === "snapshot") dispatch(msg);
+  });
 }
 
 declare global {

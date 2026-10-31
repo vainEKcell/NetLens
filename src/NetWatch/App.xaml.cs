@@ -38,9 +38,12 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += (_, args) =>
             Log.Error("Task 未观察异常", Flatten(args.Exception));
 
-        // --spike：打开 WebView2 穿刺窗口（与默认 WPF UI 共享同一个 MainViewModel）
+        // --spike[:page]：打开 WebView2 穿刺窗口（与默认 WPF UI 共享同一个 MainViewModel）
         var vm = new MainViewModel();
-        Window main = e.Args.Contains("--spike") ? new SpikeWindow(vm) : new MainWindow(vm);
+        var spikeArg = e.Args.FirstOrDefault(a => a.StartsWith("--spike", StringComparison.Ordinal));
+        Window main = spikeArg != null
+            ? new SpikeWindow(vm, spikeArg.Length > 7 ? spikeArg[8..] : "")
+            : new MainWindow(vm);
         MainWindow = main;
         main.Show();
 

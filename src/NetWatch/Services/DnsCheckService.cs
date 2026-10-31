@@ -12,12 +12,20 @@ public sealed record DohResult(string Domain, string LocalIps, string RefIps, st
 /// 这是本程序唯一的主动联网功能——仅在用户点击按钮时向所选公共 DoH 发起少量查询。
 public sealed class DnsCheckService
 {
-    public static readonly (string NameKey, string Url)[] Endpoints =
+    /// DoH 参考源：国内优先，海外源供代理环境使用；Region 用于 UI 分组
+    public static readonly (string NameKey, string Url, string Region)[] Endpoints =
     {
-        ("dns.ali", "https://223.5.5.5/resolve"),
-        ("dns.dnspod", "https://doh.pub/resolve"),
-        ("dns.cloudflare", "https://1.1.1.1/resolve"),
+        ("dns.ali", "https://223.5.5.5/resolve", "cn"),
+        ("dns.dnspod", "https://doh.pub/resolve", "cn"),
+        ("dns.dnspod2", "https://120.53.53.53/resolve", "cn"),
+        ("dns.ali2", "https://223.6.6.6/resolve", "cn"),
+        ("dns.cloudflare", "https://1.1.1.1/resolve", "global"),
+        ("dns.google", "https://dns.google/resolve", "global"),
+        ("dns.quad9", "https://9.9.9.9:5053/resolve", "global"),
     };
+
+    /// 自动模式（ProviderIndex = -1）：国内源在前，失败自动换下一个
+    public const int AutoProviderIndex = -1;
 
     public static readonly string[] DefaultProbes = { "www.baidu.com", "www.qq.com", "www.microsoft.com" };
 

@@ -313,6 +313,11 @@
 
     <sys:String x:Key="doh.idle">体检未运行。此功能为唯一的主动联网功能：点击后向所选公共 DoH 发起少量查询做交叉比对。</sys:String>
     <sys:String x:Key="doh.running">体检中…</sys:String>
+    <sys:String x:Key="doh.trying">正在尝试参考源：{0}…</sys:String>
+    <sys:String x:Key="dns.ali2">阿里公共 DNS（223.6.6.6）</sys:String>
+    <sys:String x:Key="dns.dnspod2">DNSPod 公共 DNS（120.53.53.53）</sys:String>
+    <sys:String x:Key="dns.google">Google Public DNS</sys:String>
+    <sys:String x:Key="dns.quad9">Quad9 DNS</sys:String>
     <sys:String x:Key="doh.checking">正在体检 {0} …</sys:String>
     <sys:String x:Key="doh.done">体检完成。注意：结论为提示性——公共域名的 CDN 调度可能合法造成“不一致”，请换参考源复核后再下结论。</sys:String>
     <sys:String x:Key="doh.probeTip">逗号分隔的探测域名（最多 8 个）</sys:String>

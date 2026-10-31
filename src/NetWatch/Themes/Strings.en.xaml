@@ -314,6 +314,11 @@
 
     <sys:String x:Key="doh.idle">Check not run. This is the only feature that actively uses the network: it sends a few queries to the selected public DoH for cross-validation.</sys:String>
     <sys:String x:Key="doh.running">Checking…</sys:String>
+    <sys:String x:Key="doh.trying">Trying reference source: {0}…</sys:String>
+    <sys:String x:Key="dns.ali2">Aliyun Public DNS (223.6.6.6)</sys:String>
+    <sys:String x:Key="dns.dnspod2">DNSPod Public DNS (120.53.53.53)</sys:String>
+    <sys:String x:Key="dns.google">Google Public DNS</sys:String>
+    <sys:String x:Key="dns.quad9">Quad9 DNS</sys:String>
     <sys:String x:Key="doh.checking">Checking {0} …</sys:String>
     <sys:String x:Key="doh.done">Check complete. Note: results are indicative — CDN scheduling can legitimately cause "mismatches"; cross-check with another reference before concluding.</sys:String>
     <sys:String x:Key="doh.probeTip">Comma-separated probe domains (max 8)</sys:String>

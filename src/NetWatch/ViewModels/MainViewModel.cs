@@ -1647,14 +1647,30 @@ public sealed class MainViewModel : VmBase, IDisposable
             return;
         }
 
-        var url = DnsCheckService.Endpoints[Math.Clamp(DohProviderIndex, 0, DnsCheckService.Endpoints.Length - 1)].Url;
         DohRunning = true;
         DohStatusText = L10n.T("doh.running");
         RaiseAll(nameof(DohRunning), nameof(DohStatusText));
         try
         {
             var progress = new Progress<string>(s => { DohStatusText = s; Raise(nameof(DohStatusText)); });
-            var results = await DnsCheck.RunAsync(domains, url, progress);
+            IProgress<string> report = progress;
+            // 自动模式（-1）：按国内优先顺序逐源尝试，首个拿到参考结果的源即采用
+            List<DohResult> results;
+            if (DohProviderIndex == DnsCheckService.AutoProviderIndex)
+            {
+                results = new List<DohResult>();
+                foreach (var ep in DnsCheckService.Endpoints)
+                {
+                    report.Report(L10n.T("doh.trying", L10n.T(ep.NameKey)));
+                    results = await DnsCheck.RunAsync(domains, ep.Url, progress);
+                    if (results.Any(r => !string.IsNullOrEmpty(r.RefIps))) break;
+                }
+            }
+            else
+            {
+                var url = DnsCheckService.Endpoints[Math.Clamp(DohProviderIndex, 0, DnsCheckService.Endpoints.Length - 1)].Url;
+                results = await DnsCheck.RunAsync(domains, url, progress);
+            }
             DohResults.Clear();
             foreach (var r in results) DohResults.Add(new DohResultVM(r));
             DohStatusText = L10n.T("doh.done");

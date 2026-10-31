@@ -5,12 +5,33 @@
   <title>NetWatch</title>
 </head>
 <body>
-  <div id="toolbar">
-    <span id="title">NetWatch · WebUI Spike</span>
-    <span id="totals">↑ 0 B/s　↓ 0 B/s</span>
-    <button id="btnPause">暂停监控</button>
+  <div id="app">
+    <aside id="sidebar">
+      <div id="brand"><span class="dot"></span>NetWatch</div>
+      <nav id="nav"></nav>
+      <div class="ver">0.1.5 · alpha</div>
+    </aside>
+    <div id="main">
+      <header id="topbar">
+        <div class="metric">
+          <span class="label">总上传</span>
+          <span class="value up" id="tb-up">0 B/s</span>
+        </div>
+        <div class="metric">
+          <span class="label">总下载</span>
+          <span class="value down" id="tb-down">0 B/s</span>
+        </div>
+        <div class="metric">
+          <span class="label">会话累计</span>
+          <span class="value" id="tb-session" style="font-size: 13px;">—</span>
+        </div>
+        <div class="spacer"></div>
+        <div id="spark"><canvas id="spark-canvas" width="180" height="42"></canvas></div>
+        <button id="btn-pause">暂停监控</button>
+      </header>
+      <main id="content"></main>
+    </div>
   </div>
-  <div id="grid" class="ag-theme-fluent-dark"></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

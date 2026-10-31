@@ -371,11 +371,13 @@ public sealed class DohResultVM : VmBase
     public string RefIps { get; }
     public string Verdict { get; }
     public SolidColorBrush VerdictBrush { get; }
+    public byte RiskByte { get; }
 
     public DohResultVM(DohResult r)
     {
         Domain = r.Domain; LocalIps = r.LocalIps; RefIps = r.RefIps; Verdict = r.Verdict;
         VerdictBrush = UiBrushes.Risk(r.Level);
+        RiskByte = (byte)r.Level;
     }
 }
 
