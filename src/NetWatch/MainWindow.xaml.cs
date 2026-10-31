@@ -16,10 +16,10 @@ public partial class MainWindow : Window
 
     private FrameworkElement[]? _pages;
 
-    public MainWindow()
+    public MainWindow(MainViewModel vm)
     {
         InitializeComponent();
-        _vm = new MainViewModel();
+        _vm = vm;
         DataContext = _vm;
         _vm.ChartPush += (u, d) => Chart.Push(u, d);
         _vm.NavigateToEventsRequested += () => Nav.SelectedIndex = 4; // 事件流（网络体检移至网络配置之后）
