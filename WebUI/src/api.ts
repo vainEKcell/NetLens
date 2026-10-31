@@ -34,6 +34,7 @@ export interface PingRow {
   LossText: string;
   P95Text: string;
   QualityText: string;
+  QualityClass: string;
 }
 
 export interface DnsStreamRow {
@@ -97,9 +98,10 @@ export interface Snapshot {
     mtu: string;
     pings: PingRow[];
     speed: { down: string; up: string; tier: string; node: string; progress: string };
-    scenarios: { Name: string; Verdict: string }[];
+    scenarios: { Name: string; Verdict: string; Class: string }[];
     peak: string;
     verdict: string;
+    verdictClass: string;
     advices: string[];
   };
   events: {

@@ -195,6 +195,7 @@ public sealed class SnapshotBuilder
                 p.LossText,
                 p.P95Text,
                 p.QualityText,
+                p.QualityClass,
             }).ToArray(),
             speed = new
             {
@@ -204,9 +205,10 @@ public sealed class SnapshotBuilder
                 node = _vm.SpeedNodeText,
                 progress = _vm.SpeedProgressText,
             },
-            scenarios = _vm.ScenarioRows.Select(s => new { s.Name, s.Verdict }).ToArray(),
+            scenarios = _vm.ScenarioRows.Select(s => new { s.Name, s.Verdict, s.Class }).ToArray(),
             peak = _vm.PeakText,
             verdict = _vm.CheckVerdictText,
+            verdictClass = _vm.CheckVerdictClass,
             advices = _vm.CheckAdvices.ToArray(),
         };
     }

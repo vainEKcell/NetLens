@@ -1,5 +1,6 @@
 import { createGrid, GridOptions, ColDef, GridApi, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot } from "../api";
+import { t, agLocale } from "../i18n";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -7,10 +8,10 @@ let api: GridApi | null = null;
 let rootEl: HTMLElement | null = null;
 
 const cols: ColDef[] = [
-  { headerName: "协议", field: "ProtoText", width: 70 },
-  { headerName: "端口", field: "Port", width: 84, type: "rightAligned",
+  { headerName: t("port.col.proto"), field: "ProtoText", width: 70 },
+  { headerName: t("port.col.port"), field: "Port", width: 84, type: "rightAligned",
     cellClass: "text-blue", sort: "asc" },
-  { headerName: "绑定地址", field: "Bind", width: 160,
+  { headerName: t("port.col.bind"), field: "Bind", width: 160,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -18,16 +19,17 @@ const cols: ColDef[] = [
       s.style.fontSize = "12px";
       return s;
     } },
-  { headerName: "暴露面", field: "BindText", width: 116,
+  { headerName: t("port.col.bindText"), field: "BindText", width: 116,
     cellClass: (p) => (String(p.value).includes("所有") || String(p.value).includes("任意") ? "risk-low" : "text-dim") },
-  { headerName: "PID", field: "Pid", width: 80, type: "rightAligned" },
-  { headerName: "进程", field: "Process", flex: 1 },
+  { headerName: t("port.col.pid"), field: "Pid", width: 80, type: "rightAligned" },
+  { headerName: t("port.col.process"), field: "Process", flex: 1 },
 ];
 
 const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
   defaultColDef: { sortable: true, resizable: true },
+  localeText: agLocale(),
   suppressCellFocus: true,
   cellFlashDuration: 0,
   cellFadeDuration: 0,
@@ -37,8 +39,8 @@ const gridOptions: GridOptions = {
 export function render(root: HTMLElement): void {
   root.innerHTML = `
     <div class="page-head">
-      <h1>监听端口</h1>
-      <div class="sub">本机监听端口与对外暴露面（所有地址 = 可被局域网/公网访问）</div>
+      <h1>${t("port.title")}</h1>
+      <div class="sub">${t("port.sub")}</div>
     </div>
     <div class="ag-theme-nw" id="port-grid" style="height: calc(100vh - 210px);"></div>`;
   rootEl = root;

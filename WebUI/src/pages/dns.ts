@@ -1,5 +1,6 @@
 import { createGrid, GridOptions, ColDef, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot } from "../api";
+import { t, agLocale, lang } from "../i18n";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -8,26 +9,26 @@ let dohApi: GridApi | null = null;
 type GridApi = ReturnType<typeof createGrid>;
 
 const streamCols: ColDef[] = [
-  { headerName: "时间", field: "time", width: 76 },
-  { headerName: "进程", field: "process", width: 150 },
-  { headerName: "域名", field: "domain", flex: 1.2, cellRenderer: (p: { value: string }) => {
+  { headerName: t("dns.col.time"), field: "time", width: 76 },
+  { headerName: t("dns.col.process"), field: "process", width: 150 },
+  { headerName: t("dns.col.domain"), field: "domain", flex: 1.2, cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
       s.style.fontFamily = "var(--mono)";
       s.style.fontSize = "12px";
       return s;
     } },
-  { headerName: "解析结果", field: "ips", flex: 1.2, cellClass: "text-dim" },
-  { headerName: "提示", field: "alertText", flex: 1.3,
+  { headerName: t("dns.col.ips"), field: "ips", flex: 1.2, cellClass: "text-dim" },
+  { headerName: t("dns.col.note"), field: "alertText", flex: 1.3,
     cellClass: (p) => (p.value ? "risk-low" : "text-dim"),
     valueFormatter: (p) => (p.value ? String(p.value) : "—") },
 ];
 
 const dohCols: ColDef[] = [
-  { headerName: "域名", field: "Domain", width: 170 },
-  { headerName: "本机解析", field: "LocalIps", flex: 1.1 },
-  { headerName: "参考源解析", field: "RefIps", flex: 1.1, cellClass: "text-dim" },
-  { headerName: "结论", field: "Verdict", flex: 1,
+  { headerName: t("dns.col.domain"), field: "Domain", width: 170 },
+  { headerName: t("dns.col.local"), field: "LocalIps", flex: 1.1 },
+  { headerName: t("dns.col.ref"), field: "RefIps", flex: 1.1, cellClass: "text-dim" },
+  { headerName: t("dns.col.verdict"), field: "Verdict", flex: 1,
     cellClass: (p) => verdictClassByRisk(p.data?.RiskByte ?? 0) },
 ];
 
@@ -40,25 +41,25 @@ let rootEl: HTMLElement | null = null;
 export function render(root: HTMLElement): void {
   root.innerHTML = `
     <div class="page-head">
-      <h1>DNS 安全</h1>
-      <div class="sub">解析流为被动监听（零流量）；DNS 体检为主动交叉验证，仅在点击按钮时联网</div>
+      <h1>${t("dns.title")}</h1>
+      <div class="sub">${t("dns.sub")}</div>
     </div>
     <div class="grid2">
-      <div class="card"><h2>DNS 服务器（变更会告警）</h2><div class="kv"><span class="v" id="dns-servers" style="font-size:12px;">读取中…</span></div></div>
-      <div class="card"><h2>系统代理 / WinHTTP</h2><div class="kv"><span class="v" id="dns-proxy" style="font-size:12px;">读取中…</span></div></div>
+      <div class="card"><h2>${t("dns.servers")}</h2><div class="kv"><span class="v" id="dns-servers" style="font-size:12px;">读取中…</span></div></div>
+      <div class="card"><h2>${t("dns.proxy")}</h2><div class="kv"><span class="v" id="dns-proxy" style="font-size:12px;">读取中…</span></div></div>
     </div>
     <div class="card">
-      <h2>实时 DNS 解析流（最近 200 条）</h2>
+      <h2>${t("dns.stream")}</h2>
       <div class="ag-theme-nw" id="dns-stream" style="height: 300px;"></div>
     </div>
     <div class="card">
-      <h2>DNS 体检 — 主动交叉验证</h2>
+      <h2>${t("dns.doh")}</h2>
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
         <select id="doh-provider" style="min-width: 220px;"></select>
         <input type="text" id="doh-probes" style="flex:1; min-width: 260px;" />
-        <button class="btn primary" id="doh-run">开始体检</button>
+        <button class="btn primary" id="doh-run">${t("dns.doh.run")}</button>
       </div>
-      <div class="hint">「自动」按国内优先顺序逐源尝试；开启代理后可选择海外参考源获得与直连一致的对照结果。</div>
+      <div class="hint">${t("dns.doh.hint")}</div>
       <div class="hint" id="doh-status" style="margin-top:6px;">—</div>
       <div class="ag-theme-nw" id="doh-grid" style="height: 220px; margin-top: 8px;"></div>
     </div>`;
@@ -73,25 +74,26 @@ export function render(root: HTMLElement): void {
   dohApi = createGrid(document.getElementById("doh-grid")!, {
     columnDefs: dohCols, rowData: [],
     defaultColDef: { sortable: false, resizable: true },
+    localeText: agLocale(),
     suppressCellFocus: true,
   } as GridOptions);
 
   const sel = document.getElementById("doh-provider") as HTMLSelectElement;
   const sources: { i: number; label: string; group: string }[] = [
-    { i: -1, label: "自动（国内优先，失败换源）", group: "" },
-    { i: 0, label: "阿里公共 DNS（223.5.5.5）", group: "国内源" },
-    { i: 1, label: "DNSPod（doh.pub）", group: "国内源" },
-    { i: 2, label: "DNSPod（120.53.53.53）", group: "国内源" },
-    { i: 3, label: "阿里公共 DNS（223.6.6.6）", group: "国内源" },
-    { i: 4, label: "Cloudflare（1.1.1.1）", group: "海外源" },
-    { i: 5, label: "Google Public DNS", group: "海外源" },
-    { i: 6, label: "Quad9（9.9.9.9）", group: "海外源" },
+    { i: -1, label: t("dns.doh.auto"), group: "" },
+    { i: 0, label: "AliDNS 223.5.5.5", group: "cn" },
+    { i: 1, label: "DNSPod doh.pub", group: "cn" },
+    { i: 2, label: "DNSPod 120.53.53.53", group: "cn" },
+    { i: 3, label: "AliDNS 223.6.6.6", group: "cn" },
+    { i: 4, label: "Cloudflare 1.1.1.1", group: "global" },
+    { i: 5, label: "Google Public DNS", group: "global" },
+    { i: 6, label: "Quad9 9.9.9.9", group: "global" },
   ];
   let lastGroup = "";
   sources.forEach((s) => {
     if (s.group && s.group !== lastGroup) {
       const og = document.createElement("optgroup");
-      og.label = s.group;
+      og.label = s.group === "cn" ? (lang() === "zh" ? "国内源" : "China sources") : (lang() === "zh" ? "海外源" : "Global sources");
       og.id = `g-${s.group}`;
       sel.appendChild(og);
       lastGroup = s.group;

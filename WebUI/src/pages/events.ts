@@ -1,5 +1,6 @@
 import { createGrid, GridOptions, ColDef, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot, sendCommand } from "../api";
+import { t, agLocale } from "../i18n";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -15,11 +16,11 @@ const kindClass = (kind: string) => {
 };
 
 const cols: ColDef[] = [
-  { headerName: "时间", field: "time", width: 76 },
-  { headerName: "类型", field: "kind", width: 108,
+  { headerName: t("ev.col.time"), field: "time", width: 76 },
+  { headerName: t("ev.col.kind"), field: "kind", width: 108,
     cellClass: (p) => kindClass(String(p.value)) },
-  { headerName: "进程", field: "process", width: 168 },
-  { headerName: "目标 / 内容", field: "detail", flex: 1.4,
+  { headerName: t("ev.col.process"), field: "process", width: 168 },
+  { headerName: t("ev.col.detail"), field: "detail", flex: 1.4,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -27,7 +28,7 @@ const cols: ColDef[] = [
       s.style.fontSize = "11.5px";
       return s;
     } },
-  { headerName: "数据量", field: "bytes", width: 92, type: "rightAligned",
+  { headerName: t("ev.col.bytes"), field: "bytes", width: 92, type: "rightAligned",
     valueFormatter: (p) => (p.value ? String(p.value) : "") },
 ];
 
@@ -35,6 +36,7 @@ const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
   defaultColDef: { sortable: false, resizable: true },
+  localeText: agLocale(),
   suppressCellFocus: true,
   cellFlashDuration: 0,
   cellFadeDuration: 0,
@@ -44,13 +46,13 @@ const gridOptions: GridOptions = {
 export function render(root: HTMLElement): void {
   root.innerHTML = `
     <div class="page-head">
-      <h1>事件流</h1>
-      <div class="sub">连接、断开、大额传输、DNS 解析与拦截事件的统一时间线（内存保留最近 65536 条）</div>
+      <h1>${t("ev.title")}</h1>
+      <div class="sub">${t("ev.sub")}</div>
     </div>
     <div class="card" style="padding: 10px 14px; display:flex; align-items:center; gap:10px;">
       <span id="ev-filter" class="hint" style="margin:0;"></span>
       <div style="flex:1;"></div>
-      <button class="btn" id="ev-clear-filter" style="display:none;">重置筛选</button>
+      <button class="btn" id="ev-clear-filter" style="display:none;">${t("ev.reset")}</button>
     </div>
     <div class="ag-theme-nw" id="ev-grid" style="height: calc(100vh - 250px);"></div>`;
   rootEl = root;
@@ -63,7 +65,7 @@ export function onSnapshot(s: Snapshot): void {
   if (!rootEl) return;
   const fe = document.getElementById("ev-filter")!;
   const show = s.events.filterVisible;
-  fe.textContent = show ? `筛选生效：${s.events.filterText}（右键行可按类型/进程筛选）` : "右键事件行可按类型或进程筛选";
+  fe.textContent = show ? t("ev.filter.active", s.events.filterText) : t("ev.filter.hint");
   (document.getElementById("ev-clear-filter") as HTMLButtonElement).style.display = show ? "" : "none";
   api?.setGridOption("rowData", s.events.items.map((r, i) => ({ ...r, __i: i })));
 }

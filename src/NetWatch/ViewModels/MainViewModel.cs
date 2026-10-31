@@ -760,6 +760,7 @@ public sealed class MainViewModel : VmBase, IDisposable
     public string PeakText { get; private set; } = "";
     public ObservableCollection<ScenarioRowVM> ScenarioRows { get; } = new();
     public string CheckVerdictText { get; private set; } = "";
+    public string CheckVerdictClass { get; private set; } = "";
     public SolidColorBrush CheckVerdictBrush { get; private set; } = UiBrushes.Dim;
     public RelayCommand NetworkCheckCommand { get; private set; } = null!;
 
@@ -869,7 +870,8 @@ public sealed class MainViewModel : VmBase, IDisposable
                 2 => (L10n.T("ncv.v.fair"), UiBrushes.Amber),
                 _ => (L10n.T("ncv.v.poor"), UiBrushes.Red),
             };
-        return new ScenarioRowVM { Name = name, Verdict = text, Brush = brush };
+        var cls = unknown ? "" : score switch { 0 => "st-excellent", 1 => "st-good", 2 => "st-fair", _ => "st-poor" };
+        return new ScenarioRowVM { Name = name, Verdict = text, Brush = brush, Class = cls };
     }
 
     public async Task RunNetworkCheckAsync()
@@ -1009,6 +1011,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                 <= 4 => (L10n.T("ncv.fair"), UiBrushes.Amber),
                 _ => (L10n.T("ncv.poor"), UiBrushes.Red),
             };
+            CheckVerdictClass = total switch { 0 => "st-excellent", <= 2 => "st-good", <= 4 => "st-fair", _ => "st-poor" };
 
             CheckAdvices.Clear();
             foreach (var a in advices.Distinct()) CheckAdvices.Add("• " + a);

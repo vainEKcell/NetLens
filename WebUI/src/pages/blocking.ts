@@ -1,5 +1,6 @@
 import { createGrid, GridOptions, ColDef, GridApi, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot, sendCommand } from "../api";
+import { t, agLocale } from "../i18n";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -8,8 +9,8 @@ let rootEl: HTMLElement | null = null;
 let selectedPath = "";
 
 const cols: ColDef[] = [
-  { headerName: "程序", field: "DisplayName", width: 240 },
-  { headerName: "路径", field: "Path", flex: 1.4,
+  { headerName: t("bl.col.app"), field: "DisplayName", width: 240 },
+  { headerName: t("bl.col.path"), field: "Path", flex: 1.4,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -18,13 +19,14 @@ const cols: ColDef[] = [
       s.style.color = "var(--dim)";
       return s;
     } },
-  { headerName: "规则", field: "RulesText", width: 90, type: "rightAligned" },
+  { headerName: t("bl.col.rules"), field: "RulesText", width: 90, type: "rightAligned" },
 ];
 
 const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
   defaultColDef: { sortable: true, resizable: true },
+  localeText: agLocale(),
   suppressCellFocus: true,
   cellFlashDuration: 0,
   cellFadeDuration: 0,
@@ -40,17 +42,17 @@ const gridOptions: GridOptions = {
 export function render(root: HTMLElement): void {
   root.innerHTML = `
     <div class="page-head">
-      <h1>拦截名单</h1>
-      <div class="sub">防火墙按程序拦截（Windows 防火墙规则，可在系统防火墙或此处解除）</div>
+      <h1>${t("bl.title")}</h1>
+      <div class="sub">${t("bl.sub")}</div>
     </div>
     <div class="card" style="padding: 10px 14px; display:flex; gap:10px; align-items:center;">
-      <button class="btn" id="bl-unblock" disabled>解除选中程序的拦截</button>
-      <button class="btn" id="bl-refresh">刷新名单</button>
-      <span class="hint" style="margin:0;">在总览右键的处置也会写入此处；规则名带 NetWatch 前缀便于识别</span>
+      <button class="btn" id="bl-unblock" disabled>${t("bl.unblock")}</button>
+      <button class="btn" id="bl-refresh">${t("bl.refresh")}</button>
+      <span class="hint" style="margin:0;">${t("bl.hint")}</span>
     </div>
     <div class="ag-theme-nw" id="bl-grid" style="height: calc(100vh - 380px);"></div>
     <div class="card" style="margin-top:12px;">
-      <h2>允许名单（用户信任，优先于引擎判定）</h2>
+      <h2>${t("bl.trusted")}</h2>
       <div id="trusted-list" class="hint"></div>
     </div>`;
   rootEl = root;
@@ -65,12 +67,12 @@ export function onSnapshot(s: Snapshot): void {
   appsApi?.setGridOption("rowData", s.blocking.apps as unknown as Record<string, unknown>[]);
   const tl = document.getElementById("trusted-list")!;
   const html = s.blocking.trusted.length
-    ? s.blocking.trusted.map((t) => `
+    ? s.blocking.trusted.map((item) => `
         <div class="trusted-row">
-          <span>${escapeHtml(t.DisplayName)}</span>
-          <button class="btn" data-key="${escapeHtml(t.Key)}">移出</button>
+          <span>${escapeHtml(item.DisplayName)}</span>
+          <button class="btn" data-key="${escapeHtml(item.Key)}">${t("bl.remove")}</button>
         </div>`).join("")
-    : "暂无允许名单项——在总览选中进程后使用「允许联网」加入";
+    : t("bl.trusted.empty");
   if (tl.innerHTML !== html) {
     tl.innerHTML = html;
     tl.querySelectorAll("button[data-key]").forEach((b) =>

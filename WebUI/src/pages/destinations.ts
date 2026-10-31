@@ -1,5 +1,6 @@
 import { createGrid, GridOptions, ColDef, GridApi, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot } from "../api";
+import { t, agLocale } from "../i18n";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -7,7 +8,7 @@ let api: GridApi | null = null;
 let rootEl: HTMLElement | null = null;
 
 const cols: ColDef[] = [
-  { headerName: "目的地", field: "Display", flex: 1.6, minWidth: 180,
+  { headerName: t("dst.col.display"), field: "Display", flex: 1.6, minWidth: 180,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -15,17 +16,18 @@ const cols: ColDef[] = [
       s.style.fontSize = "12px";
       return s;
     } },
-  { headerName: "范围", field: "Scope", width: 84, cellClass: "text-dim" },
-  { headerName: "↑ 累计", field: "UpText", width: 110, type: "rightAligned", cellClass: "text-green" },
-  { headerName: "↓ 累计", field: "DownText", width: 110, type: "rightAligned", cellClass: "text-blue" },
-  { headerName: "最近活动", field: "LastText", width: 100, type: "rightAligned", cellClass: "text-dim" },
-  { headerName: "涉及进程", field: "ProcessesText", flex: 1.2, cellClass: "text-dim" },
+  { headerName: t("dst.col.scope"), field: "Scope", width: 84, cellClass: "text-dim" },
+  { headerName: t("dst.col.up"), field: "UpText", width: 110, type: "rightAligned", cellClass: "text-green" },
+  { headerName: t("dst.col.down"), field: "DownText", width: 110, type: "rightAligned", cellClass: "text-blue" },
+  { headerName: t("dst.col.last"), field: "LastText", width: 100, type: "rightAligned", cellClass: "text-dim" },
+  { headerName: t("dst.col.processes"), field: "ProcessesText", flex: 1.2, cellClass: "text-dim" },
 ];
 
 const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
   defaultColDef: { sortable: true, resizable: true },
+  localeText: agLocale(),
   suppressCellFocus: true,
   cellFlashDuration: 0,
   cellFadeDuration: 0,
@@ -35,8 +37,8 @@ const gridOptions: GridOptions = {
 export function render(root: HTMLElement): void {
   root.innerHTML = `
     <div class="page-head">
-      <h1>目的地排行</h1>
-      <div class="sub">按远端地址聚合的会话累计流量（域名优先显示）</div>
+      <h1>${t("dst.title")}</h1>
+      <div class="sub">${t("dst.sub")}</div>
     </div>
     <div class="ag-theme-nw" id="dst-grid" style="height: calc(100vh - 210px);"></div>`;
   rootEl = root;

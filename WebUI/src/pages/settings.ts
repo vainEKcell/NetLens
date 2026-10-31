@@ -1,89 +1,90 @@
 import { Snapshot, sendCommand } from "../api";
+import { t } from "../i18n";
 
 let rootEl: HTMLElement | null = null;
 
 export function render(root: HTMLElement): void {
   root.innerHTML = `
     <div class="page-head">
-      <h1>设置</h1>
-      <div class="sub">语言 / 主题 / 数据保留（即改即存）</div>
+      <h1>${t("set.title")}</h1>
+      <div class="sub">${t("set.sub")}</div>
     </div>
     <div class="grid2">
       <div>
         <div class="card">
-          <h2>外观</h2>
+          <h2>${t("set.appearance")}</h2>
           <div class="kv" style="grid-template-columns: 90px 220px; row-gap: 10px;">
-            <span class="k">界面语言</span>
+            <span class="k">${t("set.lang")}</span>
             <select id="set-lang">
-              <option value="auto">跟随系统</option>
-              <option value="zh">中文</option>
-              <option value="en">English</option>
+              <option value="auto">${t("set.lang.auto")}</option>
+              <option value="zh">${t("set.lang.zh")}</option>
+              <option value="en">${t("set.lang.en")}</option>
             </select>
-            <span class="k">主题</span>
+            <span class="k">${t("set.theme")}</span>
             <select id="set-theme">
-              <option value="auto">跟随系统</option>
-              <option value="dark">深色</option>
-              <option value="light">浅色</option>
+              <option value="auto">${t("set.theme.auto")}</option>
+              <option value="dark">${t("set.theme.dark")}</option>
+              <option value="light">${t("set.theme.light")}</option>
             </select>
           </div>
-          <div class="hint">语言影响服务层产出的文本（NAT 判定、告警等）；界面文字的英文翻译将在 beta 版补齐。</div>
+          <div class="hint">${t("set.lang.hint")}</div>
         </div>
 
         <div class="card">
-          <h2>数据与隐私</h2>
+          <h2>${t("set.data")}</h2>
           <div class="kv" style="grid-template-columns: 90px 220px; row-gap: 10px;">
-            <span class="k">行为基线</span>
+            <span class="k">${t("set.baseline")}</span>
             <select id="set-baseline">
-              <option value="30">保留 30 天</option>
-              <option value="90">保留 90 天</option>
-              <option value="365">保留 365 天</option>
-              <option value="0">不限</option>
+              <option value="30">${t("set.b30")}</option>
+              <option value="90">${t("set.b90")}</option>
+              <option value="365">${t("set.b365")}</option>
+              <option value="0">${t("set.b0")}</option>
             </select>
-            <span class="k">证据流</span>
+            <span class="k">${t("set.evidence")}</span>
             <select id="set-evidence">
-              <option value="3">保留 3 天</option>
-              <option value="7">保留 7 天</option>
-              <option value="30">保留 30 天</option>
-              <option value="0">不限</option>
+              <option value="3">${t("set.e3")}</option>
+              <option value="7">${t("set.e7")}</option>
+              <option value="30">${t("set.e30")}</option>
+              <option value="0">${t("set.b0")}</option>
             </select>
-            <span class="k">证据容量</span>
+            <span class="k">${t("set.cap")}</span>
             <select id="set-cap">
-              <option value="128">128 MB</option>
-              <option value="512">512 MB</option>
-              <option value="2048">2 GB</option>
+              <option value="128">${t("set.c128")}</option>
+              <option value="512">${t("set.c512")}</option>
+              <option value="2048">${t("set.c2048")}</option>
             </select>
-            <span class="k">基线学习</span>
+            <span class="k">${t("set.baselinePause")}</span>
             <label style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="set-pause" style="width:auto;" /> 暂停（证据流照常）
+              <input type="checkbox" id="set-pause" style="width:auto;" /> ${t("set.baselinePause.hint")}
             </label>
           </div>
           <div class="hint" id="set-storage" style="margin-top:8px;">—</div>
           <div style="display:flex; gap:8px; margin-top:10px;">
-            <button class="btn" id="set-cleanup">立即清理过期数据</button>
-            <button class="btn" id="set-audit" style="display:none;">启用防火墙拦截审计</button>
+            <button class="btn" id="set-cleanup">${t("set.cleanup")}</button>
+            <button class="btn" id="set-audit" style="display:none;">${t("set.audit")}</button>
           </div>
         </div>
       </div>
 
       <div>
         <div class="card">
-          <h2>总览显示</h2>
+          <h2>${t("set.overview")}</h2>
           <div class="kv" style="grid-template-columns: 90px 220px; row-gap: 10px;">
-            <span class="k">回环流量</span>
+            <span class="k">${t("set.loopback")}</span>
             <label style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="set-loopback" style="width:auto;" /> 显示回环 (127.x)
+              <input type="checkbox" id="set-loopback" style="width:auto;" /> ${t("set.loopback.hint")}
             </label>
-            <span class="k">搜索</span>
-            <input type="text" id="set-search" placeholder="按进程名/路径过滤总览" style="width: 100%;" />
+            <span class="k">${t("set.search")}</span>
+            <input type="text" id="set-search" placeholder="${t("set.search.ph")}" style="width: 100%;" />
           </div>
         </div>
         <div class="card">
-          <h2>事件流</h2>
+          <h2>${t("set.events")}</h2>
           <div style="display:flex; gap:8px;">
-            <button class="btn" id="set-export">导出事件流 (CSV)</button>
-            <button class="btn" id="set-clearev">清空事件流</button>
+            <button class="btn" id="set-export">${t("set.export")}</button>
+            <button class="btn" id="set-clearev">${t("set.clear")}</button>
           </div>
-          <div class="hint">导出用系统另存为对话框；清空仅影响界面视图，磁盘证据流不受影响。</div>
+          <div class="hint">${t("set.clear.hint")}</div>
         </div>
       </div>
     </div>`;

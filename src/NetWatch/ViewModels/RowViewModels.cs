@@ -386,6 +386,7 @@ public sealed class ScenarioRowVM
     public string Name { get; init; } = "";
     public string Verdict { get; init; } = "";
     public SolidColorBrush Brush { get; init; } = UiBrushes.Fg;
+    public string Class { get; init; } = ""; // WebUI 着色类（st-good/st-fair/st-poor），语言无关
 }
 
 public sealed class PingRowVM : VmBase
@@ -399,6 +400,7 @@ public sealed class PingRowVM : VmBase
     public string LossText { get; private set; } = "";
     public string P95Text { get; private set; } = "";
     public string QualityText { get; private set; } = "";
+    public string QualityClass { get; private set; } = "";
     public SolidColorBrush QualityBrush { get; private set; } = UiBrushes.Fg;
 
     public void Update(PingProbeResult r, string? label = null)
@@ -414,8 +416,9 @@ public sealed class PingRowVM : VmBase
         var q = r.QualityScore switch { 0 => "ncv.q.excellent", 1 => "ncv.q.fair", _ => "ncv.q.poor" };
         QualityText = L10n.T(q);
         QualityBrush = r.QualityScore switch { 0 => UiBrushes.Green, 1 => UiBrushes.Amber, _ => UiBrushes.Red };
+        QualityClass = r.QualityScore switch { 0 => "st-good", 1 => "st-fair", _ => "st-poor" };
         RaiseAll(nameof(Target), nameof(TargetIp), nameof(MinText), nameof(AvgText), nameof(MaxText),
-            nameof(JitterText), nameof(LossText), nameof(P95Text), nameof(QualityText), nameof(QualityBrush));
+            nameof(JitterText), nameof(LossText), nameof(P95Text), nameof(QualityText), nameof(QualityClass), nameof(QualityBrush));
     }
 }
 
