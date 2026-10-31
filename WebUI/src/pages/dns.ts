@@ -74,7 +74,7 @@ export function render(root: HTMLElement): void {
   dohApi = createGrid(document.getElementById("doh-grid")!, {
     columnDefs: dohCols, rowData: [],
     defaultColDef: { sortable: false, resizable: true },
-    localeText: agLocale(),
+    getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
     suppressCellFocus: true,
   } as GridOptions);
 

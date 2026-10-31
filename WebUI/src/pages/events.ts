@@ -36,7 +36,7 @@ const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
   defaultColDef: { sortable: false, resizable: true },
-  localeText: agLocale(),
+  getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   suppressCellFocus: true,
   cellFlashDuration: 0,
   cellFadeDuration: 0,

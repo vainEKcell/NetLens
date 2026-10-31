@@ -40,12 +40,14 @@ html, body {
   overflow: hidden;
 }
 
-#app { display: flex; height: 100vh; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+#body { flex: 1; display: flex; min-height: 0; }
 
 /* ===== 侧栏 ===== */
 #sidebar {
   width: 250px;
   flex-shrink: 0;
+  height: 100%;
   background: var(--panel);
   border-right: 1px solid var(--border);
   display: flex;
@@ -93,17 +95,18 @@ html, body {
 /* ===== 主区 ===== */
 #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
-/* 顶栏：整体一个面板，数据与曲线同底融合 */
+/* 常驻状态栏：横贯全宽，数据与曲线贴合（恢复早期版本布局） */
 #topbar {
   display: flex;
   align-items: center;
-  margin: 12px 16px 0;
-  padding: 10px 18px;
+  margin: 10px 14px 8px;
+  padding: 9px 18px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
-#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding-right: 26px; }
+#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding-right: 24px; }
+#topbar .metric + .metric { border-left: 1px solid var(--border); padding-left: 24px; }
 #topbar .metric .label { font-size: 10.5px; color: var(--faint); }
 #topbar .metric .value {
   font-size: 17px; font-weight: 700;
@@ -117,10 +120,12 @@ html, body {
 /* 曲线与数据同底融合：canvas 贴合面板右侧，无独立边框 */
 #spark {
   position: relative;
-  width: 220px; height: 44px;
-  margin-left: 10px;
+  width: 220px; height: 46px;
+  margin-left: 6px;
   overflow: hidden;
   border-radius: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
 }
 #spark canvas { position: absolute; inset: 0; }
 #topbar .spacer { flex: 1; }
@@ -139,7 +144,9 @@ html, body {
 #btn-pause:hover { background: var(--border); }
 #btn-pause.paused { color: var(--amber); border-color: var(--amber); }
 
-#content { flex: 1; overflow: auto; padding: 14px 16px; }
+#content { flex: 1; overflow: auto; padding: 12px 16px; }
+#sidebar { border-radius: 0 var(--radius) var(--radius) 0; margin: 0 0 10px 0; }
+#content { border-radius: 0; }
 .page { display: none; animation: fadein 0.18s ease; }
 .page.active { display: block; }
 @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }

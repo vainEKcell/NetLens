@@ -90,12 +90,12 @@ function applyLanguage(setting: string): void {
     if (el) el.textContent = t(item.titleKey);
   });
   // 顶栏标签
-  const labels = document.querySelectorAll("#topbar .metric .label");
-  if (labels.length >= 3) {
-    labels[0].textContent = t("tb.up");
-    labels[1].textContent = t("tb.down");
-    labels[2].textContent = t("tb.session");
-  }
+  const lblUp = document.getElementById("lbl-up");
+  const lblDown = document.getElementById("lbl-down");
+  const lblSession = document.getElementById("lbl-session");
+  if (lblUp) lblUp.textContent = t("tb.up");
+  if (lblDown) lblDown.textContent = t("tb.down");
+  if (lblSession) lblSession.textContent = t("tb.session");
   setPaused(paused);
   navigate(true);
 }

@@ -38,7 +38,7 @@ const gridOptions: GridOptions = {
   columnDefs,
   rowData: [],
   defaultColDef: { sortable: true, resizable: true },
-  localeText: agLocale(),
+  getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   rowSelection: { mode: "singleRow", checkboxes: false },
   suppressCellFocus: true,
   cellFlashDuration: 0,

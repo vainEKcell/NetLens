@@ -437,10 +437,10 @@ public sealed class MainViewModel : VmBase, IDisposable
 
     // ================= DNS 页 =================
 
-    public string DnsServersText { get; private set; } = "读取中…";
-    public string ProxyText { get; private set; } = "读取中…";
-    public string WinHttpText { get; private set; } = "读取中…";
-    public string HostsText { get; private set; } = "读取中…";
+    public string DnsServersText { get; private set; } = L10n.T("cfg.reading");
+    public string ProxyText { get; private set; } = L10n.T("cfg.reading");
+    public string WinHttpText { get; private set; } = L10n.T("cfg.reading");
+    public string HostsText { get; private set; } = L10n.T("cfg.reading");
     public string DnsAlertCountText { get; private set; } = "";
 
     public string DohProbeDomains { get; set; } = string.Join(", ", DnsCheckService.DefaultProbes);

@@ -153,7 +153,7 @@ public sealed class NetConfigService : IDisposable
     }
 
     private static NetConfigSnapshot EmptySnapshot() =>
-        new(Array.Empty<AdapterInfo>(), "读取中…", "读取中…", Array.Empty<HostEntry>(), default, Array.Empty<string>());
+        new(Array.Empty<AdapterInfo>(), L10n.T("cfg.reading"), L10n.T("cfg.reading"), Array.Empty<HostEntry>(), default, Array.Empty<string>());
 
     public void Dispose() => _timer.Dispose();
 }
