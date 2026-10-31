@@ -11,20 +11,20 @@ let selectedPidEl: HTMLElement;
 let detailBody: HTMLElement;
 
 const columnDefs: ColDef[] = [
-  { headerName: t("ov.col.pid"), field: "pid", width: 84 },
-  { headerName: t("ov.col.name"), field: "name", flex: 1.7, minWidth: 130, cellRenderer: nameCell },
-  { headerName: "风险", field: "risk", width: 86,
+  { headerName: t("ov.col.pid"), headerValueGetter: () => t("ov.col.pid"), field: "pid", width: 84 },
+  { headerName: t("ov.col.name"), headerValueGetter: () => t("ov.col.name"), field: "name", flex: 1.7, minWidth: 130, cellRenderer: nameCell },
+  { headerName: t("ov.col.risk"), headerValueGetter: () => t("ov.col.risk"), field: "risk", width: 86,
     cellClass: (p) => riskClass[p.value as number] ?? "",
     valueFormatter: (p) => t(`ov.risk.${p.value}`) },
-  { headerName: t("ov.col.down"), field: "down", width: 104, type: "rightAligned",
+  { headerName: t("ov.col.down"), headerValueGetter: () => t("ov.col.down"), field: "down", width: 104, type: "rightAligned",
     valueFormatter: (p) => fmtSpeed(p.value as number), cellClass: "text-blue", sort: "desc" },
-  { headerName: t("ov.col.up"), field: "up", width: 104, type: "rightAligned",
+  { headerName: t("ov.col.up"), headerValueGetter: () => t("ov.col.up"), field: "up", width: 104, type: "rightAligned",
     valueFormatter: (p) => fmtSpeed(p.value as number), cellClass: "text-green" },
-  { headerName: t("ov.col.downTotal"), field: "downTotal", width: 100, type: "rightAligned",
+  { headerName: t("ov.col.downTotal"), headerValueGetter: () => t("ov.col.downTotal"), field: "downTotal", width: 100, type: "rightAligned",
     valueFormatter: (p) => fmtBytes(p.value as number) },
-  { headerName: t("ov.col.upTotal"), field: "upTotal", width: 100, type: "rightAligned",
+  { headerName: t("ov.col.upTotal"), headerValueGetter: () => t("ov.col.upTotal"), field: "upTotal", width: 100, type: "rightAligned",
     valueFormatter: (p) => fmtBytes(p.value as number) },
-  { headerName: t("ov.col.conns"), field: "conns", width: 76, type: "rightAligned" },
+  { headerName: t("ov.col.conns"), headerValueGetter: () => t("ov.col.conns"), field: "conns", width: 76, type: "rightAligned" },
 ];
 
 function nameCell(params: { value: string; data?: OverviewRow }): HTMLElement {

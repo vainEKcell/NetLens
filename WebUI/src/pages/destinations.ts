@@ -8,7 +8,7 @@ let api: GridApi | null = null;
 let rootEl: HTMLElement | null = null;
 
 const cols: ColDef[] = [
-  { headerName: t("dst.col.display"), field: "Display", flex: 1.6, minWidth: 180,
+  { headerName: t("dst.col.display"), headerValueGetter: () => t("dst.col.display"), field: "Display", flex: 1.6, minWidth: 180,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -16,11 +16,11 @@ const cols: ColDef[] = [
       s.style.fontSize = "12px";
       return s;
     } },
-  { headerName: t("dst.col.scope"), field: "Scope", width: 84, cellClass: "text-dim" },
-  { headerName: t("dst.col.up"), field: "UpText", width: 110, type: "rightAligned", cellClass: "text-green" },
-  { headerName: t("dst.col.down"), field: "DownText", width: 110, type: "rightAligned", cellClass: "text-blue" },
-  { headerName: t("dst.col.last"), field: "LastText", width: 100, type: "rightAligned", cellClass: "text-dim" },
-  { headerName: t("dst.col.processes"), field: "ProcessesText", flex: 1.2, cellClass: "text-dim" },
+  { headerName: t("dst.col.scope"), headerValueGetter: () => t("dst.col.scope"), field: "Scope", width: 84, cellClass: "text-dim" },
+  { headerName: t("dst.col.up"), headerValueGetter: () => t("dst.col.up"), field: "UpText", width: 110, type: "rightAligned", cellClass: "text-green" },
+  { headerName: t("dst.col.down"), headerValueGetter: () => t("dst.col.down"), field: "DownText", width: 110, type: "rightAligned", cellClass: "text-blue" },
+  { headerName: t("dst.col.last"), headerValueGetter: () => t("dst.col.last"), field: "LastText", width: 100, type: "rightAligned", cellClass: "text-dim" },
+  { headerName: t("dst.col.processes"), headerValueGetter: () => t("dst.col.processes"), field: "ProcessesText", flex: 1.2, cellClass: "text-dim" },
 ];
 
 const gridOptions: GridOptions = {

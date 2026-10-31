@@ -9,8 +9,8 @@ let rootEl: HTMLElement | null = null;
 let selectedPath = "";
 
 const cols: ColDef[] = [
-  { headerName: t("bl.col.app"), field: "DisplayName", width: 240 },
-  { headerName: t("bl.col.path"), field: "Path", flex: 1.4,
+  { headerName: t("bl.col.app"), headerValueGetter: () => t("bl.col.app"), field: "DisplayName", width: 240 },
+  { headerName: t("bl.col.path"), headerValueGetter: () => t("bl.col.path"), field: "Path", flex: 1.4,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -19,7 +19,7 @@ const cols: ColDef[] = [
       s.style.color = "var(--dim)";
       return s;
     } },
-  { headerName: t("bl.col.rules"), field: "RulesText", width: 90, type: "rightAligned" },
+  { headerName: t("bl.col.rules"), headerValueGetter: () => t("bl.col.rules"), field: "RulesText", width: 90, type: "rightAligned" },
 ];
 
 const gridOptions: GridOptions = {

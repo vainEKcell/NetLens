@@ -9,26 +9,26 @@ let dohApi: GridApi | null = null;
 type GridApi = ReturnType<typeof createGrid>;
 
 const streamCols: ColDef[] = [
-  { headerName: t("dns.col.time"), field: "time", width: 76 },
-  { headerName: t("dns.col.process"), field: "process", width: 150 },
-  { headerName: t("dns.col.domain"), field: "domain", flex: 1.2, cellRenderer: (p: { value: string }) => {
+  { headerName: t("dns.col.time"), headerValueGetter: () => t("dns.col.time"), field: "time", width: 76 },
+  { headerName: t("dns.col.process"), headerValueGetter: () => t("dns.col.process"), field: "process", width: 150 },
+  { headerName: t("dns.col.domain"), headerValueGetter: () => t("dns.col.domain"), field: "domain", flex: 1.2, cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
       s.style.fontFamily = "var(--mono)";
       s.style.fontSize = "12px";
       return s;
     } },
-  { headerName: t("dns.col.ips"), field: "ips", flex: 1.2, cellClass: "text-dim" },
-  { headerName: t("dns.col.note"), field: "alertText", flex: 1.3,
+  { headerName: t("dns.col.ips"), headerValueGetter: () => t("dns.col.ips"), field: "ips", flex: 1.2, cellClass: "text-dim" },
+  { headerName: t("dns.col.note"), headerValueGetter: () => t("dns.col.note"), field: "alertText", flex: 1.3,
     cellClass: (p) => (p.value ? "risk-low" : "text-dim"),
     valueFormatter: (p) => (p.value ? String(p.value) : "—") },
 ];
 
 const dohCols: ColDef[] = [
-  { headerName: t("dns.col.domain"), field: "Domain", width: 170 },
-  { headerName: t("dns.col.local"), field: "LocalIps", flex: 1.1 },
-  { headerName: t("dns.col.ref"), field: "RefIps", flex: 1.1, cellClass: "text-dim" },
-  { headerName: t("dns.col.verdict"), field: "Verdict", flex: 1,
+  { headerName: t("dns.col.domain"), headerValueGetter: () => t("dns.col.domain"), field: "Domain", width: 170 },
+  { headerName: t("dns.col.local"), headerValueGetter: () => t("dns.col.local"), field: "LocalIps", flex: 1.1 },
+  { headerName: t("dns.col.ref"), headerValueGetter: () => t("dns.col.ref"), field: "RefIps", flex: 1.1, cellClass: "text-dim" },
+  { headerName: t("dns.col.verdict"), headerValueGetter: () => t("dns.col.verdict"), field: "Verdict", flex: 1,
     cellClass: (p) => verdictClassByRisk(p.data?.RiskByte ?? 0) },
 ];
 

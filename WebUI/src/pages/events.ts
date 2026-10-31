@@ -16,11 +16,11 @@ const kindClass = (kind: string) => {
 };
 
 const cols: ColDef[] = [
-  { headerName: t("ev.col.time"), field: "time", width: 76 },
-  { headerName: t("ev.col.kind"), field: "kind", width: 108,
+  { headerName: t("ev.col.time"), headerValueGetter: () => t("ev.col.time"), field: "time", width: 76 },
+  { headerName: t("ev.col.kind"), headerValueGetter: () => t("ev.col.kind"), field: "kind", width: 108,
     cellClass: (p) => kindClass(String(p.value)) },
-  { headerName: t("ev.col.process"), field: "process", width: 168 },
-  { headerName: t("ev.col.detail"), field: "detail", flex: 1.4,
+  { headerName: t("ev.col.process"), headerValueGetter: () => t("ev.col.process"), field: "process", width: 168 },
+  { headerName: t("ev.col.detail"), headerValueGetter: () => t("ev.col.detail"), field: "detail", flex: 1.4,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -28,7 +28,7 @@ const cols: ColDef[] = [
       s.style.fontSize = "11.5px";
       return s;
     } },
-  { headerName: t("ev.col.bytes"), field: "bytes", width: 92, type: "rightAligned",
+  { headerName: t("ev.col.bytes"), headerValueGetter: () => t("ev.col.bytes"), field: "bytes", width: 92, type: "rightAligned",
     valueFormatter: (p) => (p.value ? String(p.value) : "") },
 ];
 

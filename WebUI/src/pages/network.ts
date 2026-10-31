@@ -9,21 +9,21 @@ let historyApi: GridApi | null = null;
 let rootEl: HTMLElement | null = null;
 
 const adapterCols: ColDef[] = [
-  { headerName: t("net.col.adapter"), field: "Name", width: 180 },
-  { headerName: t("net.col.status"), field: "Status", width: 76,
+  { headerName: t("net.col.adapter"), headerValueGetter: () => t("net.col.adapter"), field: "Name", width: 180 },
+  { headerName: t("net.col.status"), headerValueGetter: () => t("net.col.status"), field: "Status", width: 76,
     cellClass: (p) => (p.value === "up" ? "text-green" : "text-dim"),
     valueFormatter: (p) => (p.value === "up" ? t("net.up") : t("net.down")) },
-  { headerName: t("net.col.ips"), field: "IpsText", flex: 1.2,
+  { headerName: t("net.col.ips"), headerValueGetter: () => t("net.col.ips"), field: "IpsText", flex: 1.2,
     cellRenderer: monoCell },
-  { headerName: t("net.col.gw"), field: "GwText", flex: 0.8, cellRenderer: monoCell },
-  { headerName: t("net.col.dns"), field: "DnsText", flex: 1.2, cellRenderer: monoCell },
+  { headerName: t("net.col.gw"), headerValueGetter: () => t("net.col.gw"), field: "GwText", flex: 0.8, cellRenderer: monoCell },
+  { headerName: t("net.col.dns"), headerValueGetter: () => t("net.col.dns"), field: "DnsText", flex: 1.2, cellRenderer: monoCell },
 ];
 
 const historyCols: ColDef[] = [
-  { headerName: t("net.col.time"), field: "TimeText", width: 130 },
-  { headerName: t("net.col.what"), field: "What", width: 150 },
-  { headerName: t("net.col.old"), field: "Old", flex: 1, cellRenderer: monoCell },
-  { headerName: t("net.col.new"), field: "New", flex: 1, cellRenderer: monoCell },
+  { headerName: t("net.col.time"), headerValueGetter: () => t("net.col.time"), field: "TimeText", width: 130 },
+  { headerName: t("net.col.what"), headerValueGetter: () => t("net.col.what"), field: "What", width: 150 },
+  { headerName: t("net.col.old"), headerValueGetter: () => t("net.col.old"), field: "Old", flex: 1, cellRenderer: monoCell },
+  { headerName: t("net.col.new"), headerValueGetter: () => t("net.col.new"), field: "New", flex: 1, cellRenderer: monoCell },
 ];
 
 function monoCell(p: { value: string }): HTMLElement {

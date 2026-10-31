@@ -8,10 +8,10 @@ let api: GridApi | null = null;
 let rootEl: HTMLElement | null = null;
 
 const cols: ColDef[] = [
-  { headerName: t("port.col.proto"), field: "ProtoText", width: 70 },
-  { headerName: t("port.col.port"), field: "Port", width: 84, type: "rightAligned",
+  { headerName: t("port.col.proto"), headerValueGetter: () => t("port.col.proto"), field: "ProtoText", width: 70 },
+  { headerName: t("port.col.port"), headerValueGetter: () => t("port.col.port"), field: "Port", width: 84, type: "rightAligned",
     cellClass: "text-blue", sort: "asc" },
-  { headerName: t("port.col.bind"), field: "Bind", width: 160,
+  { headerName: t("port.col.bind"), headerValueGetter: () => t("port.col.bind"), field: "Bind", width: 160,
     cellRenderer: (p: { value: string }) => {
       const s = document.createElement("span");
       s.textContent = p.value;
@@ -19,10 +19,10 @@ const cols: ColDef[] = [
       s.style.fontSize = "12px";
       return s;
     } },
-  { headerName: t("port.col.bindText"), field: "BindText", width: 116,
+  { headerName: t("port.col.bindText"), headerValueGetter: () => t("port.col.bindText"), field: "BindText", width: 116,
     cellClass: (p) => (String(p.value).includes("所有") || String(p.value).includes("任意") ? "risk-low" : "text-dim") },
-  { headerName: t("port.col.pid"), field: "Pid", width: 80, type: "rightAligned" },
-  { headerName: t("port.col.process"), field: "Process", flex: 1 },
+  { headerName: t("port.col.pid"), headerValueGetter: () => t("port.col.pid"), field: "Pid", width: 80, type: "rightAligned" },
+  { headerName: t("port.col.process"), headerValueGetter: () => t("port.col.process"), field: "Process", flex: 1 },
 ];
 
 const gridOptions: GridOptions = {
