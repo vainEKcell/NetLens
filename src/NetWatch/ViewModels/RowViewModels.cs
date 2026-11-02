@@ -351,6 +351,9 @@ public sealed class BlockedAppVM : VmBase
 public sealed class ConfigChangeRowVM : VmBase
 {
     public string TimeText { get; private set; } = "";
+    public string WhatKey { get; }
+    public string OldRaw { get; }
+    public string NewRaw { get; }
     public string What { get; private set; } = "";
     public string Old { get; private set; } = "";
     public string New { get; private set; } = "";
@@ -359,7 +362,13 @@ public sealed class ConfigChangeRowVM : VmBase
     public ConfigChangeRowVM(ConfigChange c)
     {
         TimeText = c.TimeUtc.ToLocalTime().ToString("MM-dd HH:mm:ss");
-        What = c.What; Old = c.Old; New = c.New; Serious = c.Serious;
+        What = L10n.T(c.WhatKey);
+        Old = NetConfigService.FormatValue(c.WhatKey, c.OldRaw);
+        New = NetConfigService.FormatValue(c.WhatKey, c.NewRaw);
+        Serious = c.Serious;
+        WhatKey = c.WhatKey;
+        OldRaw = c.OldRaw;
+        NewRaw = c.NewRaw;
         RaiseAll(nameof(TimeText), nameof(What), nameof(Old), nameof(New), nameof(Serious));
     }
 }

@@ -21,10 +21,22 @@ const adapterCols: ColDef[] = [
 
 const historyCols: ColDef[] = [
   { headerName: t("net.col.time"), headerValueGetter: () => t("net.col.time"), field: "TimeText", width: 130 },
-  { headerName: t("net.col.what"), headerValueGetter: () => t("net.col.what"), field: "What", width: 150 },
-  { headerName: t("net.col.old"), headerValueGetter: () => t("net.col.old"), field: "Old", flex: 1, cellRenderer: monoCell },
-  { headerName: t("net.col.new"), headerValueGetter: () => t("net.col.new"), field: "New", flex: 1, cellRenderer: monoCell },
+  { headerName: t("net.col.what"), headerValueGetter: () => t("net.col.what"), field: "WhatText", width: 170,
+    cellClass: (p) => (p.data?.Serious ? "risk-low" : "") },
+  { headerName: t("net.col.old"), headerValueGetter: () => t("net.col.old"), field: "OldText", flex: 1, cellRenderer: monoCell },
+  { headerName: t("net.col.new"), headerValueGetter: () => t("net.col.new"), field: "NewText", flex: 1, cellRenderer: monoCell },
 ];
+
+// 语言无关原始值 → 当前语言文本（与 C# FormatValue 同规则）
+function fmtValue(whatKey: string, raw: string): string {
+  if (whatKey === "cfg.what.proxy" || whatKey === "cfg.what.winhttp") {
+    if (raw === "off" || raw === "direct" || raw === "") return t("cfg.proxyOff");
+    if (raw.startsWith("on:")) return t("cfg.proxyOn", raw.slice(3));
+    return raw;
+  }
+  if (whatKey === "cfg.what.hosts") return t("cfg.entriesCount", raw);
+  return raw === "" ? t("cfg.none") : raw;
+}
 
 function monoCell(p: { value: string }): HTMLElement {
   const s = document.createElement("span");
@@ -77,5 +89,9 @@ export function render(root: HTMLElement): void {
 export function onSnapshot(s: Snapshot): void {
   if (!rootEl) return;
   adaptersApi?.setGridOption("rowData", s.network.adapters as unknown as Record<string, unknown>[]);
-  historyApi?.setGridOption("rowData", s.network.configHistory.map((c, i) => ({ ...c, __i: i })) as unknown as Record<string, unknown>[]);
+  // WhatKey+raw → 按当前语言渲染（语言切换后历史条目跟随）
+  historyApi?.setGridOption("rowData", s.network.configHistory.map((c, i) => ({
+    __i: i, TimeText: c.TimeText, Serious: c.Serious,
+    WhatText: t(c.WhatKey), OldText: fmtValue(c.WhatKey, c.OldRaw), NewText: fmtValue(c.WhatKey, c.NewRaw),
+  })) as unknown as Record<string, unknown>[]);
 }

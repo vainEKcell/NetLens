@@ -19,11 +19,12 @@ public sealed record AdapterInfo(string Name, string Status, string[] Ips, strin
 public sealed record HostEntry(string Ip, string[] Hosts);
 public sealed record NetConfigSnapshot(
     AdapterInfo[] Adapters,
-    string ProxyText,
-    string WinHttpText,
+    string ProxyRaw,     // 语言无关原始值："on:<server>" / "off"
+    string WinHttpRaw,   // "direct" / "<proxy>"
     IReadOnlyList<HostEntry> Hosts,
     DateTime HostsModified,
-    string[] AllDns);
+    string[] AllDns,
+    bool Ready = true);  // false = 初始占位快照（不参与变更对比）
 
 /// 配置层 DNS 劫持监控：DNS 服务器 / 系统代理 / WinHTTP 代理 / hosts 文件的变更检测（零流量）
 public sealed class NetConfigService : IDisposable
@@ -35,6 +36,22 @@ public sealed class NetConfigService : IDisposable
     private readonly Timer _timer;
     private NetConfigSnapshot? _last;
     private string _lastHostsHash = "";
+
+    // ===== 原始值 → 当前语言展示文本（MVM/旧 UI 用；WebUI 由前端按键渲染） =====
+    public static string FormatValue(string whatKey, string raw)
+    {
+        if (whatKey == "cfg.what.proxy" || whatKey == "cfg.what.winhttp")
+        {
+            if (raw == "off" || raw == "direct" || raw.Length == 0) return L10n.T("cfg.proxyOff");
+            if (raw.StartsWith("on:", StringComparison.Ordinal)) return L10n.T("cfg.proxyOn", raw[3..]);
+            return raw;
+        }
+        if (whatKey == "cfg.what.hosts")
+            return L10n.T("cfg.entriesCount", raw);
+        return raw.Length == 0 ? L10n.T("cfg.none") : raw;
+    }
+
+    public static string FmtDns(string[] xs) => xs.Length == 0 ? L10n.T("cfg.none") : string.Join(", ", xs);
 
     /// UI 消费：配置变更事件
     public ConcurrentQueue<ConfigChange> Changes { get; } = new();
@@ -75,58 +92,57 @@ public sealed class NetConfigService : IDisposable
                              .Distinct(StringComparer.OrdinalIgnoreCase)
                              .ToArray();
 
-        var (proxyText, _) = ReadWinInetProxy();
-        var winHttp = FormatWinHttp(NativeMethods.GetWinHttpProxy());
+        var (proxyRaw, _) = ReadWinInetProxy();
+        var wh = NativeMethods.GetWinHttpProxy();
+        // 读取失败（Proxy == "?"）按直连展示，避免出现 "On: ?" 乱值
+        var winHttpRaw = !wh.Direct || wh.Proxy == "?" ? "direct" : "on:" + wh.Proxy;
         var hosts = ReadHosts(out var hostsModified);
         var hostsHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
             Encoding.UTF8.GetBytes(string.Join("|", hosts.Select(h => h.Ip + ":" + string.Join(",", h.Hosts))))));
 
-        var snap = new NetConfigSnapshot(adapters.ToArray(), proxyText, winHttp, hosts, hostsModified, allDns);
+        var snap = new NetConfigSnapshot(adapters.ToArray(), proxyRaw, winHttpRaw, hosts, hostsModified, allDns);
         var old = Interlocked.Exchange(ref Snapshot, snap);
         _last = snap;
 
-        if (old == null) return; // 首轮为基线，不产生“变更”
+        // 首轮（含"读取中"占位）为基线，不产生变更——否则会出现 Old=读取中 的假记录
+        if (old == null || !old.Ready) return;
 
-        if (!old.AllDns.SequenceEqual(allDns) && !new HashSet<string>(old.AllDns, StringComparer.OrdinalIgnoreCase).SetEquals(allDns))
-            Changes.Enqueue(new ConfigChange(DateTime.UtcNow, L10n.T("cfg.what.dns"),
-                Fmt(old.AllDns), Fmt(allDns), true));
+        var dnsChanged = !new HashSet<string>(old.AllDns, StringComparer.OrdinalIgnoreCase).SetEquals(allDns);
+        if (dnsChanged)
+            Changes.Enqueue(new ConfigChange(DateTime.UtcNow, "cfg.what.dns",
+                string.Join(", ", old.AllDns), string.Join(", ", allDns), true));
 
-        if (old.ProxyText != proxyText)
-            Changes.Enqueue(new ConfigChange(DateTime.UtcNow, L10n.T("cfg.what.proxy"),
-                old.ProxyText, proxyText, true));
+        if (old.ProxyRaw != proxyRaw)
+            Changes.Enqueue(new ConfigChange(DateTime.UtcNow, "cfg.what.proxy",
+                old.ProxyRaw, proxyRaw, true));
 
-        if (old.WinHttpText != winHttp)
-            Changes.Enqueue(new ConfigChange(DateTime.UtcNow, L10n.T("cfg.what.winhttp"),
-                old.WinHttpText, winHttp, false));
+        if (old.WinHttpRaw != winHttpRaw)
+            Changes.Enqueue(new ConfigChange(DateTime.UtcNow, "cfg.what.winhttp",
+                old.WinHttpRaw, winHttpRaw, false));
 
         if (hostsHash != _lastHostsHash)
         {
             if (_lastHostsHash.Length > 0)
-                Changes.Enqueue(new ConfigChange(DateTime.UtcNow, L10n.T("cfg.what.hosts"),
-                    string.Format(L10n.T("cfg.entriesCount"), old.Hosts.Count),
-                    string.Format(L10n.T("cfg.entriesCount"), hosts.Count), true));
+                Changes.Enqueue(new ConfigChange(DateTime.UtcNow, "cfg.what.hosts",
+                    old.Hosts.Count.ToString(), hosts.Count.ToString(), true));
             _lastHostsHash = hostsHash;
         }
-
-        static string FormatWinHttp((bool Direct, string Proxy) p) => p.Direct ? L10n.T("cfg.direct") : p.Proxy;
-
-        static string Fmt(string[] xs) => xs.Length == 0 ? L10n.T("cfg.none") : string.Join(", ", xs);
     }
 
-    private (string Text, string? AutoConfig) ReadWinInetProxy()
+    /// 返回语言无关原始值："on:<server>" / "off"
+    private (string Raw, string? AutoConfig) ReadWinInetProxy()
     {
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings");
-            if (key == null) return (L10n.T("cfg.proxyOff"), null);
+            if (key == null) return ("off", null);
             int enable = key.GetValue("ProxyEnable") is int v ? v : 0;
             string? server = key.GetValue("ProxyServer") as string;
             string? pac = key.GetValue("AutoConfigURL") as string;
-            string text = enable == 1 && !string.IsNullOrEmpty(server) ? L10n.T("cfg.proxyOn", server) : L10n.T("cfg.proxyOff");
-            if (!string.IsNullOrEmpty(pac)) text += "　" + L10n.T("cfg.pac", pac);
-            return (text, pac);
+            var raw = enable == 1 && !string.IsNullOrEmpty(server) ? "on:" + server : "off";
+            return (raw, pac);
         }
-        catch { return (L10n.T("cfg.readFail"), null); }
+        catch { return ("off", null); }
     }
 
     private List<HostEntry> ReadHosts(out DateTime modified)
@@ -153,7 +169,7 @@ public sealed class NetConfigService : IDisposable
     }
 
     private static NetConfigSnapshot EmptySnapshot() =>
-        new(Array.Empty<AdapterInfo>(), L10n.T("cfg.reading"), L10n.T("cfg.reading"), Array.Empty<HostEntry>(), default, Array.Empty<string>());
+        new(Array.Empty<AdapterInfo>(), "off", "direct", Array.Empty<HostEntry>(), default, Array.Empty<string>(), Ready: false);
 
     public void Dispose() => _timer.Dispose();
 }

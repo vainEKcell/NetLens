@@ -66,7 +66,7 @@ public sealed class SnapshotBuilder
             network = new
             {
                 adapters = _vm.Adapters.Select(a => new { a.Name, a.Status, a.IpsText, a.GwText, a.DnsText }).ToArray(),
-                configHistory = _vm.ConfigHistory.Select(c => new { c.TimeText, c.What, c.Old, c.New, c.Serious }).ToArray(),
+                configHistory = _vm.ConfigHistory.Select(c => new { c.TimeText, WhatKey = c.WhatKey, OldRaw = c.OldRaw, NewRaw = c.NewRaw, c.Serious }).ToArray(),
             },
             settings = new
             {

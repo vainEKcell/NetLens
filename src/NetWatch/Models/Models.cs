@@ -38,7 +38,9 @@ public readonly record struct NetEvent(
 public sealed record DnsEvent(DateTime TimeUtc, int Pid, string Domain, string[] Ips);
 
 /// 网络配置变更（DNS/代理/hosts/WinHTTP）
-public sealed record ConfigChange(DateTime TimeUtc, string What, string Old, string New, bool Serious);
+/// 配置变更记录：WhatKey/Language-neutral raw 值——展示层按当前语言渲染，
+/// 语言切换后历史条目跟随（此前存渲染文本，切语言后旧条目永久停留旧语言）
+public sealed record ConfigChange(DateTime TimeUtc, string WhatKey, string OldRaw, string NewRaw, bool Serious);
 
 /// 一次 TCP/UDP 连接表快照中的一行
 public sealed record ConnectionInfo(

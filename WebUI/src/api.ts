@@ -123,7 +123,7 @@ export interface Snapshot {
   };
   network: {
     adapters: { Name: string; Status: string; IpsText: string; GwText: string; DnsText: string }[];
-    configHistory: { TimeText: string; What: string; Old: string; New: string; Serious: boolean }[];
+    configHistory: { TimeText: string; WhatKey: string; OldRaw: string; NewRaw: string; Serious: boolean }[];
   };
   settings: {
     language: string; theme: string;

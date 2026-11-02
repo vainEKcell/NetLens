@@ -97,7 +97,11 @@ const zh: Record<string, string> = {
   "ph.title": "此页将在后续版本迁移到新界面",
   "ph.sub": "功能当前仍可通过启动 NetWatch 时不加 --spike 参数使用完整 WPF 界面",
   // AG Grid
-  "ag.noRows": "暂无数据", "ag.loading": "加载中…",
+  "ag.noRows": "暂无数据",
+  "cfg.what.dns": "DNS 服务器", "cfg.what.proxy": "系统代理 (WinINET)",
+  "cfg.what.winhttp": "WinHTTP 代理", "cfg.what.hosts": "hosts 文件",
+  "cfg.proxyOn": "已启用：{0}", "cfg.proxyOff": "直连连接（无代理）",
+  "cfg.entriesCount": "{0} 条条目", "cfg.none": "（未配置）", "ag.loading": "加载中…",
 };
 
 const en: Record<string, string> = {
@@ -183,7 +187,11 @@ const en: Record<string, string> = {
   "set.retention30": "30 days", "set.retention90": "90 days", "set.retention365": "365 days",
   "ph.title": "This page will move to the new UI in a later release",
   "ph.sub": "Without the --spike argument NetWatch still offers the full WPF interface",
-  "ag.noRows": "No data", "ag.loading": "Loading…",
+  "ag.noRows": "No data",
+  "cfg.what.dns": "DNS servers", "cfg.what.proxy": "System proxy (WinINet)",
+  "cfg.what.winhttp": "WinHTTP proxy", "cfg.what.hosts": "hosts file",
+  "cfg.proxyOn": "On: {0}", "cfg.proxyOff": "Direct connection (no proxy)",
+  "cfg.entriesCount": "{0} entries", "cfg.none": "(not configured)", "ag.loading": "Loading…",
 };
 
 const dicts: Record<Lang, Record<string, string>> = { zh, en };

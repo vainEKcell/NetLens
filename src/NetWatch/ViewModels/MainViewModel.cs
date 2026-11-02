@@ -460,8 +460,9 @@ public sealed class MainViewModel : VmBase, IDisposable
             {
                 ConfigHistory.Insert(0, new ConfigChangeRowVM(ch));
                 while (ConfigHistory.Count > 200) ConfigHistory.RemoveAt(ConfigHistory.Count - 1);
+                // 事件流里的配置变更按当前语言渲染（WhatKey+raw）
                 AddEvent(EventRowVM.FromAlert(ch.TimeUtc, ch.Serious ? RiskLevel.Medium : RiskLevel.Low,
-                    $"[{ch.What}] {ch.Old}  →  {ch.New}"));
+                    $"[{L10n.T(ch.WhatKey)}] {NetConfigService.FormatValue(ch.WhatKey, ch.OldRaw)}  →  {NetConfigService.FormatValue(ch.WhatKey, ch.NewRaw)}"));
                 if (ch.Serious) _seriousConfigCount++;
             }
 
@@ -1415,9 +1416,9 @@ public sealed class MainViewModel : VmBase, IDisposable
     private void UpdateConfigCards()
     {
         var snap = Config.Snapshot;
-        DnsServersText = snap.AllDns.Length == 0 ? L10n.T("cfg.none") : string.Join("　", snap.AllDns);
-        ProxyText = snap.ProxyText;
-        WinHttpText = snap.WinHttpText;
+        DnsServersText = NetConfigService.FmtDns(snap.AllDns);
+        ProxyText = NetConfigService.FormatValue("cfg.what.proxy", snap.ProxyRaw);
+        WinHttpText = NetConfigService.FormatValue("cfg.what.winhttp", snap.WinHttpRaw);
         HostsText = L10n.T("cfg.entries", snap.Hosts.Count,
             snap.HostsModified == default ? "—" : snap.HostsModified.ToString("MM-dd HH:mm"));
 
