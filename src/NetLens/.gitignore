@@ -1,0 +1,4 @@
+obj/
+bin/
+*.wpftmp.csproj
+Themes/.mimosa/
