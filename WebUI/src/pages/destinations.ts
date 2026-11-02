@@ -38,11 +38,12 @@ const gridOptions: GridOptions = {
 
 export function render(root: HTMLElement): void {
   root.innerHTML = `
-    <div class="page-head">
-      <h1>${t("dst.title")}</h1>
-      <div class="sub">${t("dst.sub")}</div>
+    <div class="grid-toolbar" id="dst-grid-toolbar">
+      <div class="page-head">
+        <h1>${t("dst.title")}</h1>
+        <div class="sub">${t("dst.sub")}</div>
+      </div>
     </div>
-    <div class="grid-toolbar" id="dst-grid-toolbar"></div>
         <div class="ag-theme-nw" id="dst-grid" style="height: calc(100vh - 210px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("dst-grid")!, gridOptions);

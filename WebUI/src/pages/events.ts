@@ -47,16 +47,17 @@ const gridOptions: GridOptions = {
 
 export function render(root: HTMLElement): void {
   root.innerHTML = `
-    <div class="page-head">
-      <h1>${t("ev.title")}</h1>
-      <div class="sub">${t("ev.sub")}</div>
-    </div>
     <div class="card" style="padding: 10px 14px; display:flex; align-items:center; gap:10px;">
       <span id="ev-filter" class="hint" style="margin:0;"></span>
       <div style="flex:1;"></div>
       <button class="btn" id="ev-clear-filter" style="display:none;">${t("ev.reset")}</button>
     </div>
-    <div class="grid-toolbar" id="ev-grid-toolbar"></div>
+    <div class="grid-toolbar" id="ev-grid-toolbar">
+      <div class="page-head">
+        <h1>${t("ev.title")}</h1>
+        <div class="sub">${t("ev.sub")}</div>
+      </div>
+    </div>
         <div class="ag-theme-nw" id="ev-grid" style="height: calc(100vh - 250px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("ev-grid")!, gridOptions);

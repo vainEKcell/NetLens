@@ -54,13 +54,14 @@ const gridOptions: GridOptions = {
 
 export function render(root: HTMLElement): void {
   root.innerHTML = `
-    <div class="page-head">
-      <h1>${t("ov.title")}</h1>
-      <div class="sub">${t("ov.sub")}</div>
-    </div>
     <div id="overview-wrap">
       <div id="ov-left">
-        <div class="grid-toolbar" id="ov-toolbar"></div>
+        <div class="grid-toolbar" id="ov-toolbar">
+          <div class="page-head">
+            <h1>${t("ov.title")}</h1>
+            <div class="sub">${t("ov.sub")}</div>
+          </div>
+        </div>
         <div class="ag-theme-nw" id="ov-grid" style="height: calc(100vh - 240px);"></div>
       </div>
       <div class="card" id="detail-panel"></div>
