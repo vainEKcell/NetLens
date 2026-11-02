@@ -8,6 +8,7 @@ const zh: Record<string, string> = {
   "nav.network": "网络配置", "nav.netcheck": "网络体检", "nav.settings": "设置",
   // 顶栏
   "tb.up": "总上传", "tb.down": "总下载", "tb.session": "会话累计",
+  "tb.hideLoopback": "隐藏回环", "tb.onlyFlagged": "仅看可疑", "tb.searchPh": "搜索 进程 / 路径 / PID",
   "tb.pause": "暂停监控", "tb.resume": "恢复监控",
   // 总览
   "ov.title": "总览", "ov.sub": "每进程实时流量 · 点击行查看详情与处置",
@@ -97,6 +98,7 @@ const zh: Record<string, string> = {
   "ph.title": "此页将在后续版本迁移到新界面",
   "ph.sub": "功能当前仍可通过启动 NetLens 时不加 --spike 参数使用完整 WPF 界面",
   // AG Grid
+  "sort.label": "排序",
   "ag.noRows": "暂无数据",
   "cfg.what.dns": "DNS 服务器", "cfg.what.proxy": "系统代理 (WinINET)",
   "cfg.what.winhttp": "WinHTTP 代理", "cfg.what.hosts": "hosts 文件",
@@ -109,6 +111,7 @@ const en: Record<string, string> = {
   "nav.ports": "Listening Ports", "nav.events": "Event Stream", "nav.blocking": "Blocklist",
   "nav.network": "Network Config", "nav.netcheck": "Network Check", "nav.settings": "Settings",
   "tb.up": "Upload", "tb.down": "Download", "tb.session": "Session totals",
+  "tb.hideLoopback": "Hide loopback", "tb.onlyFlagged": "Suspicious only", "tb.searchPh": "Search process / path / PID",
   "tb.pause": "Pause monitoring", "tb.resume": "Resume monitoring",
   "ov.title": "Overview", "ov.sub": "Real-time per-process traffic · click a row for details and actions",
   "ov.col.pid": "PID", "ov.col.name": "Process", "ov.col.risk": "Risk",
@@ -187,6 +190,7 @@ const en: Record<string, string> = {
   "set.retention30": "30 days", "set.retention90": "90 days", "set.retention365": "365 days",
   "ph.title": "This page will move to the new UI in a later release",
   "ph.sub": "Without the --spike argument NetLens still offers the full WPF interface",
+  "sort.label": "Sort",
   "ag.noRows": "No data",
   "cfg.what.dns": "DNS servers", "cfg.what.proxy": "System proxy (WinINet)",
   "cfg.what.winhttp": "WinHTTP proxy", "cfg.what.hosts": "hosts file",

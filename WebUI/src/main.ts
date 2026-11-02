@@ -69,6 +69,9 @@ const upEl = document.getElementById("tb-up")!;
 const downEl = document.getElementById("tb-down")!;
 const sessionEl = document.getElementById("tb-session")!;
 const pauseBtn = document.getElementById("btn-pause") as HTMLButtonElement;
+const loopbackCb = document.getElementById("tb-loopback") as HTMLInputElement;
+const flaggedCb = document.getElementById("tb-flagged") as HTMLInputElement;
+const searchEl = document.getElementById("tb-search") as HTMLInputElement;
 
 let paused = false;
 function setPaused(v: boolean): void {
@@ -78,6 +81,14 @@ function setPaused(v: boolean): void {
 }
 
 pauseBtn.addEventListener("click", () => sendCommand(paused ? "resume" : "pause"));
+loopbackCb.addEventListener("change", () => sendCommand("setHideLoopback", { value: loopbackCb.checked }));
+flaggedCb.addEventListener("change", () => sendCommand("setOnlyFlagged", { value: flaggedCb.checked }));
+let searchTimer = 0;
+searchEl.addEventListener("input", () => {
+  window.clearTimeout(searchTimer);
+  const v = searchEl.value;
+  searchTimer = window.setTimeout(() => sendCommand("setSearch", { value: v }), 300);
+});
 
 // ===== 语言：设置值 auto=按系统语言；切换后重建当前页（列头/按钮/说明全走 t()） =====
 let lastLangSetting = "";
@@ -98,6 +109,11 @@ function applyLanguage(setting: string): void {
   if (lblUp) lblUp.textContent = t("tb.up");
   if (lblDown) lblDown.textContent = t("tb.down");
   if (lblSession) lblSession.textContent = t("tb.session");
+  const loopLbl = document.getElementById("tb-loopback-label");
+  const flagLbl = document.getElementById("tb-flagged-label");
+  if (loopLbl) loopLbl.textContent = t("tb.hideLoopback");
+  if (flagLbl) flagLbl.textContent = t("tb.onlyFlagged");
+  searchEl.placeholder = t("tb.searchPh");
   setPaused(paused);
   navigate(true);
 }
@@ -130,6 +146,9 @@ onSnapshot((s: Snapshot) => {
   sessionEl.textContent = `↑ ${fmtBytes(s.totals.upAll)}　↓ ${fmtBytes(s.totals.downAll)}`;
   pushPoint(s.totals.up, s.totals.down);
   if (s.paused !== paused) setPaused(s.paused);
+  if (loopbackCb.checked !== s.settings.hideLoopback) loopbackCb.checked = s.settings.hideLoopback;
+  if (flaggedCb.checked !== s.settings.onlyFlagged) flaggedCb.checked = s.settings.onlyFlagged;
+  if (document.activeElement !== searchEl && searchEl.value !== s.settings.searchText) searchEl.value = s.settings.searchText;
 
   const mod = pageModules[currentPage];
   if (mod) mod.onSnapshot(s);

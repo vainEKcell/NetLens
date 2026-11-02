@@ -1,6 +1,7 @@
 import { createGrid, GridOptions, ColDef, GridApi, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot } from "../api";
 import { t, agLocale } from "../i18n";
+import { mountSortControl } from "../sortctl";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -43,6 +44,12 @@ export function render(root: HTMLElement): void {
     <div class="ag-theme-nw" id="dst-grid" style="height: calc(100vh - 210px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("dst-grid")!, gridOptions);
+  const head = root.querySelector(".page-head") as HTMLElement;
+  mountSortControl(head, api, [
+    { key: "DownBytes", label: t("dst.col.down") },
+    { key: "UpBytes", label: t("dst.col.up") },
+    { key: "Display", label: t("dst.col.display") },
+  ], "DownBytes", "desc");
 }
 
 export function onSnapshot(s: Snapshot): void {

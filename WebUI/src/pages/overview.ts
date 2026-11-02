@@ -1,6 +1,7 @@
 import { createGrid, GridOptions, ColDef, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot, OverviewRow, fmtSpeed, fmtBytes, riskClass, sendCommand } from "../api";
 import { t, agLocale } from "../i18n";
+import { mountSortControl } from "../sortctl";
 import "./../styles.css";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -52,9 +53,11 @@ const gridOptions: GridOptions = {
 
 export function render(root: HTMLElement): void {
   root.innerHTML = `
-    <div class="page-head">
-      <h1>${t("ov.title")}</h1>
-      <div class="sub">${t("ov.sub")}</div>
+    <div class="page-head" style="display:flex; align-items:baseline; gap:14px;">
+      <div>
+        <h1>${t("ov.title")}</h1>
+        <div class="sub">${t("ov.sub")}</div>
+      </div>
     </div>
     <div id="overview-wrap">
       <div class="ag-theme-nw" id="ov-grid" style="height: calc(100vh - 210px);"></div>
@@ -64,6 +67,17 @@ export function render(root: HTMLElement): void {
   detailBody = document.getElementById("detail-panel")!;
   selectedPidEl = detailBody;
   renderDetailEmpty();
+
+  const head = root.querySelector(".page-head") as HTMLElement;
+  mountSortControl(head, api, [
+    { key: "down", label: t("ov.col.down") },
+    { key: "up", label: t("ov.col.up") },
+    { key: "downTotal", label: t("ov.col.downTotal") },
+    { key: "upTotal", label: t("ov.col.upTotal") },
+    { key: "conns", label: t("ov.col.conns") },
+    { key: "name", label: t("ov.col.name") },
+    { key: "pid", label: t("ov.col.pid") },
+  ], "down", "desc");
 }
 
 function renderDetailEmpty(): void {

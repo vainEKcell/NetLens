@@ -1,6 +1,7 @@
 import { createGrid, GridOptions, ColDef, GridApi, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot } from "../api";
 import { t, agLocale } from "../i18n";
+import { mountSortControl } from "../sortctl";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -45,6 +46,12 @@ export function render(root: HTMLElement): void {
     <div class="ag-theme-nw" id="port-grid" style="height: calc(100vh - 210px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("port-grid")!, gridOptions);
+  const head = root.querySelector(".page-head") as HTMLElement;
+  mountSortControl(head, api, [
+    { key: "Port", label: t("port.col.port") },
+    { key: "Process", label: t("port.col.process") },
+    { key: "Pid", label: t("port.col.pid") },
+  ], "Port", "asc");
 }
 
 export function onSnapshot(s: Snapshot): void {

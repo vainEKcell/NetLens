@@ -1,6 +1,7 @@
 import { createGrid, GridOptions, ColDef, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { Snapshot, sendCommand } from "../api";
 import { t, agLocale } from "../i18n";
+import { mountSortControl } from "../sortctl";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -57,6 +58,12 @@ export function render(root: HTMLElement): void {
     <div class="ag-theme-nw" id="ev-grid" style="height: calc(100vh - 250px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("ev-grid")!, gridOptions);
+  const head = root.querySelector(".page-head") as HTMLElement;
+  mountSortControl(head, api, [
+    { key: "__i", label: t("ev.col.time") },
+    { key: "Process", label: t("ev.col.process") },
+    { key: "BytesText", label: t("ev.col.bytes") },
+  ], "__i", "desc");
   (document.getElementById("ev-clear-filter") as HTMLButtonElement).onclick = () =>
     sendCommand("filterEventsByPid", { pid: 0 });
 }

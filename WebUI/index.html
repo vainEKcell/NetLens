@@ -6,8 +6,14 @@
 </head>
 <body>
   <div id="app">
-    <!-- 常驻状态栏：横贯全宽（恢复早期版本布局） -->
+    <!-- 常驻状态栏：横贯全宽。品牌与监控控件在左（恢复早期版本），数据与曲线在右 -->
     <header id="topbar">
+      <div id="brand"><span class="dot"></span>NetLens</div>
+      <button id="btn-pause">暂停监控</button>
+      <label class="tb-check"><input type="checkbox" id="tb-loopback" /><span id="tb-loopback-label">隐藏回环</span></label>
+      <label class="tb-check"><input type="checkbox" id="tb-flagged" /><span id="tb-flagged-label">仅看可疑</span></label>
+      <input type="text" id="tb-search" placeholder="搜索 进程 / 路径 / PID" />
+      <div class="spacer"></div>
       <div class="metric">
         <span class="label" id="lbl-up">总上传</span>
         <span class="value up" id="tb-up">0 B/s</span>
@@ -20,14 +26,11 @@
         <span class="label" id="lbl-session">会话累计</span>
         <span class="value small" id="tb-session">—</span>
       </div>
-      <!-- 曲线紧贴数据，中间不留大空隙 -->
+      <!-- 曲线紧贴数据 -->
       <div id="spark"><canvas id="spark-canvas" width="220" height="44"></canvas></div>
-      <div class="spacer"></div>
-      <button id="btn-pause">暂停监控</button>
     </header>
     <div id="body">
       <aside id="sidebar">
-        <div id="brand"><span class="dot"></span>NetLens</div>
         <nav id="nav"></nav>
         <div class="ver">0.1.5 · alpha</div>
       </aside>
