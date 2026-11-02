@@ -920,10 +920,15 @@ public sealed class MainViewModel : VmBase, IDisposable
             CheckProgressText = "";
             Raise(nameof(CheckProgressText));
             var targets = new List<(string Addr, string Label)>();
-            var gw = Config.Snapshot.Adapters.Where(a => a.Status == AdapterStatus.Connected)
-                .SelectMany(a => a.Gateways)
-                .FirstOrDefault(g => g.Contains('.') && !g.StartsWith("169.254"));
-            if (gw != null) targets.Add((gw, L10n.T("ping.gateway")));
+
+            // 网关探测（大修）：GetBestRoute 实际出口 + RFC1918 物理网关优先 + 无效网关过滤。
+            // 旧实现取"第一个 IPv4 网关"，VPN 虚拟网卡（如 Redmi VPN 的 26.x 段）排前就被选中，
+            // 且 26.0.0.0 这类网络地址根本不可 ping（内网 100% 丢包缺陷的根因）。
+            var gwInfo = NetGatewayService.Detect(Config.Snapshot.Adapters);
+            if (gwInfo != null)
+            {
+                targets.Add((gwInfo.Gateway, L10n.T("ping.gateway")));
+            }
             targets.Add(("223.5.5.5", L10n.T("ping.ali")));
             targets.Add(("119.29.29.29", L10n.T("ping.tencent")));
 
@@ -932,6 +937,8 @@ public sealed class MainViewModel : VmBase, IDisposable
             var advices = new List<string>();
             if (natScore == 2) advices.Add(L10n.T("ncv.advise.nat.symmetric"));
             if (isWifi) advices.Add(L10n.T("ncv.advise.wifi"));
+            if (gwInfo?.VpnSkipped != null) // VPN/虚拟网关被跳过时明确告知（26.x 等非 RFC1918 段）
+                advices.Add(L10n.T("ncv.advise.vpn", gwInfo.Gateway, gwInfo.AdapterName, gwInfo.VpnSkipped));
 
             int latencyScore = 0, jitterScore = 0, lossScore = 0;
             double worstAvg = 0, worstJitter = 0, worstLoss = 0;
@@ -942,7 +949,7 @@ public sealed class MainViewModel : VmBase, IDisposable
                 Raise(nameof(CheckProgressText));
                 var r = await PingProbe.RunAsync(addr, 30, ct);
                 PingRows.Add(PingRowFrom(r, label));
-                if (r.Target != gw && r.Ok > 0) // 公网参考点计入评级（网关只做局域网参考）
+                if (addr != gwInfo?.Gateway && r.Ok > 0) // 公网参考点计入评级（网关只做局域网参考）
                 {
                     worstAvg = Math.Max(worstAvg, r.AvgMs);
                     worstJitter = Math.Max(worstJitter, r.JitterMs);

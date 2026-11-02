@@ -231,6 +231,7 @@
     <sys:String x:Key="ncv.advise">建议</sys:String>
     <sys:String x:Key="ncv.advise.nat.symmetric">对称 NAT 会限制部分 P2P 联机，可尝试开启路由器 UPnP，或使用联机平台的中继</sys:String>
     <sys:String x:Key="ncv.advise.wifi">无线连接的抖动天然高于有线，竞技场景建议插网线</sys:String>
+    <sys:String x:Key="ncv.advise.vpn">检测到 VPN/虚拟网关（{2}），已跳过并按物理内网网关 {0}（{1}）测量局域网质量。</sys:String>
     <sys:String x:Key="ncv.advise.latency">到公网延迟偏高——检查后台是否有大流量进程（总览表按速度排序即可看到）</sys:String>
     <sys:String x:Key="ncv.advise.jitter">抖动明显，常见于 Wi-Fi 干扰或带宽被抢占</sys:String>
     <sys:String x:Key="ncv.advise.loss">存在丢包——排查网线、路由器与线路质量</sys:String>

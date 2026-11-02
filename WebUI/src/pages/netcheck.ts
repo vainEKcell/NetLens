@@ -77,6 +77,11 @@ export function render(root: HTMLElement): void {
     </div>`;
   rootEl = root;
   (document.getElementById("nc-run") as HTMLButtonElement).onclick = () => sendCommand("runNetCheck");
+  // 验证通道：--spike:netcheck?autostart=1 时自动开始体检
+  if ((window as unknown as { __autostartNetCheck?: boolean }).__autostartNetCheck) {
+    (window as unknown as { __autostartNetCheck?: boolean }).__autostartNetCheck = false;
+    window.setTimeout(() => sendCommand("runNetCheck"), 600);
+  }
 }
 
 

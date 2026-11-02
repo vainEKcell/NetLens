@@ -44,7 +44,9 @@ const content = document.getElementById("content")!;
 let currentPage = "";
 
 function navigate(force = false): void {
-  const id = location.hash.replace(/^#\//, "") || "overview";
+  const raw = location.hash.replace(/^#\//, "");
+  const id = raw.split("?")[0] || "overview";
+  if (raw.includes("autostart=1")) (window as unknown as { __autostartNetCheck?: boolean }).__autostartNetCheck = true;
   const item = NAV.find((n) => n.id === id) ?? NAV[0];
   if (item.id === currentPage && !force) return;
   currentPage = item.id;

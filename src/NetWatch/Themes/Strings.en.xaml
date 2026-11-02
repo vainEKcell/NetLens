@@ -232,6 +232,7 @@
     <sys:String x:Key="ncv.advise">Advice</sys:String>
     <sys:String x:Key="ncv.advise.nat.symmetric">Symmetric NAT limits some P2P play — try router UPnP or rely on platform relay</sys:String>
     <sys:String x:Key="ncv.advise.wifi">Wi-Fi jitter is naturally higher than wired; use Ethernet for competitive play</sys:String>
+    <sys:String x:Key="ncv.advise.vpn">VPN/virtual gateway detected ({2}); skipped, measuring LAN quality via physical gateway {0} ({1}).</sys:String>
     <sys:String x:Key="ncv.advise.latency">High public latency — check for heavy background traffic (sort Overview by speed)</sys:String>
     <sys:String x:Key="ncv.advise.jitter">Visible jitter — usually Wi-Fi interference or bandwidth contention</sys:String>
     <sys:String x:Key="ncv.advise.loss">Packet loss detected — check cabling, router and ISP line</sys:String>
