@@ -1,9 +1,9 @@
-﻿param([string]$NavName = "总览", [string]$OutFile = "S:\ZWorker\NetWatch\verify\alpha-overview.png")
+﻿param([string]$NavName = "总览", [string]$OutFile = "S:\ZWorker\NetLens\verify\alpha-overview.png")
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -Namespace Win32 -Name Native -MemberDefinition '[DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);'
-$p = Get-Process NetWatch | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+$p = Get-Process NetLens | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
 [Win32.Native]::SetForegroundWindow($p.MainWindowHandle) | Out-Null
 Start-Sleep -Milliseconds 600
 $root = [System.Windows.Automation.AutomationElement]::RootElement

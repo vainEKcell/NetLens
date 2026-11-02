@@ -1,11 +1,11 @@
-﻿param([string]$Dir = "S:\ZWorker\NetWatch\verify")
+﻿param([string]$Dir = "S:\ZWorker\NetLens\verify")
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient
 New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 
 $lines = @()
-$pids = (Get-Process NetWatch -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
-$lines += "NetWatch PIDs: $($pids -join ', ')"
+$pids = (Get-Process NetLens -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
+$lines += "NetLens PIDs: $($pids -join ', ')"
 
 $root = [System.Windows.Automation.AutomationElement]::RootElement
 $kids = $root.FindAll([System.Windows.Automation.TreeScope]::Children, [System.Windows.Automation.Condition]::TrueCondition)

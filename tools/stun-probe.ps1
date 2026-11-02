@@ -1,4 +1,4 @@
-﻿# 裸 STUN 探测：验证网络路径是否可达（与 NetWatch 代码无关的独立实现）
+﻿# 裸 STUN 探测：验证网络路径是否可达（与 NetLens 代码无关的独立实现）
 $targets = @('stun.qq.com', 'stun.miwifi.com', 'stun.cloudflare.com')
 foreach ($t in $targets) {
     try {

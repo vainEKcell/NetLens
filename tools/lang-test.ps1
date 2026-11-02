@@ -1,4 +1,4 @@
-﻿param([string]$Dir = "S:\ZWorker\NetWatch\verify")
+﻿param([string]$Dir = "S:\ZWorker\NetLens\verify")
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName UIAutomationClient
@@ -17,11 +17,11 @@ public static class Win {
 [Win]::SetProcessDPIAware() | Out-Null
 New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 
-$logFile = "S:\ZWorker\NetWatch\verify\uilog.txt"
+$logFile = "S:\ZWorker\NetLens\verify\uilog.txt"
 function Log([string]$m) { Add-Content -Path $logFile -Value $m -Encoding UTF8 }
 
 function Shot([string]$name) {
-    $p = Get-Process NetWatch | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+    $p = Get-Process NetLens | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
     $r = New-Object Win+RECT
     [Win]::GetWindowRect($p.MainWindowHandle, [ref]$r) | Out-Null
     $w = $r.R - $r.L; $h = $r.B - $r.T
@@ -34,7 +34,7 @@ function Shot([string]$name) {
 }
 
 try {
-    $netProc = Get-Process NetWatch | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+    $netProc = Get-Process NetLens | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
     if (-not [Win]::IsWindowVisible($netProc.MainWindowHandle)) {
         [Win]::ShowWindow($netProc.MainWindowHandle, 9) | Out-Null
         Start-Sleep -Milliseconds 600

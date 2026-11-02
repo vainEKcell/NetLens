@@ -1,4 +1,4 @@
-# NetWatch
+# NetLens
 
 一个 Windows 下的进程级网络监控工具
 
@@ -20,7 +20,7 @@
 
 ## 下载
 
-右侧 [Releases](https://github.com/vainEKcell/NetWatch/releases) 中找到最新版本 `NetWatch-Setup-x.x.x.exe`，双击安装。打开时弹 UAC 点"是"——需要管理员权限，用于读内核网络事件和改防火墙规则，若对此有顾虑请不要下载该项目。
+右侧 [Releases](https://github.com/vainEKcell/NetLens/releases) 中找到最新版本 `NetLens-Setup-x.x.x.exe`，双击安装。打开时弹 UAC 点"是"——需要管理员权限，用于读内核网络事件和改防火墙规则，若对此有顾虑请不要下载该项目。
 
 ## 快速开始
 
@@ -35,7 +35,7 @@ powershell -ExecutionPolicy Bypass -File build-installer.ps1
 - 本工具只看连接和流量，**看不到 HTTPS 里面的内容**，别指望它替你分析加密数据
 - 判定只是提示，不是确诊病毒。仅仅是揭示网络痕迹，最终判断仍然要靠你自己。
 - 程序自身零联网：没有遥测、没有更新检查、不查 IP 归属地。例外只有两处，皆为主动触发（自己点击）：设置里的"DNS 体检"、右键的"浏览器查询文件情报"
-- 行为基线和证据流都存在本机 `%LOCALAPPDATA%\NetWatch`，保留多久可以在设置里调，不想要了随时清
+- 行为基线和证据流都存在本机 `%LOCALAPPDATA%\NetLens`，保留多久可以在设置里调，不想要了随时清
 - 浏览器如果开了自带的"安全 DNS"（DoH），会绕过系统解析，DNS 页看不到它的记录——介意的话把浏览器那个开关关掉
 
 ## 具体实现

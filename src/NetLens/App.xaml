@@ -1,0 +1,15 @@
+<Application x:Class="NetLens.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:NetLens.Services">
+    <!-- StartupUri 移除：App.xaml.cs 按启动参数选择 MainWindow 或 SpikeWindow -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Controls.xaml"/>
+                <ResourceDictionary Source="Themes/Palette.Dark.xaml"/>
+                <ResourceDictionary Source="Themes/Strings.zh.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

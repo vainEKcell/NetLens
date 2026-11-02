@@ -1,4 +1,4 @@
-﻿param([string]$Dir = "S:\ZWorker\NetWatch\verify", [string]$PidText = "2068")
+﻿param([string]$Dir = "S:\ZWorker\NetLens\verify", [string]$PidText = "2068")
 $ErrorActionPreference = 'Stop'
 
 function Main {
@@ -20,8 +20,8 @@ public static class Win {
     [Win]::SetProcessDPIAware() | Out-Null
     New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 
-    $netProc = Get-Process NetWatch | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
-    if (-not $netProc) { throw "NetWatch has no window handle" }
+    $netProc = Get-Process NetLens | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+    if (-not $netProc) { throw "NetLens has no window handle" }
     if (-not [Win]::IsWindowVisible($netProc.MainWindowHandle)) {
         [Win]::ShowWindow($netProc.MainWindowHandle, 9) | Out-Null   # SW_RESTORE
         Start-Sleep -Milliseconds 800
@@ -30,7 +30,7 @@ public static class Win {
     [Win]::SetForegroundWindow($netProc.MainWindowHandle) | Out-Null
 
     function Shot([string]$name) {
-        $p = Get-Process NetWatch | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+        $p = Get-Process NetLens | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
         $r = New-Object Win+RECT
         [Win]::GetWindowRect($p.MainWindowHandle, [ref]$r) | Out-Null
         $w = $r.R - $r.L; $h = $r.B - $r.T
@@ -44,13 +44,13 @@ public static class Win {
     }
 
     $root = [System.Windows.Automation.AutomationElement]::RootElement
-    $nid = (Get-Process NetWatch | Select-Object -First 1).Id
-    $logFile = "S:\ZWorker\NetWatch\verify\uilog.txt"
+    $nid = (Get-Process NetLens | Select-Object -First 1).Id
+    $logFile = "S:\ZWorker\NetLens\verify\uilog.txt"
     function Log([string]$m) { Add-Content -Path $logFile -Value $m -Encoding UTF8 }
     Log "=== run $(Get-Date -Format HH:mm:ss) pid=$nid ==="
     $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ProcessIdProperty, $nid)
     $win = $root.FindFirst([System.Windows.Automation.TreeScope]::Children, $cond)
-    if (-not $win) { throw "UIA: NetWatch window not found (pid=$nid)" }
+    if (-not $win) { throw "UIA: NetLens window not found (pid=$nid)" }
     Log ("window: " + $win.Current.Name)
 
     function FindByName([string]$name) {
@@ -132,6 +132,6 @@ public static class Win {
 try {
     Main
 } catch {
-    Add-Content -Path "S:\ZWorker\NetWatch\verify\uilog.txt" -Value ("ERROR: " + $_.ToString()) -Encoding UTF8
+    Add-Content -Path "S:\ZWorker\NetLens\verify\uilog.txt" -Value ("ERROR: " + $_.ToString()) -Encoding UTF8
     throw
 }

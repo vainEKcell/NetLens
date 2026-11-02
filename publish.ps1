@@ -3,8 +3,8 @@
 #   .\publish.ps1                -> 依赖框架版（需要机器上有 .NET 10 运行时，体积小）
 #   .\publish.ps1 -SelfContained -> 自包含版（无任何依赖，体积大，可拷贝到别的机器）
 $ErrorActionPreference = 'Stop'
-$proj = Join-Path $PSScriptRoot 'src\NetWatch\NetWatch.csproj'
-$out  = Join-Path $PSScriptRoot 'publish\NetWatch'
+$proj = Join-Path $PSScriptRoot 'src\NetLens\NetLens.csproj'
+$out  = Join-Path $PSScriptRoot 'publish\NetLens'
 
 $publishArgs = @('publish', $proj, '-c', 'Release', '-r', 'win-x64')
 if ($SelfContained) {
@@ -19,4 +19,4 @@ $publishArgs += @('/p:PublishSingleFile=true', '/p:IncludeNativeLibrariesForSelf
 & dotnet @publishArgs
 if ($LASTEXITCODE -ne 0) { throw "发布失败" }
 Write-Output "==> 完成。输出目录: $out"
-Write-Output '==> 运行 NetWatch.exe 时会请求管理员权限（ETW 内核跟踪与防火墙规则所需）。'
+Write-Output '==> 运行 NetLens.exe 时会请求管理员权限（ETW 内核跟踪与防火墙规则所需）。'

@@ -1,0 +1,451 @@
+using System.Net;
+using System.Windows.Media;
+using NetLens.Models;
+using NetLens.Services;
+
+namespace NetLens.ViewModels;
+
+public abstract class VmBase : System.ComponentModel.INotifyPropertyChanged
+{
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    protected void Raise(string name) => PropertyChanged?.Invoke(this, new(name));
+    protected void RaiseAll(params string[] names)
+    {
+        foreach (var n in names) PropertyChanged?.Invoke(this, new(n));
+    }
+}
+
+internal static class UiBrushes
+{
+    // 共享可变画刷：主题切换时由 UiBrushes.Refresh 原地改色，绑定引用自动更新
+    public static readonly SolidColorBrush Green = B(0x4C, 0xC8, 0x78);
+    public static readonly SolidColorBrush Blue = B(0x46, 0xA0, 0xFF);
+    public static readonly SolidColorBrush Amber = B(0xE3, 0xA8, 0x36);
+    public static readonly SolidColorBrush Red = B(0xE5, 0x53, 0x4B);
+    public static readonly SolidColorBrush Dim = B(0x8B, 0x95, 0xA7);
+    public static readonly SolidColorBrush Faint = B(0x3D, 0x47, 0x59);
+    public static readonly SolidColorBrush Fg = B(0xD8, 0xDE, 0xE9);
+
+    private static SolidColorBrush B(byte r, byte g, byte b)
+    {
+        var sb = new SolidColorBrush(Color.FromRgb(r, g, b));
+        return sb; // 不冻结：允许主题刷新改色
+    }
+
+    private static readonly (SolidColorBrush, Color)[][] Themes =
+    {
+        // dark
+        new[]
+        {
+            (Green, Color.FromRgb(0x4C, 0xC8, 0x78)), (Blue, Color.FromRgb(0x46, 0xA0, 0xFF)),
+            (Amber, Color.FromRgb(0xE3, 0xA8, 0x36)), (Red, Color.FromRgb(0xE5, 0x53, 0x4B)),
+            (Dim, Color.FromRgb(0x8B, 0x95, 0xA7)), (Faint, Color.FromRgb(0x3D, 0x47, 0x59)),
+            (Fg, Color.FromRgb(0xD8, 0xDE, 0xE9)),
+        },
+        // light
+        new[]
+        {
+            (Green, Color.FromRgb(0x17, 0x8A, 0x4C)), (Blue, Color.FromRgb(0x1F, 0x6F, 0xD6)),
+            (Amber, Color.FromRgb(0xB5, 0x73, 0x0E)), (Red, Color.FromRgb(0xCC, 0x3D, 0x36)),
+            (Dim, Color.FromRgb(0x5C, 0x67, 0x79)), (Faint, Color.FromRgb(0xA6, 0xAD, 0xBD)),
+            (Fg, Color.FromRgb(0x1C, 0x25, 0x30)),
+        },
+    };
+
+    public static void Refresh(string theme)
+    {
+        var table = theme == "light" ? Themes[1] : Themes[0];
+        foreach (var (brush, color) in table) brush.Color = color;
+    }
+
+    public static SolidColorBrush Risk(RiskLevel lv) => lv switch
+    {
+        RiskLevel.High => Red,
+        RiskLevel.Medium => Amber,
+        RiskLevel.Low => Dim,
+        _ => Faint,
+    };
+}
+
+public sealed class ProcessRowVM : VmBase
+{
+    public int Pid { get; private set; }
+    public string Name { get; private set; } = "";
+    public string Company { get; private set; } = "";
+    public string Path { get; private set; } = "";
+    public ImageSource? IconSource { get; private set; }
+    public string UpSpeedText { get; private set; } = "";
+    public string DownSpeedText { get; private set; } = "";
+    public string UpTotalText { get; private set; } = "";
+    public string DownTotalText { get; private set; } = "";
+    public double UpSpeedBytes { get; private set; }
+    public double DownSpeedBytes { get; private set; }
+    public long UpTotalBytes { get; private set; }
+    public long DownTotalBytes { get; private set; }
+    public int ConnCount { get; private set; }
+    public RiskLevel Risk { get; private set; }
+    public byte RiskByte { get; private set; }
+    public SolidColorBrush RiskBrush { get; private set; } = UiBrushes.Faint;
+    public string RiskText { get; private set; } = "";
+    public bool Blocked { get; private set; }
+
+    public void Update(ProcessEntry e, PidStats? s, int conns, Verdict verdict)
+    {
+        Pid = e.Pid;
+        Name = e.Exited ? e.Name + "（已退出）" : e.Name;
+        Company = e.Company ?? e.Description ?? "";
+        Path = e.Path ?? "";
+        IconSource = e.Icon;
+        UpSpeedBytes = s?.UpSpeed ?? 0;
+        DownSpeedBytes = s?.DownSpeed ?? 0;
+        UpTotalBytes = s?.UpTotal ?? 0;
+        DownTotalBytes = s?.DownTotal ?? 0;
+        UpSpeedText = Util.FormatSpeed(UpSpeedBytes);
+        DownSpeedText = Util.FormatSpeed(DownSpeedBytes);
+        UpTotalText = Util.FormatBytes(UpTotalBytes);
+        DownTotalText = Util.FormatBytes(DownTotalBytes);
+        ConnCount = conns;
+        Risk = verdict.Status switch
+        {
+            VerdictStatus.HighRisk => RiskLevel.High,
+            VerdictStatus.Attention => RiskLevel.Medium,
+            _ => RiskLevel.None,
+        };
+        RiskByte = verdict.RiskByte;
+        RiskBrush = verdict.Status switch
+        {
+            VerdictStatus.HighRisk => UiBrushes.Red,
+            VerdictStatus.Attention => UiBrushes.Amber,
+            VerdictStatus.Unknown => UiBrushes.Dim,
+            _ => UiBrushes.Faint,
+        };
+        RiskText = verdict.Summary + (verdict.Evidence.Count == 0
+            ? ""
+            : "\n" + string.Join("\n", verdict.Evidence.Select(x => $"• {x.Statement}" + (x.Caveat != null ? $"（误报可能：{x.Caveat}）" : ""))));
+        Blocked = e.FirewallBlocked;
+        RaiseAll(nameof(Pid), nameof(Name), nameof(Company), nameof(Path), nameof(IconSource),
+            nameof(UpSpeedText), nameof(DownSpeedText), nameof(UpTotalText), nameof(DownTotalText),
+            nameof(UpSpeedBytes), nameof(DownSpeedBytes), nameof(UpTotalBytes), nameof(DownTotalBytes),
+            nameof(ConnCount), nameof(Risk), nameof(RiskByte), nameof(RiskBrush), nameof(RiskText), nameof(Blocked));
+    }
+}
+
+public sealed class EventRowVM : VmBase
+{
+    public int Pid { get; private set; }
+    public string? RemoteIp { get; private set; }
+    public string? Domain { get; private set; }
+    public DateTime RawTime { get; private set; }
+    public string TimeText { get; private set; } = "";
+    public string KindText { get; private set; } = "";
+    public SolidColorBrush KindBrush { get; private set; } = UiBrushes.Fg;
+    public string Process { get; private set; } = "";
+    public string Detail { get; private set; } = "";
+    public string BytesText { get; private set; } = "";
+    public long RawBytes { get; private set; }
+    public string RawKind { get; private set; } = "";
+
+    public void UpdateName(string name)
+    {
+        Process = name;
+        Raise(nameof(Process));
+    }
+
+    public static EventRowVM FromNet(NetEvent e, string procName, DnsService dns)
+    {
+        var vm = new EventRowVM
+        {
+            Pid = e.Pid,
+            RemoteIp = e.RemoteIp,
+            RawTime = e.TimeUtc.ToLocalTime(),
+            TimeText = e.TimeUtc.ToLocalTime().ToString("HH:mm:ss"),
+            Process = procName,
+            RawBytes = e.Kind == EventKind.Traffic ? e.Bytes : 0,
+        };
+        string domain = e.RemoteIp != null ? dns.LookupDomain(e.RemoteIp) ?? "" : "";
+        vm.Domain = string.IsNullOrEmpty(domain) ? null : domain;
+        string remote = e.RemoteIp == null ? "" : Util.FormatEndpoint(e.RemoteIp, e.RemotePort);
+        if (domain.Length > 0) remote += $" ({domain})";
+        vm.Detail = remote;
+        switch (e.Kind)
+        {
+            case EventKind.NewConn:
+                vm.KindText = L10n.T("kind.newConn"); vm.KindBrush = UiBrushes.Green; vm.RawKind = "newConn"; break;
+            case EventKind.Closed:
+                vm.KindText = L10n.T("kind.closed"); vm.KindBrush = UiBrushes.Dim; vm.RawKind = "closed"; break;
+            default:
+                if (e.IsSend) { vm.KindText = L10n.T("kind.largeUp"); vm.KindBrush = UiBrushes.Amber; vm.RawKind = "largeUp"; }
+                else { vm.KindText = L10n.T("kind.largeDown"); vm.KindBrush = UiBrushes.Blue; vm.RawKind = "largeDown"; }
+                vm.BytesText = Util.FormatBytes(e.Bytes);
+                break;
+        }
+        vm.RaiseAll(nameof(TimeText), nameof(KindText), nameof(KindBrush), nameof(Process), nameof(Detail), nameof(BytesText));
+        return vm;
+    }
+
+    public static EventRowVM FromBlocked(BlockedConnectionEvent b, string procName)
+    {
+        var vm = new EventRowVM
+        {
+            Pid = b.Pid,
+            RawTime = b.TimeUtc.ToLocalTime(),
+            TimeText = b.TimeUtc.ToLocalTime().ToString("HH:mm:ss"),
+            KindText = L10n.T("kind.fwBlock"),
+            KindBrush = UiBrushes.Red,
+            RawKind = "fwBlock",
+            Process = procName,
+            Detail = $"{Util.FormatEndpoint(b.RemoteIp, b.RemotePort)} ({b.Protocol})" +
+                     (string.IsNullOrEmpty(b.AppPath) ? "" : $"  ·  {b.AppPath}"),
+        };
+        vm.RaiseAll(nameof(TimeText), nameof(KindText), nameof(KindBrush), nameof(Process), nameof(Detail));
+        return vm;
+    }
+
+    public static EventRowVM FromSystem(string text)
+    {
+        var vm = new EventRowVM
+        {
+            Pid = -1,
+            RawTime = DateTime.Now,
+            TimeText = DateTime.Now.ToString("HH:mm:ss"),
+            KindText = L10n.T("kind.system"), KindBrush = UiBrushes.Dim, RawKind = "system",
+            Detail = text,
+        };
+        vm.RaiseAll(nameof(TimeText), nameof(KindText), nameof(KindBrush), nameof(Process), nameof(Detail));
+        return vm;
+    }
+
+    public static EventRowVM FromAlert(DateTime time, RiskLevel level, string text, string? domain = null)
+    {
+        var vm = new EventRowVM
+        {
+            Pid = -1,
+            Domain = domain,
+            RawTime = time.ToLocalTime(),
+            TimeText = time.ToLocalTime().ToString("HH:mm:ss"),
+            KindText = L10n.T("kind.alert"),
+            KindBrush = level == RiskLevel.High ? UiBrushes.Red : level == RiskLevel.Medium ? UiBrushes.Amber : UiBrushes.Dim,
+            RawKind = "alert",
+            Detail = text,
+        };
+        vm.RaiseAll(nameof(TimeText), nameof(KindText), nameof(KindBrush), nameof(Detail));
+        return vm;
+    }
+}
+
+public sealed class ConnRowVM : VmBase
+{
+    public string Remote { get; private set; } = "";
+    public string Local { get; private set; } = "";
+    public string ProtoText { get; private set; } = "";
+    public string State { get; private set; } = "";
+    public string Scope { get; private set; } = "";
+
+    public static ConnRowVM From(ConnectionInfo c, DnsService dns)
+    {
+        var (raddr, _) = Util.SplitEndpoint(c.Remote);
+        var domain = dns.LookupDomain(raddr);
+        var vm = new ConnRowVM
+        {
+            Remote = domain == null ? c.Remote : $"{c.Remote} ({domain})",
+            Local = c.Local,
+            ProtoText = c.Proto == NetProto.Tcp ? "TCP" : "UDP",
+            State = c.State,
+            // UDP 表只有本地绑定、没有远端，公网/局域网分类无意义
+            Scope = c.Proto == NetProto.Udp ? "-" : Util.ScopeText(c.IsLoopback, c.IsLan),
+        };
+        vm.RaiseAll(nameof(Remote), nameof(Local), nameof(ProtoText), nameof(State), nameof(Scope));
+        return vm;
+    }
+}
+
+public sealed class DnsRowVM : VmBase
+{
+    public int Pid { get; private set; }
+    public string TimeText { get; private set; } = "";
+    public string Process { get; private set; } = "";
+    public string Domain { get; private set; } = "";
+    public string Ips { get; private set; } = "";
+    public bool IsAlert { get; private set; }
+    public string AlertText { get; private set; } = "";
+
+    public void UpdateName(string name)
+    {
+        Process = name;
+        Raise(nameof(Process));
+    }
+
+    public static DnsRowVM From(DnsStreamItem it, string procName)
+    {
+        var vm = new DnsRowVM
+        {
+            Pid = it.Pid,
+            TimeText = it.TimeUtc.ToLocalTime().ToString("HH:mm:ss"),
+            Process = procName,
+            Domain = it.Domain,
+            Ips = it.Ips,
+            IsAlert = it.Alert,
+            AlertText = it.AlertText,
+        };
+        vm.RaiseAll(nameof(TimeText), nameof(Process), nameof(Domain), nameof(Ips), nameof(IsAlert), nameof(AlertText));
+        return vm;
+    }
+}
+
+public sealed class RemoteRowVM : VmBase
+{
+    public string Display { get; private set; } = "";
+    public string Scope { get; private set; } = "";
+    public string UpText { get; private set; } = "";
+    public string DownText { get; private set; } = "";
+    public long UpBytes { get; private set; }
+    public long DownBytes { get; private set; }
+    public string ProcessesText { get; private set; } = "";
+    public string LastText { get; private set; } = "";
+
+    public void Update(string ip, RemoteStats rs, string? domain, string procNames)
+    {
+        Display = domain == null ? ip : $"{domain} ({ip})";
+        bool loop = IPAddress.TryParse(ip, out var a) && IPAddress.IsLoopback(a);
+        bool lan = a != null && !loop && Util.IsLanIp(a);
+        Scope = Util.ScopeText(loop, lan);
+        UpBytes = rs.Up; DownBytes = rs.Down;
+        UpText = Util.FormatBytes(rs.Up);
+        DownText = Util.FormatBytes(rs.Down);
+        ProcessesText = procNames;
+        LastText = rs.LastUtc.ToLocalTime().ToString("HH:mm:ss");
+        RaiseAll(nameof(Display), nameof(Scope), nameof(UpText), nameof(DownText),
+            nameof(UpBytes), nameof(DownBytes), nameof(ProcessesText), nameof(LastText));
+    }
+}
+
+public sealed class PortRowVM : VmBase
+{
+    public string ProtoText { get; private set; } = "";
+    public int Port { get; private set; }
+    public string Bind { get; private set; } = "";
+    public string BindText { get; private set; } = "";
+    public int Pid { get; private set; }
+    public string Process { get; private set; } = "";
+
+    public void Update(ConnectionInfo c, string procName)
+    {
+        ProtoText = c.Proto == NetProto.Tcp ? "TCP" : "UDP";
+        var (addr, port) = Util.SplitEndpoint(c.Local);
+        Port = port;
+        Bind = c.Local;
+        BindText = addr is "0.0.0.0" or "::" ? L10n.T("bind.lan") : addr is "127.0.0.1" or "::1" ? L10n.T("bind.local") : L10n.T("bind.specific");
+        Pid = c.Pid;
+        Process = procName;
+        RaiseAll(nameof(ProtoText), nameof(Port), nameof(Bind), nameof(BindText), nameof(Pid), nameof(Process));
+    }
+}
+
+public sealed class BlockedAppVM : VmBase
+{
+    public string DisplayName { get; set; } = "";
+    public string Path { get; set; } = "";
+    public string RulesText { get; set; } = "";
+}
+
+public sealed class ConfigChangeRowVM : VmBase
+{
+    public string TimeText { get; private set; } = "";
+    public string WhatKey { get; }
+    public string OldRaw { get; }
+    public string NewRaw { get; }
+    public string What { get; private set; } = "";
+    public string Old { get; private set; } = "";
+    public string New { get; private set; } = "";
+    public bool Serious { get; private set; }
+
+    public ConfigChangeRowVM(ConfigChange c)
+    {
+        TimeText = c.TimeUtc.ToLocalTime().ToString("MM-dd HH:mm:ss");
+        What = L10n.T(c.WhatKey);
+        Old = NetConfigService.FormatValue(c.WhatKey, c.OldRaw);
+        New = NetConfigService.FormatValue(c.WhatKey, c.NewRaw);
+        Serious = c.Serious;
+        WhatKey = c.WhatKey;
+        OldRaw = c.OldRaw;
+        NewRaw = c.NewRaw;
+        RaiseAll(nameof(TimeText), nameof(What), nameof(Old), nameof(New), nameof(Serious));
+    }
+}
+
+public sealed class DohResultVM : VmBase
+{
+    public string Domain { get; }
+    public string LocalIps { get; }
+    public string RefIps { get; }
+    public string Verdict { get; }
+    public SolidColorBrush VerdictBrush { get; }
+    public byte RiskByte { get; }
+
+    public DohResultVM(DohResult r)
+    {
+        Domain = r.Domain; LocalIps = r.LocalIps; RefIps = r.RefIps; Verdict = r.Verdict;
+        VerdictBrush = UiBrushes.Risk(r.Level);
+        RiskByte = (byte)r.Level;
+    }
+}
+
+public sealed class ScenarioRowVM
+{
+    public string Name { get; init; } = "";
+    public string Verdict { get; init; } = "";
+    public SolidColorBrush Brush { get; init; } = UiBrushes.Fg;
+    public string Class { get; init; } = ""; // WebUI 着色类（st-good/st-fair/st-poor），语言无关
+}
+
+public sealed class PingRowVM : VmBase
+{
+    public string Target { get; private set; } = "";
+    public string TargetIp { get; private set; } = "";
+    public string MinText { get; private set; } = "";
+    public string AvgText { get; private set; } = "";
+    public string MaxText { get; private set; } = "";
+    public string JitterText { get; private set; } = "";
+    public string LossText { get; private set; } = "";
+    public string P95Text { get; private set; } = "";
+    public string QualityText { get; private set; } = "";
+    public string QualityClass { get; private set; } = "";
+    public SolidColorBrush QualityBrush { get; private set; } = UiBrushes.Fg;
+
+    public void Update(PingProbeResult r, string? label = null)
+    {
+        TargetIp = r.Target;
+        Target = label ?? r.Target;
+        MinText = $"{r.MinMs:F1} ms";
+        AvgText = $"{r.AvgMs:F1} ms";
+        MaxText = $"{r.MaxMs:F1} ms";
+        JitterText = $"{r.JitterMs:F1} ms";
+        LossText = $"{r.LossPct:F1}%";
+        P95Text = $"{r.P95Ms:F1} ms";
+        var q = r.QualityScore switch { 0 => "ncv.q.excellent", 1 => "ncv.q.fair", _ => "ncv.q.poor" };
+        QualityText = L10n.T(q);
+        QualityBrush = r.QualityScore switch { 0 => UiBrushes.Green, 1 => UiBrushes.Amber, _ => UiBrushes.Red };
+        QualityClass = r.QualityScore switch { 0 => "st-good", 1 => "st-fair", _ => "st-poor" };
+        RaiseAll(nameof(Target), nameof(TargetIp), nameof(MinText), nameof(AvgText), nameof(MaxText),
+            nameof(JitterText), nameof(LossText), nameof(P95Text), nameof(QualityText), nameof(QualityClass), nameof(QualityBrush));
+    }
+}
+
+public sealed class AdapterRowVM : VmBase
+{
+    public string Name { get; private set; } = "";
+    public string Status { get; private set; } = "";
+    public string IpsText { get; private set; } = "";
+    public string GwText { get; private set; } = "";
+    public string DnsText { get; private set; } = "";
+
+    public void Update(AdapterInfo a)
+    {
+        Name = a.Name;
+        Status = a.Status == AdapterStatus.Connected ? L10n.T("adapter.up") : L10n.T("adapter.down");
+        IpsText = a.Ips.Length == 0 ? "—" : string.Join(", ", a.Ips);
+        GwText = a.Gateways.Length == 0 ? "—" : string.Join(", ", a.Gateways);
+        DnsText = a.Dns.Length == 0 ? "—" : string.Join(", ", a.Dns);
+        RaiseAll(nameof(Name), nameof(Status), nameof(IpsText), nameof(GwText), nameof(DnsText));
+    }
+}

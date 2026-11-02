@@ -1,4 +1,4 @@
-﻿# 开发仓库 → 提审仓库（S:\GitSubmitClass\NetWatch）同步
+﻿# 开发仓库 → 提审仓库（S:\GitSubmitClass\NetLens）同步
 # 机制：git push（原子、可靠，不会被文件锁坑）；提审仓库配置了
 # receive.denyCurrentBranch=updateInstead，推送后其工作区自动更新，
 # GitHub Desktop 打开该目录即可看到新提交（必要时 Repository → Refresh）。
@@ -6,7 +6,7 @@
 param([switch]$PushGitHub)
 $ErrorActionPreference = 'Stop'
 $src = Split-Path $PSScriptRoot
-$dst = "S:\GitSubmitClass\NetWatch"
+$dst = "S:\GitSubmitClass\NetLens"
 
 Write-Output "开发: $src"
 Write-Output "提审: $dst"

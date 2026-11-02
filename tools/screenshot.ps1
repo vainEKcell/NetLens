@@ -1,4 +1,4 @@
-param([string]$OutFile = "S:\ZWorker\NetWatch\verify\window.png")
+param([string]$OutFile = "S:\ZWorker\NetLens\verify\window.png")
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 Add-Type @"
@@ -14,8 +14,8 @@ public static class Win {
 "@
 [Win]::SetProcessDPIAware() | Out-Null
 
-$p = Get-Process NetWatch -ErrorAction Stop | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
-if (-not $p) { throw "NetWatch window not found" }
+$p = Get-Process NetLens -ErrorAction Stop | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+if (-not $p) { throw "NetLens window not found" }
 $hwnd = $p.MainWindowHandle
 [Win]::SetForegroundWindow($hwnd) | Out-Null
 Start-Sleep -Milliseconds 800

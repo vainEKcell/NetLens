@@ -1,22 +1,22 @@
 ﻿param()
 $ErrorActionPreference = 'Continue'
-$marker = "S:\ZWorker\NetWatch\verify\build-done.flag"
+$marker = "S:\ZWorker\NetLens\verify\build-done.flag"
 Remove-Item $marker -ErrorAction SilentlyContinue
 
-Get-Process NetWatch -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process NetLens -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2
 $deadline = (Get-Date).AddMinutes(5)
 while ((Get-Date) -lt $deadline -and -not (Test-Path $marker)) { Start-Sleep -Seconds 2 }
-if (-not (Test-Path $marker)) { Set-Content "S:\ZWorker\NetWatch\verify\speedtest-result.txt" "orchestrator: build never finished"; exit 1 }
+if (-not (Test-Path $marker)) { Set-Content "S:\ZWorker\NetLens\verify\speedtest-result.txt" "orchestrator: build never finished"; exit 1 }
 
-Start-Process "S:\ZWorker\NetWatch\src\NetWatch\bin\Debug\net10.0-windows\NetWatch.exe"
+Start-Process "S:\ZWorker\NetLens\src\NetLens\bin\Debug\net10.0-windows\NetLens.exe"
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline) {
     Start-Sleep -Seconds 1
-    $p = Get-Process NetWatch -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+    $p = Get-Process NetLens -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
     if ($p) { break }
 }
-if (-not $p) { Set-Content "S:\ZWorker\NetWatch\verify\speedtest-result.txt" "window never appeared"; exit 1 }
+if (-not $p) { Set-Content "S:\ZWorker\NetLens\verify\speedtest-result.txt" "window never appeared"; exit 1 }
 $out = @("window ok (pid $($p.Id))")
 Start-Sleep -Seconds 3
 
@@ -24,7 +24,7 @@ Add-Type -AssemblyName UIAutomationClient
 $root = [System.Windows.Automation.AutomationElement]::RootElement
 $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ProcessIdProperty, $p.Id)
 $win = $root.FindFirst([System.Windows.Automation.TreeScope]::Children, $cond)
-if (-not $win) { Set-Content "S:\ZWorker\NetWatch\verify\speedtest-result.txt" "UIA window not found"; exit 1 }
+if (-not $win) { Set-Content "S:\ZWorker\NetLens\verify\speedtest-result.txt" "UIA window not found"; exit 1 }
 
 function Find-ByName($parent, $name, $ctlType) {
     $c1 = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name)
@@ -41,7 +41,7 @@ if ($nav) {
 }
 
 $btn = Find-ByName $win "开始网络体检" ([System.Windows.Automation.ControlType]::Button)
-if (-not $btn) { Set-Content "S:\ZWorker\NetWatch\verify\speedtest-result.txt" ($out -join '; ' + " | run button not found"); exit 1 }
+if (-not $btn) { Set-Content "S:\ZWorker\NetLens\verify\speedtest-result.txt" ($out -join '; ' + " | run button not found"); exit 1 }
 ($btn.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)).Invoke()
 $out += "check invoked"
 
@@ -58,4 +58,4 @@ while ((Get-Date) -lt $deadline) {
     $joined = $out -join [char]10
     if ($joined -match '测速完成|均不可用') { break }
 }
-Set-Content -Path "S:\ZWorker\NetWatch\verify\speedtest-result.txt" -Value ($out -join [Environment]::NewLine) -Encoding UTF8
+Set-Content -Path "S:\ZWorker\NetLens\verify\speedtest-result.txt" -Value ($out -join [Environment]::NewLine) -Encoding UTF8

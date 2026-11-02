@@ -4,7 +4,7 @@
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
-$outFile = Join-Path $PSScriptRoot '..\src\NetWatch\Assets\app.ico'
+$outFile = Join-Path $PSScriptRoot '..\src\NetLens\Assets\app.ico'
 New-Item -ItemType Directory -Force -Path (Split-Path $outFile) | Out-Null
 
 $S = 256

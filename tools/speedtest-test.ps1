@@ -1,20 +1,20 @@
 ﻿param()
 $ErrorActionPreference = 'Continue'
 Add-Type -AssemblyName UIAutomationClient
-$logFile = "S:\ZWorker\NetWatch\verify\speedtest-result.txt"
+$logFile = "S:\ZWorker\NetLens\verify\speedtest-result.txt"
 $out = @()
 
 # 0) 旧实例：杀掉（窗口可能在托盘隐藏）
-Get-Process NetWatch -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process NetLens -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2
 
 # 1) 启动
-Start-Process "S:\ZWorker\NetWatch\src\NetWatch\bin\Debug\net10.0-windows\NetWatch.exe"
+Start-Process "S:\ZWorker\NetLens\src\NetLens\bin\Debug\net10.0-windows\NetLens.exe"
 $deadline = (Get-Date).AddSeconds(30)
 $hwnd = 0
 while ((Get-Date) -lt $deadline) {
     Start-Sleep -Seconds 1
-    $p = Get-Process NetWatch -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+    $p = Get-Process NetLens -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
     if ($p) { $hwnd = $p.MainWindowHandle; break }
 }
 if ($hwnd -eq 0) { Set-Content $logFile "window never appeared"; exit 1 }

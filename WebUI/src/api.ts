@@ -1,4 +1,4 @@
-// C# ⇄ WebUI 唯一通道（与 src/NetWatch/Bridge/UiBridge.cs、SnapshotBuilder.cs 对应）
+// C# ⇄ WebUI 唯一通道（与 src/NetLens/Bridge/UiBridge.cs、SnapshotBuilder.cs 对应）
 
 export interface OverviewRow {
   pid: number;

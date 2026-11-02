@@ -65,7 +65,7 @@ const zh: Record<string, string> = {
   // 拦截
   "bl.title": "拦截名单", "bl.sub": "防火墙按程序拦截（Windows 防火墙规则，可在系统防火墙或此处解除）",
   "bl.unblock": "解除选中程序的拦截", "bl.refresh": "刷新名单",
-  "bl.hint": "在总览右键的处置也会写入此处；规则名带 NetWatch 前缀便于识别",
+  "bl.hint": "在总览右键的处置也会写入此处；规则名带 NetLens 前缀便于识别",
   "bl.col.app": "程序", "bl.col.path": "路径", "bl.col.rules": "规则",
   "bl.trusted": "允许名单（用户信任，优先于引擎判定）",
   "bl.trusted.empty": "暂无允许名单项——在总览选中进程后使用「允许联网」加入",
@@ -95,7 +95,7 @@ const zh: Record<string, string> = {
   "set.retention30": "30 天", "set.retention90": "90 天", "set.retention365": "365 天",
   // 占位
   "ph.title": "此页将在后续版本迁移到新界面",
-  "ph.sub": "功能当前仍可通过启动 NetWatch 时不加 --spike 参数使用完整 WPF 界面",
+  "ph.sub": "功能当前仍可通过启动 NetLens 时不加 --spike 参数使用完整 WPF 界面",
   // AG Grid
   "ag.noRows": "暂无数据",
   "cfg.what.dns": "DNS 服务器", "cfg.what.proxy": "系统代理 (WinINET)",
@@ -159,7 +159,7 @@ const en: Record<string, string> = {
   "port.col.bindText": "Exposure", "port.col.pid": "PID", "port.col.process": "Process",
   "bl.title": "Blocklist", "bl.sub": "Per-program firewall blocking (Windows firewall rules; removable here or in Windows)",
   "bl.unblock": "Unblock selected program", "bl.refresh": "Refresh list",
-  "bl.hint": "Actions from the Overview right-click menu also land here; rules carry a NetWatch prefix for identification",
+  "bl.hint": "Actions from the Overview right-click menu also land here; rules carry a NetLens prefix for identification",
   "bl.col.app": "Program", "bl.col.path": "Path", "bl.col.rules": "Rules",
   "bl.trusted": "Allowed list (user-trusted, overrides engine verdicts)",
   "bl.trusted.empty": "Nothing allowed yet — select a process in Overview and use \"Allow\"",
@@ -186,7 +186,7 @@ const en: Record<string, string> = {
   "set.clear.hint": "Export uses the system save dialog; clearing only affects the view, on-disk evidence is untouched.",
   "set.retention30": "30 days", "set.retention90": "90 days", "set.retention365": "365 days",
   "ph.title": "This page will move to the new UI in a later release",
-  "ph.sub": "Without the --spike argument NetWatch still offers the full WPF interface",
+  "ph.sub": "Without the --spike argument NetLens still offers the full WPF interface",
   "ag.noRows": "No data",
   "cfg.what.dns": "DNS servers", "cfg.what.proxy": "System proxy (WinINet)",
   "cfg.what.winhttp": "WinHTTP proxy", "cfg.what.hosts": "hosts file",

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>NetLens</RootNamespace>
+    <AssemblyName>NetLens</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <Version>0.1.5</Version>
+    <Product>NetLens</Product>
+    <Description>每进程网络流量实时监控与 DNS 劫持检测分析台</Description>
+    <DebugType>embedded</DebugType>
+    <SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.*" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.*" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" Condition="Exists('Assets\app.ico')" />
+  </ItemGroup>
+
+  <!-- spike/webui：WebUI 前端产物复制到输出目录（SpikeWindow 从 BaseDirectory\WebUI 加载） -->
+  <ItemGroup>
+    <Content Include="..\..\WebUI\dist\**\*" CopyToOutputDirectory="PreserveNewest" Link="WebUI\%(RecursiveDir)%(Filename)%(Extension)"
+             Condition="Exists('..\..\WebUI\dist\index.html')" />
+  </ItemGroup>
+
+</Project>

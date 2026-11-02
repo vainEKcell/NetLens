@@ -1,9 +1,9 @@
 ﻿param()
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient
-$logFile = "S:\ZWorker\NetWatch\verify\netcheck-result.txt"
-$netProc = Get-Process NetWatch | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
-if (-not $netProc) { Set-Content $logFile "NetWatch not running"; exit 1 }
+$logFile = "S:\ZWorker\NetLens\verify\netcheck-result.txt"
+$netProc = Get-Process NetLens | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+if (-not $netProc) { Set-Content $logFile "NetLens not running"; exit 1 }
 $root = [System.Windows.Automation.AutomationElement]::RootElement
 $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ProcessIdProperty, $netProc.Id)
 $win = $root.FindFirst([System.Windows.Automation.TreeScope]::Children, $cond)

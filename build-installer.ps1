@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 
 Write-Output '==> 1/3 自包含发布（win-x64，含 .NET 运行时）'
-& dotnet publish "$root\src\NetWatch\NetWatch.csproj" -c Release -r win-x64 --self-contained true -o "$root\publish\installer-payload"
+& dotnet publish "$root\src\NetLens\NetLens.csproj" -c Release -r win-x64 --self-contained true -o "$root\publish\installer-payload"
 if ($LASTEXITCODE -ne 0) { throw "发布失败" }
 
 Write-Output '==> 2/3 定位 Inno Setup（ISCC.exe）'
@@ -24,6 +24,6 @@ Write-Output '==> 3/3 打包安装器'
 & $iscc "/DMyAppVersion=$Version" "$root\setup.iss"
 if ($LASTEXITCODE -ne 0) { throw "打包失败" }
 
-$out = "$root\dist\NetWatch-Setup-$Version.exe"
+$out = "$root\dist\NetLens-Setup-$Version.exe"
 Write-Output "==> 完成: $out ($([math]::Round((Get-Item $out).Length / 1MB, 1)) MB)"
 Write-Output '    分发说明：目标机 Windows 10/11 x64 即可，无需任何运行时；安装后首次运行弹 UAC。'
