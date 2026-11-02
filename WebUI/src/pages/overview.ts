@@ -39,7 +39,8 @@ function nameCell(params: { value: string; data?: OverviewRow }): HTMLElement {
 const gridOptions: GridOptions = {
   columnDefs,
   rowData: [],
-  defaultColDef: { sortable: true, resizable: true },
+  // 列头点击排序已由页头排序控件承担（总览专属），此处禁用避免双入口
+  defaultColDef: { sortable: false, resizable: true },
   getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   rowSelection: { mode: "singleRow", checkboxes: false },
   suppressCellFocus: true,
