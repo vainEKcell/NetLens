@@ -51,6 +51,27 @@ public sealed class UiBridge
                 case "kill":
                     _vm.KillPid(root.GetProperty("pid").GetInt32());
                     break;
+                case "block":
+                {
+                    var bpid = root.GetProperty("pid").GetInt32();
+                    _vm.SelectProcessByPid(bpid);
+                    _vm.BlockSelected();
+                    break;
+                }
+                case "toggleTrust":
+                {
+                    var tpid = root.GetProperty("pid").GetInt32();
+                    _vm.SelectProcessByPid(tpid);
+                    _vm.ToggleTrustForSelection();
+                    break;
+                }
+                case "openFolder":
+                {
+                    var ofd = root.GetProperty("pid").GetInt32();
+                    _vm.SelectProcessByPid(ofd);
+                    _vm.OpenProcessFolder();
+                    break;
+                }
                 case "pause":
                     if (!_vm.Paused) _vm.TogglePause();
                     break;

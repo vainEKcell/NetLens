@@ -26,6 +26,7 @@ const columnDefs: ColDef[] = [
   { headerName: t("ov.col.upTotal"), headerValueGetter: () => t("ov.col.upTotal"), field: "upTotal", width: 100, type: "rightAligned",
     valueFormatter: (p) => fmtBytes(p.value as number) },
   { headerName: t("ov.col.conns"), headerValueGetter: () => t("ov.col.conns"), field: "conns", width: 76, type: "rightAligned" },
+  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
 
 function nameCell(params: { value: string; data?: OverviewRow }): HTMLElement {
@@ -53,14 +54,15 @@ const gridOptions: GridOptions = {
 
 export function render(root: HTMLElement): void {
   root.innerHTML = `
-    <div class="page-head" style="display:flex; align-items:baseline; gap:14px;">
-      <div>
-        <h1>${t("ov.title")}</h1>
-        <div class="sub">${t("ov.sub")}</div>
-      </div>
+    <div class="page-head">
+      <h1>${t("ov.title")}</h1>
+      <div class="sub">${t("ov.sub")}</div>
     </div>
     <div id="overview-wrap">
-      <div class="ag-theme-nw" id="ov-grid" style="height: calc(100vh - 210px);"></div>
+      <div id="ov-left">
+        <div class="grid-toolbar" id="ov-toolbar"></div>
+        <div class="ag-theme-nw" id="ov-grid" style="height: calc(100vh - 240px);"></div>
+      </div>
       <div class="card" id="detail-panel"></div>
     </div>`;
   api = createGrid(document.getElementById("ov-grid")!, gridOptions);
@@ -68,8 +70,8 @@ export function render(root: HTMLElement): void {
   selectedPidEl = detailBody;
   renderDetailEmpty();
 
-  const head = root.querySelector(".page-head") as HTMLElement;
-  mountSortControl(head, api, [
+  const toolbar = document.getElementById("ov-toolbar") as HTMLElement;
+  mountSortControl(toolbar, api, [
     { key: "down", label: t("ov.col.down") },
     { key: "up", label: t("ov.col.up") },
     { key: "downTotal", label: t("ov.col.downTotal") },
@@ -96,7 +98,7 @@ function renderDetail(s: Snapshot): void {
     if (selectedPidEl && detailBody.childElementCount <= 1) renderDetailEmpty();
     return;
   }
-  const sigText = d.signature ?? "未检测";
+  const sigText = d.signature ?? "—";
   const v = d.verdict;
   const evHtml = v && v.evidence.length
     ? v.evidence.map((e) => `
@@ -105,16 +107,42 @@ function renderDetail(s: Snapshot): void {
           ${e.Basis ? `<div class="basis">${t("ov.basis")}：${escapeHtml(e.Basis)}</div>` : ""}
         </div>`).join("")
     : `<div class="basis">${t("ov.detail.noVerdict")}</div>`;
+  const verdictBadge = v
+    ? `<div class="st-${["excellent", "fair", "fair", "poor"][v.riskByte] ?? ""}" style="margin-bottom:8px;">${verdictText(v.riskByte)}</div>`
+    : "";
+  const summaryHtml = v && v.summary ? `<div class="hint" style="margin-top:4px;">${escapeHtml(v.summary)}</div>` : "";
+
+  const riskHtml = d.riskReasons.length
+    ? `<h2>${t("ov.detail.risks")}</h2>` + d.riskReasons.map((r) => `<div class="advice risk-low">• ${escapeHtml(r)}</div>`).join("")
+    : "";
+  const detailRisksHtml = d.detailRisks.length
+    ? `<h2>${t("ov.detail.risks")}</h2>` + d.detailRisks.map((r) => `<div class="advice risk-low">• ${escapeHtml(r)}</div>`).join("")
+    : "";
+  const dnsHtml = d.recentDns.length
+    ? `<h2>${t("ov.detail.recentDns")}</h2>` + d.recentDns.map((r) => `<div class="conn">${escapeHtml(r)}</div>`).join("")
+    : "";
+  const identityHtml = d.identityName
+    ? `<div class="conn">${escapeHtml(d.identityName)}${d.identityKind ? ` · ${escapeHtml(d.identityKind)}` : ""}</div>` +
+      (d.fileHash ? `<div class="conn" style="word-break:break-all;">SHA256 ${escapeHtml(d.fileHash)}</div>` : "")
+    : "";
 
   detailBody.innerHTML = `
     <h2>${t("ov.detail.title")}</h2>
-    <div class="big" style="margin-bottom: 6px;">${escapeHtml(d.name)} <span class="unit">PID ${d.pid}</span></div>
-    ${v ? `<div class="st-${verdictClass(v.riskByte)}" style="margin-bottom: 8px;">${verdictText(v.riskByte)}</div>` : ""}
-    <div class="kv" style="margin-bottom: 10px;">
+    <div class="big" style="margin-bottom:6px;">${escapeHtml(d.name)} <span class="unit">PID ${d.pid}</span></div>
+    ${verdictBadge}
+    ${summaryHtml}
+    <div class="kv" style="margin-bottom:10px;">
       <span class="k">${t("ov.detail.path")}</span><span class="v path">${escapeHtml(d.path ?? "—")}</span>
       <span class="k">${t("ov.detail.vendor")}</span><span class="v">${escapeHtml(d.vendor ?? "—")}</span>
       <span class="k">${t("ov.detail.signature")}</span><span class="v">${escapeHtml(sigText)}</span>
+      ${d.parentName ? `<span class="k">${t("ov.detail.parent")}</span><span class="v">${escapeHtml(d.parentName)} (${d.parentPid})</span>` : ""}
+      ${d.firstSeen ? `<span class="k">${t("ov.detail.firstSeen")}</span><span class="v">${escapeHtml(d.firstSeen)}</span>` : ""}
+      ${d.firewallBlocked ? `<span class="k"></span><span class="v risk-low">⛔ ${t("ov.detail.blocked")}</span>` : ""}
     </div>
+    ${d.commandLine ? `<h2>${t("ov.detail.cmdline")}</h2><div class="conn" style="word-break:break-all;">${escapeHtml(d.commandLine)}</div>` : ""}
+    ${identityHtml ? `<h2>${t("ov.detail.identity")}</h2>${identityHtml}` : ""}
+    ${riskHtml}
+    ${detailRisksHtml}
     <h2>${t("ov.detail.verdict")}</h2>
     ${evHtml}
     <h2>${t("ov.detail.services")}（${d.services.length}）</h2>
@@ -125,10 +153,18 @@ function renderDetail(s: Snapshot): void {
     ${d.conns.length
       ? d.conns.map((c) => `<div class="conn">[${c.Proto}] ${escapeHtml(c.Remote)} · ${escapeHtml(c.State)}</div>`).join("")
       : `<div class="basis">${t("ov.detail.noConns")}</div>`}
-    <div style="display:flex; gap:8px; margin-top: 12px;">
+    ${dnsHtml}
+    <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
       <button class="btn" id="d-kill">${t("ov.detail.kill")}</button>
+      <button class="btn" id="d-block">${t("ov.detail.block")}</button>
+      <button class="btn" id="d-trust">${t("ov.detail.trust")}</button>
+      <button class="btn" id="d-folder">${t("ov.detail.folder")}</button>
     </div>`;
+
   (detailBody.querySelector("#d-kill") as HTMLButtonElement).onclick = () => sendCommand("kill", { pid: d.pid });
+  (detailBody.querySelector("#d-block") as HTMLButtonElement).onclick = () => sendCommand("block", { pid: d.pid });
+  (detailBody.querySelector("#d-trust") as HTMLButtonElement).onclick = () => sendCommand("toggleTrust", { pid: d.pid });
+  (detailBody.querySelector("#d-folder") as HTMLButtonElement).onclick = () => sendCommand("openFolder", { pid: d.pid });
 }
 
 function verdictText(risk: number): string {

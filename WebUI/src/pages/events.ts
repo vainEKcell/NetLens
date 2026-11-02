@@ -31,6 +31,7 @@ const cols: ColDef[] = [
     } },
   { headerName: t("ev.col.bytes"), headerValueGetter: () => t("ev.col.bytes"), field: "bytes", width: 92, type: "rightAligned",
     valueFormatter: (p) => (p.value ? String(p.value) : "") },
+  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
 
 const gridOptions: GridOptions = {
@@ -55,11 +56,12 @@ export function render(root: HTMLElement): void {
       <div style="flex:1;"></div>
       <button class="btn" id="ev-clear-filter" style="display:none;">${t("ev.reset")}</button>
     </div>
-    <div class="ag-theme-nw" id="ev-grid" style="height: calc(100vh - 250px);"></div>`;
+    <div class="grid-toolbar" id="ev-grid-toolbar"></div>
+        <div class="ag-theme-nw" id="ev-grid" style="height: calc(100vh - 250px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("ev-grid")!, gridOptions);
-  const head = root.querySelector(".page-head") as HTMLElement;
-  mountSortControl(head, api, [
+  const toolbar = document.getElementById("ev-grid-toolbar") as HTMLElement;
+  mountSortControl(toolbar, api, [
     { key: "__i", label: t("ev.col.time") },
     { key: "Process", label: t("ev.col.process") },
     { key: "BytesText", label: t("ev.col.bytes") },

@@ -6,28 +6,30 @@
 </head>
 <body>
   <div id="app">
-    <!-- 常驻状态栏：横贯全宽。品牌与监控控件在左（恢复早期版本），数据与曲线在右 -->
+    <!-- 常驻状态栏：左=监控控件 | 中=品牌（居中） | 右=数据与曲线 -->
     <header id="topbar">
+      <div class="tb-left">
+        <button id="btn-pause">暂停监控</button>
+        <label class="tb-check"><input type="checkbox" id="tb-loopback" /><span id="tb-loopback-label">隐藏回环</span></label>
+        <label class="tb-check"><input type="checkbox" id="tb-flagged" /><span id="tb-flagged-label">仅看可疑</span></label>
+        <input type="text" id="tb-search" placeholder="搜索 进程 / 路径 / PID" />
+      </div>
       <div id="brand"><span class="dot"></span>NetLens</div>
-      <button id="btn-pause">暂停监控</button>
-      <label class="tb-check"><input type="checkbox" id="tb-loopback" /><span id="tb-loopback-label">隐藏回环</span></label>
-      <label class="tb-check"><input type="checkbox" id="tb-flagged" /><span id="tb-flagged-label">仅看可疑</span></label>
-      <input type="text" id="tb-search" placeholder="搜索 进程 / 路径 / PID" />
-      <div class="spacer"></div>
-      <div class="metric">
-        <span class="label" id="lbl-up">总上传</span>
-        <span class="value up" id="tb-up">0 B/s</span>
+      <div class="tb-right">
+        <div class="metric">
+          <span class="label" id="lbl-up">总上传</span>
+          <span class="value up" id="tb-up">0 B/s</span>
+        </div>
+        <div class="metric">
+          <span class="label" id="lbl-down">总下载</span>
+          <span class="value down" id="tb-down">0 B/s</span>
+        </div>
+        <div class="metric">
+          <span class="label" id="lbl-session">会话累计</span>
+          <span class="value small" id="tb-session">—</span>
+        </div>
+        <div id="spark"><canvas id="spark-canvas" width="220" height="44"></canvas></div>
       </div>
-      <div class="metric">
-        <span class="label" id="lbl-down">总下载</span>
-        <span class="value down" id="tb-down">0 B/s</span>
-      </div>
-      <div class="metric">
-        <span class="label" id="lbl-session">会话累计</span>
-        <span class="value small" id="tb-session">—</span>
-      </div>
-      <!-- 曲线紧贴数据 -->
-      <div id="spark"><canvas id="spark-canvas" width="220" height="44"></canvas></div>
     </header>
     <div id="body">
       <aside id="sidebar">

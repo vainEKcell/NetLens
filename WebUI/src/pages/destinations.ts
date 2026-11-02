@@ -22,6 +22,7 @@ const cols: ColDef[] = [
   { headerName: t("dst.col.down"), headerValueGetter: () => t("dst.col.down"), field: "DownText", width: 110, type: "rightAligned", cellClass: "text-blue" },
   { headerName: t("dst.col.last"), headerValueGetter: () => t("dst.col.last"), field: "LastText", width: 100, type: "rightAligned", cellClass: "text-dim" },
   { headerName: t("dst.col.processes"), headerValueGetter: () => t("dst.col.processes"), field: "ProcessesText", flex: 1.2, cellClass: "text-dim" },
+  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
 
 const gridOptions: GridOptions = {
@@ -41,11 +42,12 @@ export function render(root: HTMLElement): void {
       <h1>${t("dst.title")}</h1>
       <div class="sub">${t("dst.sub")}</div>
     </div>
-    <div class="ag-theme-nw" id="dst-grid" style="height: calc(100vh - 210px);"></div>`;
+    <div class="grid-toolbar" id="dst-grid-toolbar"></div>
+        <div class="ag-theme-nw" id="dst-grid" style="height: calc(100vh - 210px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("dst-grid")!, gridOptions);
-  const head = root.querySelector(".page-head") as HTMLElement;
-  mountSortControl(head, api, [
+  const toolbar = document.getElementById("dst-grid-toolbar") as HTMLElement;
+  mountSortControl(toolbar, api, [
     { key: "DownBytes", label: t("dst.col.down") },
     { key: "UpBytes", label: t("dst.col.up") },
     { key: "Display", label: t("dst.col.display") },

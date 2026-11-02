@@ -17,10 +17,24 @@ export interface DetailInfo {
   path: string | null;
   vendor: string | null;
   signature: string | null;
+  signatureState: string | null;
+  commandLine: string | null;
+  parentPid: number | null;
+  parentName: string | null;
+  firstSeen: string | null;
+  identityKey: string | null;
+  identityName: string | null;
+  identityKind: string | null;
+  fileHash: string | null;
+  firewallBlocked: boolean;
+  riskReasons: string[];
+  detailRisks: string[];
+  recentDns: string[];
   services: { name: string; displayName: string }[];
   conns: { Remote: string; Local: string; Proto: string; State: string }[];
   verdict: {
     status: string;
+    summary: string;
     riskByte: number;
     evidence: { Statement: string; Basis: string | null; Caveat: string | null; Weight: number }[];
   } | null;

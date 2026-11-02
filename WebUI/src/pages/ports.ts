@@ -24,6 +24,7 @@ const cols: ColDef[] = [
     cellClass: (p) => (String(p.value).includes("所有") || String(p.value).includes("任意") ? "risk-low" : "text-dim") },
   { headerName: t("port.col.pid"), headerValueGetter: () => t("port.col.pid"), field: "Pid", width: 80, type: "rightAligned" },
   { headerName: t("port.col.process"), headerValueGetter: () => t("port.col.process"), field: "Process", flex: 1 },
+  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
 
 const gridOptions: GridOptions = {
@@ -43,11 +44,12 @@ export function render(root: HTMLElement): void {
       <h1>${t("port.title")}</h1>
       <div class="sub">${t("port.sub")}</div>
     </div>
-    <div class="ag-theme-nw" id="port-grid" style="height: calc(100vh - 210px);"></div>`;
+    <div class="grid-toolbar" id="port-grid-toolbar"></div>
+        <div class="ag-theme-nw" id="port-grid" style="height: calc(100vh - 210px);"></div>`;
   rootEl = root;
   api = createGrid(document.getElementById("port-grid")!, gridOptions);
-  const head = root.querySelector(".page-head") as HTMLElement;
-  mountSortControl(head, api, [
+  const toolbar = document.getElementById("port-grid-toolbar") as HTMLElement;
+  mountSortControl(toolbar, api, [
     { key: "Port", label: t("port.col.port") },
     { key: "Process", label: t("port.col.process") },
     { key: "Pid", label: t("port.col.pid") },

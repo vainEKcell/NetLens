@@ -17,6 +17,19 @@ const pageModules: Record<string, PageModule> = {
   overview, destinations, dns, ports, events, blocking, network, netcheck, settings,
 };
 
+// 16px 线性图标（stroke: currentColor，与文字同色）
+const ICONS: Record<string, string> = {
+  overview: '<rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1"/><rect x="9" y="9" width="5.5" height="5.5" rx="1"/>',
+  destinations: '<circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2"/>',
+  dns: '<path d="M8 1.5l5.5 2.2v3.1c0 3.2-2.3 6-5.5 7.2-3.2-1.2-5.5-4-5.5-7.2V3.7L8 1.5z"/>',
+  ports: '<rect x="1.5" y="5.5" width="4.5" height="5" rx="1"/><rect x="10" y="5.5" width="4.5" height="5" rx="1"/><path d="M6 8h4"/>',
+  events: '<path d="M2 3.5h12M2 8h12M2 12.5h8"/>',
+  blocking: '<circle cx="8" cy="8" r="6.2"/><path d="M3.7 3.7l8.6 8.6"/>',
+  network: '<rect x="1.5" y="1.5" width="13" height="9" rx="1.5"/><path d="M5.5 13h5M8 10.5V13"/>',
+  netcheck: '<path d="M1.5 9.5l3-3 2.5 2.5 4-5 3.5 3.5"/><path d="M1.5 13h13"/>',
+  settings: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2.2M8 12.3v2.2M1.5 8h2.2M12.3 8h2.2M3.4 3.4l1.6 1.6M11 11l1.6 1.6M12.6 3.4L11 5M5 11l-1.6 1.6"/>',
+};
+
 const NAV: { id: string; titleKey: string }[] = [
   { id: "overview",     titleKey: "nav.overview" },
   { id: "destinations", titleKey: "nav.destinations" },
@@ -35,7 +48,7 @@ NAV.forEach((item) => {
   const el = document.createElement("div");
   el.className = "nav-item";
   el.dataset.page = item.id;
-  el.textContent = t(item.titleKey);
+  el.innerHTML = `<svg class="nav-ico" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[item.id] ?? ""}</svg><span>${t(item.titleKey)}</span>`;
   el.addEventListener("click", () => { location.hash = `#/${item.id}`; });
   nav.appendChild(el);
 });
@@ -100,7 +113,7 @@ function applyLanguage(setting: string): void {
   // 侧栏文案同步
   NAV.forEach((item) => {
     const el = nav.querySelector(`[data-page="${item.id}"]`) as HTMLElement | null;
-    if (el) el.textContent = t(item.titleKey);
+    if (el) (el.querySelector("span") as HTMLElement).textContent = t(item.titleKey);
   });
   // 顶栏标签
   const lblUp = document.getElementById("lbl-up");

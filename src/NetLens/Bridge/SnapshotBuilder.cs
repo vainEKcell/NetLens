@@ -109,14 +109,18 @@ public sealed class SnapshotBuilder
         return new { rows, selectedPid = _selectedPid };
     }
 
-    /// 选中进程的详情卡（路径/厂商/签名/服务/连接/判定）
+    /// 选中进程的详情卡：对照旧 WPF 详情面板的全部信息区块
     private object? BuildDetail()
     {
         if (_selectedPid <= 0) return null;
         var info = _tracker.Get(_selectedPid);
         if (info.Name.StartsWith("PID ", StringComparison.Ordinal) && _agg.Stats.All(kv => kv.Key != _selectedPid))
             return null; // 进程已退出
+
         var verdict = _vm.GetVerdictFor(_selectedPid);
+        var entity = _vm.Entities.GetProcess(_selectedPid);
+        var identity = entity == null ? null : _vm.Entities.GetIdentity(entity.IdentityKey);
+
         return new
         {
             pid = _selectedPid,
@@ -124,6 +128,19 @@ public sealed class SnapshotBuilder
             path = info.Path,
             vendor = info.Company,
             signature = info.SignatureSubject ?? info.Signature.ToString(),
+            signatureState = info.Signature.ToString(),
+            commandLine = entity?.CommandLine,
+            parentPid = entity?.ParentPid,
+            parentName = entity?.ParentPid is > 0 ? _tracker.Get(entity.ParentPid.Value).Name : null,
+            firstSeen = entity?.StartTimeUtc == null ? null : entity.StartTimeUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+            identityKey = entity?.IdentityKey,
+            identityName = identity?.DisplayName,
+            identityKind = identity == null ? null : identity.Kind.ToString(),
+            fileHash = identity?.FileHashes.Count > 0 ? identity.FileHashes.First() : null,
+            firewallBlocked = info.FirewallBlocked,
+            riskReasons = info.RiskReasons.ToArray(),
+            detailRisks = _vm.DetailRisks.ToArray(),
+            recentDns = _vm.DetailDns.Take(15).ToArray(),
             services = _vm.Entities.ServicesOf(_selectedPid).Select(s => new { s.Name, s.DisplayName }).ToArray(),
             conns = _vm.ConnectionsOf(_selectedPid).Take(20).Select(c => new
             {
@@ -135,6 +152,7 @@ public sealed class SnapshotBuilder
             verdict = verdict == null ? null : new
             {
                 status = verdict.Status.ToString(),
+                summary = verdict.Summary,
                 riskByte = verdict.RiskByte,
                 evidence = verdict.Evidence.Select(e => new { e.Statement, e.Basis, e.Caveat, e.Weight }).ToArray(),
             },
