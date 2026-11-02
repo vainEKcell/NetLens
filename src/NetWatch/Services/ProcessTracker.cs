@@ -31,7 +31,7 @@ public sealed class ProcessTracker : IDisposable
             return new ProcessEntry
             {
                 Pid = pid,
-                Name = pid == 4 ? "System（内核）" : pid == 0 ? "Idle" : $"PID {pid}",
+                Name = pid == 4 ? "System" + L10n.T("proc.kernel") : pid == 0 ? "Idle" : $"PID {pid}",
                 Exited = !(pid == 0 || pid == 4), // 系统保留 PID 是常驻的；脏数据行让其自然过期
             };
         }

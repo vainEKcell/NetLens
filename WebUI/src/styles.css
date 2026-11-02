@@ -288,6 +288,19 @@ input[type="checkbox"]:checked::after {
 .text-blue { color: var(--blue); }
 .text-dim { color: var(--dim); }
 
+/* DNS 服务器 chip 列表：长地址逐个分块，不挤压 */
+.chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.ip-chip {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  word-break: break-all;
+}
+
 /* 延迟行卡 */
 .ping-row {
   display: grid;

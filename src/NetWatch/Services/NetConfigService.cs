@@ -123,7 +123,7 @@ public sealed class NetConfigService : IDisposable
             string? server = key.GetValue("ProxyServer") as string;
             string? pac = key.GetValue("AutoConfigURL") as string;
             string text = enable == 1 && !string.IsNullOrEmpty(server) ? L10n.T("cfg.proxyOn", server) : L10n.T("cfg.proxyOff");
-            if (!string.IsNullOrEmpty(pac)) text += $"　(PAC 脚本: {pac})";
+            if (!string.IsNullOrEmpty(pac)) text += "　" + L10n.T("cfg.pac", pac);
             return (text, pac);
         }
         catch { return (L10n.T("cfg.readFail"), null); }

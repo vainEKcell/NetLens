@@ -263,6 +263,7 @@
     <sys:String x:Key="kind.dns">DNS 解析</sys:String>
     <sys:String x:Key="kind.procStart">进程启动</sys:String>
     <sys:String x:Key="kind.procStop">进程退出</sys:String>
+    <sys:String x:Key="proc.kernel">（内核）</sys:String>
     <sys:String x:Key="kind.config">配置变更</sys:String>
 
     <sys:String x:Key="scope.loopback">回环</sys:String>
@@ -391,6 +392,11 @@
     <sys:String x:Key="msg.alreadyRunning">NetWatch 已在运行（可在系统托盘找到）。</sys:String>
     <sys:String x:Key="msg.cleanup">清理</sys:String>
     <sys:String x:Key="msg.ok">确定</sys:String>
+    <sys:String x:Key="dlg.csvFilter">CSV 文件 (*.csv)|*.csv</sys:String>
+    <sys:String x:Key="tray.show">显示主界面</sys:String>
+    <sys:String x:Key="tray.exit">退出</sys:String>
+    <sys:String x:Key="conn.none">无连接</sys:String>
+    <sys:String x:Key="conn.stateUnknown">状态{0}</sys:String>
     <sys:String x:Key="id.signed">签名身份</sys:String>
     <sys:String x:Key="id.pathOnly">路径身份</sys:String>
     <sys:String x:Key="id.sysReserved">系统保留</sys:String>

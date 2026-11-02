@@ -45,8 +45,15 @@ export function render(root: HTMLElement): void {
       <div class="sub">${t("dns.sub")}</div>
     </div>
     <div class="grid2">
-      <div class="card"><h2>${t("dns.servers")}</h2><div class="kv"><span class="v" id="dns-servers" style="font-size:12px;">读取中…</span></div></div>
-      <div class="card"><h2>${t("dns.proxy")}</h2><div class="kv"><span class="v" id="dns-proxy" style="font-size:12px;">读取中…</span></div></div>
+      <div class="card"><h2>${t("dns.servers")}</h2><div id="dns-servers" class="chip-list"></div></div>
+      <div class="card"><h2>${t("dns.proxy")}</h2>
+        <div class="kv" style="grid-template-columns: 1fr; gap: 6px;">
+          <div><span class="k">${t("dns.sysproxy")}</span>
+            <div class="v" id="dns-proxy" style="font-family: var(--mono); font-size: 12px; margin-top: 2px; word-break: break-all;">—</div></div>
+          <div><span class="k">${t("dns.winhttp")}</span>
+            <div class="v" id="dns-winhttp" style="font-family: var(--mono); font-size: 12px; margin-top: 2px; word-break: break-all;">—</div></div>
+        </div>
+      </div>
     </div>
     <div class="card">
       <h2>${t("dns.stream")}</h2>
@@ -129,10 +136,18 @@ declare global {
 
 export function onSnapshot(s: Snapshot): void {
   if (!rootEl) return;
-  (document.getElementById("dns-servers")!).textContent = s.dns.servers;
-  (document.getElementById("dns-proxy")!).textContent = `${s.dns.proxy}　|　${s.dns.winhttp}`;
-  const hostsEl = document.getElementById("dns-proxy");
-  if (hostsEl && s.dns.hosts) hostsEl.title = s.dns.hosts;
+  // DNS 服务器：逐个 chip 渲染，长地址不挤压
+  const chips = document.getElementById("dns-servers")!;
+  const list = (s.dns.servers as unknown as string[]) ?? [];
+  const chipHtml = list.length
+    ? list.map((ip) => `<span class="ip-chip">${escapeHtml(ip)}</span>`).join("")
+    : `<span class="text-dim">—</span>`;
+  if (chips.innerHTML !== chipHtml) chips.innerHTML = chipHtml;
+
+  const proxyEl = document.getElementById("dns-proxy")!;
+  if (proxyEl.textContent !== s.dns.proxy) proxyEl.textContent = s.dns.proxy;
+  const winEl = document.getElementById("dns-winhttp")!;
+  if (winEl.textContent !== s.dns.winhttp) winEl.textContent = s.dns.winhttp;
 
   streamApi?.setGridOption("rowData", s.dns.stream.map((r, i) => ({ ...r, __i: i })));
   dohApi?.setGridOption("rowData", s.dns.doh.results);
@@ -143,4 +158,9 @@ export function onSnapshot(s: Snapshot): void {
   if (document.activeElement !== probesEl && probesEl.value !== s.dns.doh.probes) probesEl.value = s.dns.doh.probes;
   const runBtn = document.getElementById("doh-run") as HTMLButtonElement;
   runBtn.disabled = s.dns.doh.running;
+}
+
+function escapeHtml(s: string | null): string {
+  if (!s) return "";
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

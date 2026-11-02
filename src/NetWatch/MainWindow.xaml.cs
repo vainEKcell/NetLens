@@ -60,9 +60,9 @@ public partial class MainWindow : Window
         _tray.TrayLeftMouseUp += (_, _) => RestoreFromTray();
 
         var menu = new ContextMenu();
-        var show = new MenuItem { Header = "显示主界面" };
+        var show = new MenuItem { Header = L10n.T("tray.show") };
         show.Click += (_, _) => RestoreFromTray();
-        var exit = new MenuItem { Header = "退出" };
+        var exit = new MenuItem { Header = L10n.T("tray.exit") };
         exit.Click += (_, _) => Close();
         menu.Items.Add(show);
         menu.Items.Add(exit);

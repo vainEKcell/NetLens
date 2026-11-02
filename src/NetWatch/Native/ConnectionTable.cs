@@ -105,7 +105,7 @@ public static class ConnectionTable
                     int pid = Marshal.ReadInt32(buf, off + 8);
                     var lip = Ip4(la);
                     list.Add(new ConnectionInfo(NetProto.Udp, Util.FormatEndpoint(lip.ToString(), Swap(lp)), "-",
-                        "无连接", pid, IsLoopback(lip), false));
+                        L10n.T("conn.none"), pid, IsLoopback(lip), false));
                 }
             }
             else
@@ -117,7 +117,7 @@ public static class ConnectionTable
                     uint lp = (uint)Marshal.ReadInt32(buf, off + 20);
                     int pid = Marshal.ReadInt32(buf, off + 24);
                     list.Add(new ConnectionInfo(NetProto.Udp, Util.FormatEndpoint(la.ToString(), Swap(lp)), "-",
-                        "无连接", pid, IsLoopback(la), false));
+                        L10n.T("conn.none"), pid, IsLoopback(la), false));
                 }
             }
         }
@@ -125,7 +125,7 @@ public static class ConnectionTable
     }
 
     private static string TcpState(uint s) =>
-        s >= 1 && s <= 12 ? TcpStates[s - 1] : $"状态{s}";
+        s >= 1 && s <= 12 ? TcpStates[s - 1] : L10n.T("conn.stateUnknown", s);
 
     private static IPAddress Ip4(uint networkOrder) =>
         new(BitConverter.GetBytes(networkOrder)); // 内存序 = 网络字节序

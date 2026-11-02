@@ -417,7 +417,7 @@ public sealed class MainViewModel : VmBase, IDisposable
         var path = Tracker.Get(row.Pid).Path;
         if (string.IsNullOrEmpty(path))
         {
-            MessageBox.Show("无法读取该程序的路径。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(L10n.T("msg.noPathShort"), "NetWatch", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
         try
@@ -684,7 +684,7 @@ public sealed class MainViewModel : VmBase, IDisposable
             Settings.TrustedIdentityKeys.Remove(SelectedTrustedApp.Key);
             Settings.TrustedIdentityNames.Remove(SelectedTrustedApp.Key);
             Settings.Save();
-            AddSystemEvent($"已将 {SelectedTrustedApp.DisplayName} 移出允许名单");
+            AddSystemEvent(L10n.T("sys.untrusted", SelectedTrustedApp.DisplayName));
             RefreshTrustedApps();
         });
         RefreshTrustedApps();
@@ -709,7 +709,7 @@ public sealed class MainViewModel : VmBase, IDisposable
         Settings.TrustedIdentityKeys.Remove(key);
         Settings.TrustedIdentityNames.Remove(key);
         Settings.Save();
-        AddSystemEvent($"已将 {name} 移出允许名单");
+        AddSystemEvent(L10n.T("sys.untrusted", name));
         RefreshTrustedApps();
     }
 
@@ -1624,8 +1624,8 @@ public sealed class MainViewModel : VmBase, IDisposable
     {
         var dlg = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "导出事件流",
-            Filter = "CSV 文件 (*.csv)|*.csv",
+            Title = L10n.T("set.export"),
+            Filter = L10n.T("dlg.csvFilter"),
             FileName = $"NetWatch_事件_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
         };
         if (dlg.ShowDialog() != true) return;

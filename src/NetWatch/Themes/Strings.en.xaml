@@ -264,6 +264,7 @@
     <sys:String x:Key="kind.dns">DNS resolve</sys:String>
     <sys:String x:Key="kind.procStart">Process start</sys:String>
     <sys:String x:Key="kind.procStop">Process exit</sys:String>
+    <sys:String x:Key="proc.kernel"> (kernel)</sys:String>
     <sys:String x:Key="kind.config">Config change</sys:String>
 
     <sys:String x:Key="scope.loopback">Loopback</sys:String>
@@ -405,6 +406,11 @@
     <sys:String x:Key="msg.alreadyRunning">NetWatch is already running (check the system tray).</sys:String>
     <sys:String x:Key="msg.cleanup">Cleanup</sys:String>
     <sys:String x:Key="msg.ok">OK</sys:String>
+    <sys:String x:Key="dlg.csvFilter">CSV files (*.csv)|*.csv</sys:String>
+    <sys:String x:Key="tray.show">Show main window</sys:String>
+    <sys:String x:Key="tray.exit">Exit</sys:String>
+    <sys:String x:Key="conn.none">No connection</sys:String>
+    <sys:String x:Key="conn.stateUnknown">State {0}</sys:String>
     <sys:String x:Key="sp.title">Bandwidth test</sys:String>
     <sys:String x:Key="sp.desc">Download samples real data from an automatically selected node, skipping the TCP slow-start phase, and estimates your broadband tier; the last node that worked is preferred. Upload goes through a public endpoint and is a reference value only. Tests run over a direct connection, bypassing proxies.</sys:String>
     <sys:String x:Key="ncv.checking.speed">Measuring bandwidth…</sys:String>

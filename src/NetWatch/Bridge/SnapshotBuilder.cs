@@ -143,7 +143,6 @@ public sealed class SnapshotBuilder
 
     private object BuildDns()
     {
-        var snap = _vm.Config.Snapshot;
         var stream = _vm.DnsStream.TakeLast(200).Select(d => new
         {
             time = d.TimeText,
@@ -161,9 +160,10 @@ public sealed class SnapshotBuilder
             probes = _vm.DohProbeDomains,
             results = _vm.DohResults.Select(r => new { r.Domain, r.LocalIps, r.RefIps, r.Verdict, r.RiskByte }).ToArray(),
         };
+        var snap2 = _vm.Config.Snapshot;
         return new
         {
-            servers = _vm.DnsServersText,
+            servers = snap2.AllDns,           // 数组：前端逐个渲染成 chip，避免长串挤压换行
             proxy = _vm.ProxyText,
             winhttp = _vm.WinHttpText,
             hosts = _vm.HostsText,

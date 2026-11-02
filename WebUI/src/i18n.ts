@@ -33,6 +33,8 @@ const zh: Record<string, string> = {
   "dns.doh.hint": "「自动」按国内优先顺序逐源尝试；开启代理后可选择海外参考源获得与直连一致的对照结果。",
   "dns.doh.run": "开始体检", "dns.col.local": "本机解析", "dns.col.ref": "参考源解析",
   "dns.col.verdict": "结论",
+  "dns.sysproxy": "系统代理",
+  "dns.winhttp": "WinHTTP 代理",
   // 体检
   "nc.title": "网络体检", "nc.sub": "NAT 类型探测、网关与公网延迟测量、带宽测试一键完成，全程约半分钟",
   "nc.run": "开始网络体检", "nc.note": "检测仅在点击按钮时产生网络流量，平时不占用带宽。",
@@ -126,6 +128,8 @@ const en: Record<string, string> = {
   "dns.doh.hint": "Automatic tries CN sources in order; behind a proxy, pick an overseas reference source for an apples-to-apples comparison.",
   "dns.doh.run": "Run check", "dns.col.local": "Local resolution", "dns.col.ref": "Reference resolution",
   "dns.col.verdict": "Verdict",
+  "dns.sysproxy": "System proxy",
+  "dns.winhttp": "WinHTTP proxy",
   "nc.title": "Network Check", "nc.sub": "NAT probe, gateway and public pings, and a bandwidth test in one click; about half a minute",
   "nc.run": "Start network check", "nc.note": "The check only uses the network while it runs.",
   "nc.nat": "NAT type", "nc.external": "External address",

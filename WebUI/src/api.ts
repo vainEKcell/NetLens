@@ -72,7 +72,7 @@ export interface Snapshot {
   overview: { rows: OverviewRow[]; selectedPid: number };
   detail: DetailInfo | null;
   dns: {
-    servers: string;
+    servers: string[];
     proxy: string;
     winhttp: string;
     hosts: string;
