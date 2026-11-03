@@ -30,43 +30,54 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
 $bgPath = New-RoundedRectPath 8 8 240 240 56
 $g.FillPath([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 8, 9, 12)), $bgPath)
 
-# ---- 2. 偏心发光点：左下约 1/3 处，歪斜不居中 ----
+# ---- 2. 偏心点：深处（更小更暗，透视消失点） ----
 $px = 86.0; $py = 170.0
-$pr = 13.0
+$pr = 10.0
 $haloPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-$haloPath.AddEllipse([single]($px - 34), [single]($py - 34), 68, 68)
+$haloPath.AddEllipse([single]($px - 30), [single]($py - 30), 60, 60)
 $haloBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush $haloPath
-$haloBrush.CenterColor = [System.Drawing.Color]::FromArgb(150, 77, 141, 255)
+$haloBrush.CenterColor = [System.Drawing.Color]::FromArgb(170, 77, 141, 255)
 $haloBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 77, 141, 255))
 $g.FillPath($haloBrush, $haloPath)
-$core = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 235, 244, 255))
-$g.FillEllipse($core, [single]($px - $pr), [single]($py - $pr), $pr * 2, $pr * 2)
+$ring = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(230, 235, 244, 255)), 3
+$g.DrawEllipse($ring, [single]($px - $pr), [single]($py - $pr), $pr * 2, $pr * 2)
 
-# ---- 3. 放射细线：从点向斜右上发散（扇形扩张 + 长度透视），末端带小点 ----
+# ---- 3. 放射白线：从点朝观察者射来——每线分三段由细渐粗（透视=越近越粗） ----
 $rays = @(
-    @{ a = -80; len = 88;  c = [System.Drawing.Color]::FromArgb(255, 120, 175, 255) },
-    @{ a = -64; len = 118; c = [System.Drawing.Color]::FromArgb(255, 235, 244, 255) },
-    @{ a = -49; len = 96;  c = [System.Drawing.Color]::FromArgb(255, 80, 214, 220) },
-    @{ a = -34; len = 148; c = [System.Drawing.Color]::FromArgb(255, 235, 244, 255) },
-    @{ a = -20; len = 126; c = [System.Drawing.Color]::FromArgb(255, 120, 175, 255) },
-    @{ a = -8;  len = 168; c = [System.Drawing.Color]::FromArgb(255, 235, 244, 255) }
+    @{ a = -80; len = 88 },
+    @{ a = -64; len = 118 },
+    @{ a = -49; len = 96 },
+    @{ a = -34; len = 148 },
+    @{ a = -20; len = 126 },
+    @{ a = -8;  len = 168 }
 )
+$white = [System.Drawing.Color]::FromArgb(255, 235, 244, 255)
 foreach ($r in $rays) {
     $rad = $r.a * [System.Math]::PI / 180.0
     $dx = [System.Math]::Cos($rad)
     $dy = [System.Math]::Sin($rad)
-    $inner = $pr + 10
-    $x1 = [single]($px + $dx * $inner)
-    $y1 = [single]($py + $dy * $inner)
-    $x2 = [single]($px + $dx * ($inner + $r.len))
-    $y2 = [single]($py + $dy * ($inner + $r.len))
-    $pen = New-Object System.Drawing.Pen ($r.c), 4.5
-    $pen.StartCap = 'Round'; $pen.EndCap = 'Round'
-    $g.DrawLine($pen, $x1, $y1, $x2, $y2)
-    $tipR = 4.5
-    $tip = New-Object System.Drawing.SolidBrush ($r.c)
-    $g.FillEllipse($tip, [single]($x2 - $tipR), [single]($y2 - $tipR), $tipR * 2, $tipR * 2)
-    $tip.Dispose(); $pen.Dispose()
+    $inner = $pr + 8
+    $segN = 3
+    $w0 = 2.0; $w1 = 4.8
+    for ($seg = 0; $seg -lt $segN; $seg++) {
+        $t0 = $seg / $segN
+        $t1 = ($seg + 1) / $segN
+        $wid = [single]($w0 + ($w1 - $w0) * ($seg + 0.5) / $segN)
+        $pen = New-Object System.Drawing.Pen ($white), $wid
+        $pen.StartCap = 'Flat'; $pen.EndCap = 'Flat'
+        $x1 = [single]($px + $dx * ($inner + $r.len * $t0))
+        $y1 = [single]($py + $dy * ($inner + $r.len * $t0))
+        $x2 = [single]($px + $dx * ($inner + $r.len * $t1))
+        $y2 = [single]($py + $dy * ($inner + $r.len * $t1))
+        $g.DrawLine($pen, $x1, $y1, $x2, $y2)
+        $pen.Dispose()
+    }
+    $tipR = 5.0
+    $tip = New-Object System.Drawing.SolidBrush ($white)
+    $tipX = [single]($px + $dx * ($inner + $r.len))
+    $tipY = [single]($py + $dy * ($inner + $r.len))
+    $g.FillEllipse($tip, $tipX - $tipR, $tipY - $tipR, $tipR * 2, $tipR * 2)
+    $tip.Dispose()
 }
 
 # ---- 4. 多尺寸输出（256/48/32/16） ----
