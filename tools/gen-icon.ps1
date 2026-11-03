@@ -1,6 +1,6 @@
 ﻿# NetLens 应用图标生成：Assets\app.ico
-# 设计 v4（贴合品牌内核「网络节点 · 连接」）：
-#   纯黑圆角方底 + 左下偏心发光点 + 扁平放射细线向斜右上发散（点线结合、长度透视聚拢感）
+# 设计 v6（用户定稿方向：完整 360° 放射、偏心、扁平白线、无 3D）：
+#   纯黑圆角方底 + 偏左放射中心 + 12 条全向扁平白辐条（长短节奏）+ 中心白点。
 #   元素仅点与线，无面。256px 绘制，输出 256/48/32/16 四档。
 # 用法: powershell -ExecutionPolicy Bypass -File tools\gen-icon.ps1
 $ErrorActionPreference = 'Stop'
@@ -30,54 +30,32 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
 $bgPath = New-RoundedRectPath 8 8 240 240 56
 $g.FillPath([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 8, 9, 12)), $bgPath)
 
-# ---- 2. 偏心点：深处（更小更暗，透视消失点） ----
-$px = 86.0; $py = 170.0
-$pr = 10.0
-$haloPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-$haloPath.AddEllipse([single]($px - 30), [single]($py - 30), 60, 60)
-$haloBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush $haloPath
-$haloBrush.CenterColor = [System.Drawing.Color]::FromArgb(170, 77, 141, 255)
-$haloBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 77, 141, 255))
-$g.FillPath($haloBrush, $haloPath)
-$ring = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(230, 235, 244, 255)), 3
-$g.DrawEllipse($ring, [single]($px - $pr), [single]($py - $pr), $pr * 2, $pr * 2)
+# ---- 2. 放射中心：偏左（非画布中心），完整 360° 放射 ----
+$cx = 98.0; $cy = 128.0
 
-# ---- 3. 放射白线：从点朝观察者射来——每线分三段由细渐粗（透视=越近越粗） ----
-$rays = @(
-    @{ a = -80; len = 88 },
-    @{ a = -64; len = 118 },
-    @{ a = -49; len = 96 },
-    @{ a = -34; len = 148 },
-    @{ a = -20; len = 126 },
-    @{ a = -8;  len = 168 }
-)
-$white = [System.Drawing.Color]::FromArgb(255, 235, 244, 255)
-foreach ($r in $rays) {
-    $rad = $r.a * [System.Math]::PI / 180.0
-    $dx = [System.Math]::Cos($rad)
-    $dy = [System.Math]::Sin($rad)
-    $inner = $pr + 8
-    $segN = 3
-    $w0 = 2.0; $w1 = 4.8
-    for ($seg = 0; $seg -lt $segN; $seg++) {
-        $t0 = $seg / $segN
-        $t1 = ($seg + 1) / $segN
-        $wid = [single]($w0 + ($w1 - $w0) * ($seg + 0.5) / $segN)
-        $pen = New-Object System.Drawing.Pen ($white), $wid
-        $pen.StartCap = 'Flat'; $pen.EndCap = 'Flat'
-        $x1 = [single]($px + $dx * ($inner + $r.len * $t0))
-        $y1 = [single]($py + $dy * ($inner + $r.len * $t0))
-        $x2 = [single]($px + $dx * ($inner + $r.len * $t1))
-        $y2 = [single]($py + $dy * ($inner + $r.len * $t1))
-        $g.DrawLine($pen, $x1, $y1, $x2, $y2)
-        $pen.Dispose()
-    }
-    $tipR = 5.0
-    $tip = New-Object System.Drawing.SolidBrush ($white)
-    $tipX = [single]($px + $dx * ($inner + $r.len))
-    $tipY = [single]($py + $dy * ($inner + $r.len))
-    $g.FillEllipse($tip, $tipX - $tipR, $tipY - $tipR, $tipR * 2, $tipR * 2)
-    $tip.Dispose()
+# 中心圆点（实心白）
+$coreR = 10.0
+$core = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 235, 244, 255))
+$g.FillEllipse($core, [single]($cx - $coreR), [single]($cy - $coreR), $coreR * 2, $coreR * 2)
+
+# ---- 3. 12 条全向放射线：扁平等宽、长短节奏 ----
+$innerR = 20.0
+$rays = 12
+for ($i = 0; $i -lt $rays; $i++) {
+    $ang = $i * (360.0 / $rays) - 90      # 从正上方开始
+    $rad = $ang * [System.Math]::PI / 180.0
+    Write-Output ("dbg i={0} ang={1} rad={2:N4} rays={3}" -f $i, $ang, $rad, $rays)
+    $len = 62.0 + ($(if ($i % 2 -eq 0) { 26 } else { 0 }))   # 长短节奏
+    $x1 = [single]($cx + [System.Math]::Cos($rad) * $innerR)
+    $y1 = [single]($cy + [System.Math]::Sin($rad) * $innerR)
+    $x2 = [single]($cx + [System.Math]::Cos($rad) * ($innerR + $len))
+    $y2 = [single]($cy + [System.Math]::Sin($rad) * ($innerR + $len))
+    $penW = [single]4.5
+    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 235, 244, 255)), $penW
+    $pen.StartCap = 'Round'; $pen.EndCap = 'Round'
+    $g.DrawLine($pen, $x1, $y1, $x2, $y2)
+    Write-Output ("ray {0}: ({1:N1},{2:N1}) -> ({3:N1},{4:N1})" -f $i, $x1, $y1, $x2, $y2)
+    $pen.Dispose()
 }
 
 # ---- 4. 多尺寸输出（256/48/32/16） ----
