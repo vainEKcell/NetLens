@@ -26,7 +26,7 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
     return $p
 }
 
-# ---- 1. 背景：深空对角渐变圆角方 ----
+# ---- 1. 背景：深空对角渐变圆角方（无边框，简洁现代） ----
 $bgPath = New-RoundedRectPath 8 8 240 240 56
 $bgRect = New-Object System.Drawing.Rectangle 0, 0, 256, 256
 $bgBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
@@ -35,53 +35,32 @@ $bgBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
     [System.Drawing.Color]::FromArgb(255, 6, 9, 16),
     [System.Drawing.Drawing2D.LinearGradientMode]::BackwardDiagonal)
 $g.FillPath($bgBrush, $bgPath)
-$borderPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 60, 80, 124)), 3
-$g.DrawPath($borderPen, $bgPath)
 
 $cx = 128.0; $cy = 128.0
 
-# ---- 2. 外细环（品牌环，低饱和） ----
-$outerPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(200, 92, 132, 200)), 4
-$g.DrawEllipse($outerPen, [single]($cx - 108), [single]($cy - 108), 216, 216)
-
-# ---- 3. 光圈六叶：扇叶渐变（电蓝↔青交替），绕中心旋转排布 ----
-$leafOuter = 88.0
-$leafInner = 30.0
+# ---- 2. 光圈六叶：细窄叶片、大间隙（简洁现代），电蓝↔青交替渐变 ----
+$leafOuter = 92.0
 for ($i = 0; $i -lt 6; $i++) {
     $rot = $i * 60
     $state = $g.Save()
     $g.TranslateTransform($cx, $cy)
     $g.RotateTransform($rot)
     $leafRect = New-Object System.Drawing.Rectangle ([int](-$leafOuter)), ([int](-$leafOuter)), ([int]($leafOuter * 2)), ([int]($leafOuter * 2))
-    $c1 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 77, 141, 255) } else { [System.Drawing.Color]::FromArgb(255, 80, 200, 220) }
-    $c2 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 55, 100, 205) } else { [System.Drawing.Color]::FromArgb(255, 40, 145, 180) }
+    $c1 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 88, 150, 255) } else { [System.Drawing.Color]::FromArgb(255, 72, 205, 225) }
+    $c2 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 52, 96, 205) } else { [System.Drawing.Color]::FromArgb(255, 40, 150, 185) }
     $leafBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
         $leafRect, $c1, $c2, [System.Drawing.Drawing2D.LinearGradientMode]::Vertical)
-    $g.FillPie($leafBrush, [int](-$leafOuter), [int](-$leafOuter), [int]($leafOuter * 2), [int]($leafOuter * 2), 6, 48)
-    $g.Restore($state)
-}
-$leafEdgePen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(150, 200, 225, 255)), 2
-for ($i = 0; $i -lt 6; $i++) {
-    $rot = $i * 60
-    $state = $g.Save()
-    $g.TranslateTransform($cx, $cy)
-    $g.RotateTransform($rot)
-    $g.DrawPie($leafEdgePen, [int](-$leafOuter), [int](-$leafOuter), [int]($leafOuter * 2), [int]($leafOuter * 2), 6, 48)
+    # 细窄叶片：起始 12°、扫 36°（间隙 24°，现代留白感）
+    $g.FillPie($leafBrush, [int](-$leafOuter), [int](-$leafOuter), [int]($leafOuter * 2), [int]($leafOuter * 2), 12, 36)
     $g.Restore($state)
 }
 
-# ---- 4. 中心孔：深色圆 + 发光环（光圈孔） ----
-$holeR = 26.0
+# ---- 3. 中心：小孔深色 + 细发光环（点缀，不大面积） ----
+$holeR = 20.0
 $holeBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 8, 12, 20))
 $g.FillEllipse($holeBrush, [single]($cx - $holeR), [single]($cy - $holeR), $holeR * 2, $holeR * 2)
-$holeRing = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(220, 140, 190, 255)), 3.5
+$holeRing = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(230, 130, 190, 255)), 3
 $g.DrawEllipse($holeRing, [single]($cx - $holeR), [single]($cy - $holeR), $holeR * 2, $holeR * 2)
-$glowPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-$glowPath.AddEllipse([single]($cx - $holeR - 10), [single]($cy - $holeR - 10), ($holeR + 10) * 2, ($holeR + 10) * 2)
-$glowBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush $glowPath
-$glowBrush.CenterColor = [System.Drawing.Color]::FromArgb(0, 0, 0, 0)
-$glowBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(110, 120, 180, 255))
-$g.FillPath($glowBrush, $glowPath)
 
 
 # ---- 5. 多尺寸输出（256/48/32/16） ----

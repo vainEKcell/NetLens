@@ -6,11 +6,31 @@
 </head>
 <body>
   <div id="app">
-    <!-- 常驻状态栏：品牌在侧栏顶部（一体），状态栏=监控控件+数据+曲线（曲线占满剩余宽度） -->
+    <!-- 常驻状态栏：最左=应用 logo 收放按钮 + 品牌名，其后监控控件，右侧数据与曲线 -->
     <header id="topbar">
-      <label class="tb-check"><input type="checkbox" id="tb-loopback" /><span id="tb-loopback-label">隐藏回环</span></label>
-      <label class="tb-check"><input type="checkbox" id="tb-flagged" /><span id="tb-flagged-label">仅看可疑</span></label>
-      <input type="text" id="tb-search" placeholder="搜索 进程 / 路径 / PID" />
+      <button id="nav-toggle" title="收起 / 展开导航">
+        <img src="/brand.png" width="24" height="24" alt="NetLens" />
+      </button>
+      <span id="brand-name">NetLens</span>
+      <div class="tb-sep"></div>
+      <div class="tb-left">
+        <div class="tb-row1">
+          <button id="btn-pause" title="暂停监控">
+            <svg id="ic-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><rect x="3" y="2" width="3.6" height="12" rx="1"/><rect x="9.4" y="2" width="3.6" height="12" rx="1"/></svg>
+            <svg id="ic-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="display:none"><path d="M4 2l10 6-10 6z"/></svg>
+          </button>
+          <div class="search-group">
+            <input type="text" id="tb-search" placeholder="搜索 进程 / 路径 / PID" />
+            <button id="tb-search-btn" title="搜索">
+              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="M10.6 10.6L14 14"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="tb-row2">
+          <label class="tb-check"><input type="checkbox" id="tb-loopback" /><span id="tb-loopback-label">隐藏回环</span></label>
+          <label class="tb-check"><input type="checkbox" id="tb-flagged" /><span id="tb-flagged-label">仅看可疑</span></label>
+        </div>
+      </div>
       <div class="spacer"></div>
       <div class="metric">
         <span class="label" id="lbl-up">总上传</span>
@@ -26,18 +46,9 @@
       </div>
       <!-- 曲线固定宽度：不受左侧数字长短影响 -->
       <div id="spark"><canvas id="spark-canvas" width="260" height="44"></canvas></div>
-      <button id="btn-pause" title="暂停监控">
-        <svg id="ic-pause" viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="3" y="2" width="3.6" height="12" rx="1"/><rect x="9.4" y="2" width="3.6" height="12" rx="1"/></svg>
-        <svg id="ic-play" viewBox="0 0 16 16" width="15" height="15" fill="currentColor" style="display:none"><path d="M4 2l10 6-10 6z"/></svg>
-      </button>
     </header>
     <div id="body">
       <aside id="sidebar">
-        <div id="brand">
-          <img src="/brand.png" alt="NetLens" width="26" height="26" />
-          <span id="brand-name">NetLens</span>
-        </div>
-        <button id="nav-toggle" title="收起 / 展开导航">«</button>
         <nav id="nav"></nav>
         <div class="ver">0.1.5 · alpha</div>
       </aside>
