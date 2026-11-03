@@ -50,31 +50,43 @@ $ringBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
 $ringPen = New-Object System.Drawing.Pen ($ringBrush), 13
 $g.DrawEllipse($ringPen, $ringRect)
 
-# ---- 3. 圈内网络图谱：三节点 + 连线（进程流量关系） ----
-$nodeR = 7.5
-$nodes = @(
-    @{ x = 128; y = 84 },
-    @{ x = 92;  y = 146 },
-    @{ x = 164; y = 146 }
-)
-$linkPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(180, 120, 180, 255)), 3.5
-$g.DrawLine($linkPen, [single]$nodes[0].x, [single]$nodes[0].y, [single]$nodes[1].x, [single]$nodes[1].y)
-$g.DrawLine($linkPen, [single]$nodes[0].x, [single]$nodes[0].y, [single]$nodes[2].x, [single]$nodes[2].y)
-$g.DrawLine($linkPen, [single]$nodes[1].x, [single]$nodes[1].y, [single]$nodes[2].x, [single]$nodes[2].y)
-$nodeBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 190, 235, 255))
-foreach ($n in $nodes) {
-    $g.FillEllipse($nodeBrush, [single]($n.x - $nodeR), [single]($n.y - $nodeR), $nodeR * 2, $nodeR * 2)
+# ---- 3. 对焦括号：四角 L 形（相机对焦意象，青白色） ----
+$focusPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(230, 190, 235, 255)), 7
+$focusPen.StartCap = 'Round'; $focusPen.EndCap = 'Round'
+$inR = 46.0     # 括号内半径
+$outR = 60.0    # 括号外半径
+# 四角：左上/右上/左下/右下（每角两笔组成 L）
+foreach ($sx in @(-1, 1)) {
+    foreach ($sy in @(-1, 1)) {
+        $x1 = $cx + $sx * $outR
+        $y1 = $cy + $sy * $outR
+        $x2 = $cx + $sx * $inR
+        $y2 = $cy + $sy * $outR
+        $x3 = $cx + $sx * $outR
+        $y3 = $cy + $sy * $inR
+        $g.DrawLine($focusPen, [single]$x1, [single]$y1, [single]$x2, [single]$y2)
+        $g.DrawLine($focusPen, [single]$x1, [single]$y1, [single]$x3, [single]$y3)
+    }
 }
 
-# ---- 4. 镜片质感：左上弧形高光 + 中心光斑 ----
-$hlPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(120, 235, 245, 255)), 5
-$g.DrawArc($hlPen, ([int]($cx - $ringR + 16)), ([int]($cy - $ringR + 16)), ([int]($ringR * 2 - 32)), ([int]($ringR * 2 - 32)), 130, 80)
+# ---- 4. 中心节点：发光圆 + 十字连线（网络中枢） ----
+$centerR = 13.0
+$nodeBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 140, 190, 255))
+$g.FillEllipse($nodeBrush, [single]($cx - $centerR), [single]($cy - $centerR), $centerR * 2, $centerR * 2)
 $glowPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-$glowPath.AddEllipse([single]($cx - 14), [single]($cy - 20), 28, 28)
+$glowPath.AddEllipse([single]($cx - $centerR - 12), [single]($cy - $centerR - 12), ($centerR + 12) * 2, ($centerR + 12) * 2)
 $glowBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush $glowPath
-$glowBrush.CenterColor = [System.Drawing.Color]::FromArgb(90, 220, 240, 255)
-$glowBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 220, 240, 255))
+$glowBrush.CenterColor = [System.Drawing.Color]::FromArgb(130, 140, 190, 255)
+$glowBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 140, 190, 255))
 $g.FillPath($glowBrush, $glowPath)
+# 四向短连线（节点 → 对焦括号方向）
+$linkPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(200, 150, 200, 255)), 4
+$linkPen.StartCap = 'Round'; $linkPen.EndCap = 'Round'
+foreach ($sx in @(-1, 1)) {
+    foreach ($sy in @(-1, 1)) {
+        $g.DrawLine($linkPen, [single]($cx + $sx * 18), [single]($cy + $sy * 18), [single]($cx + $sx * 38), [single]($cy + $sy * 38))
+    }
+}
 
 # ---- 5. 多尺寸输出（256/48/32/16） ----
 $sizes = @(256, 48, 32, 16)
