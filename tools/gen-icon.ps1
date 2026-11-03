@@ -1,4 +1,4 @@
-﻿# NetLens 应用图标生成：Assets\app.ico
+﻿﻿# NetLens 应用图标生成：Assets\app.ico
 # 设计（贴合品牌内核「透镜·看清每进程流量」）：
 #   深空圆角方底 + 电蓝→青渐变圆环（透镜镜圈）+ 圈内三节点网络连线（进程流量图谱）
 #   + 镜片高光。元素少线条粗，16px 缩小仍可辨。256px 绘制，输出 256/48/32/16 四档。
@@ -26,67 +26,63 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
     return $p
 }
 
-# ---- 1. 背景：深空对角渐变圆角方（左上电蓝微光 → 右下深空） ----
+# ---- 1. 背景：深空对角渐变圆角方 ----
 $bgPath = New-RoundedRectPath 8 8 240 240 56
 $bgRect = New-Object System.Drawing.Rectangle 0, 0, 256, 256
 $bgBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
     $bgRect,
-    [System.Drawing.Color]::FromArgb(255, 22, 34, 58),
-    [System.Drawing.Color]::FromArgb(255, 7, 10, 18),
+    [System.Drawing.Color]::FromArgb(255, 20, 30, 52),
+    [System.Drawing.Color]::FromArgb(255, 6, 9, 16),
     [System.Drawing.Drawing2D.LinearGradientMode]::BackwardDiagonal)
 $g.FillPath($bgBrush, $bgPath)
-$borderPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 64, 86, 130)), 3
+$borderPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 60, 80, 124)), 3
 $g.DrawPath($borderPen, $bgPath)
 
-# ---- 2. 透镜镜圈：电蓝→青渐变粗描边圆环 ----
-$cx = 128.0; $cy = 126.0
-$ringR = 74.0
-$ringRect = New-Object System.Drawing.Rectangle ([int]($cx - $ringR)), ([int]($cy - $ringR)), ([int]($ringR * 2)), ([int]($ringR * 2))
-$ringBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-    $ringRect,
-    [System.Drawing.Color]::FromArgb(255, 77, 141, 255),
-    [System.Drawing.Color]::FromArgb(255, 80, 214, 220),
-    [System.Drawing.Drawing2D.LinearGradientMode]::ForwardDiagonal)
-$ringPen = New-Object System.Drawing.Pen ($ringBrush), 13
-$g.DrawEllipse($ringPen, $ringRect)
+$cx = 128.0; $cy = 128.0
 
-# ---- 3. 对焦括号：四角 L 形（相机对焦意象，青白色） ----
-$focusPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(230, 190, 235, 255)), 7
-$focusPen.StartCap = 'Round'; $focusPen.EndCap = 'Round'
-$inR = 46.0     # 括号内半径
-$outR = 60.0    # 括号外半径
-# 四角：左上/右上/左下/右下（每角两笔组成 L）
-foreach ($sx in @(-1, 1)) {
-    foreach ($sy in @(-1, 1)) {
-        $x1 = $cx + $sx * $outR
-        $y1 = $cy + $sy * $outR
-        $x2 = $cx + $sx * $inR
-        $y2 = $cy + $sy * $outR
-        $x3 = $cx + $sx * $outR
-        $y3 = $cy + $sy * $inR
-        $g.DrawLine($focusPen, [single]$x1, [single]$y1, [single]$x2, [single]$y2)
-        $g.DrawLine($focusPen, [single]$x1, [single]$y1, [single]$x3, [single]$y3)
-    }
+# ---- 2. 外细环（品牌环，低饱和） ----
+$outerPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(200, 92, 132, 200)), 4
+$g.DrawEllipse($outerPen, [single]($cx - 108), [single]($cy - 108), 216, 216)
+
+# ---- 3. 光圈六叶：扇叶渐变（电蓝↔青交替），绕中心旋转排布 ----
+$leafOuter = 88.0
+$leafInner = 30.0
+for ($i = 0; $i -lt 6; $i++) {
+    $rot = $i * 60
+    $state = $g.Save()
+    $g.TranslateTransform($cx, $cy)
+    $g.RotateTransform($rot)
+    $leafRect = New-Object System.Drawing.Rectangle ([int](-$leafOuter)), ([int](-$leafOuter)), ([int]($leafOuter * 2)), ([int]($leafOuter * 2))
+    $c1 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 77, 141, 255) } else { [System.Drawing.Color]::FromArgb(255, 80, 200, 220) }
+    $c2 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 55, 100, 205) } else { [System.Drawing.Color]::FromArgb(255, 40, 145, 180) }
+    $leafBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
+        $leafRect, $c1, $c2, [System.Drawing.Drawing2D.LinearGradientMode]::Vertical)
+    $g.FillPie($leafBrush, [int](-$leafOuter), [int](-$leafOuter), [int]($leafOuter * 2), [int]($leafOuter * 2), 6, 48)
+    $g.Restore($state)
+}
+$leafEdgePen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(150, 200, 225, 255)), 2
+for ($i = 0; $i -lt 6; $i++) {
+    $rot = $i * 60
+    $state = $g.Save()
+    $g.TranslateTransform($cx, $cy)
+    $g.RotateTransform($rot)
+    $g.DrawPie($leafEdgePen, [int](-$leafOuter), [int](-$leafOuter), [int]($leafOuter * 2), [int]($leafOuter * 2), 6, 48)
+    $g.Restore($state)
 }
 
-# ---- 4. 中心节点：发光圆 + 十字连线（网络中枢） ----
-$centerR = 13.0
-$nodeBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 140, 190, 255))
-$g.FillEllipse($nodeBrush, [single]($cx - $centerR), [single]($cy - $centerR), $centerR * 2, $centerR * 2)
+# ---- 4. 中心孔：深色圆 + 发光环（光圈孔） ----
+$holeR = 26.0
+$holeBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 8, 12, 20))
+$g.FillEllipse($holeBrush, [single]($cx - $holeR), [single]($cy - $holeR), $holeR * 2, $holeR * 2)
+$holeRing = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(220, 140, 190, 255)), 3.5
+$g.DrawEllipse($holeRing, [single]($cx - $holeR), [single]($cy - $holeR), $holeR * 2, $holeR * 2)
 $glowPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-$glowPath.AddEllipse([single]($cx - $centerR - 12), [single]($cy - $centerR - 12), ($centerR + 12) * 2, ($centerR + 12) * 2)
+$glowPath.AddEllipse([single]($cx - $holeR - 10), [single]($cy - $holeR - 10), ($holeR + 10) * 2, ($holeR + 10) * 2)
 $glowBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush $glowPath
-$glowBrush.CenterColor = [System.Drawing.Color]::FromArgb(130, 140, 190, 255)
-$glowBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 140, 190, 255))
+$glowBrush.CenterColor = [System.Drawing.Color]::FromArgb(0, 0, 0, 0)
+$glowBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(110, 120, 180, 255))
 $g.FillPath($glowBrush, $glowPath)
-# 四向短连线（节点 → 对焦括号方向）
-$linkPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(200, 150, 200, 255)), 4
-$linkPen.StartCap = 'Round'; $linkPen.EndCap = 'Round'
-foreach ($sx in @(-1, 1)) {
-    foreach ($sy in @(-1, 1)) {
-        $g.DrawLine($linkPen, [single]($cx + $sx * 18), [single]($cy + $sy * 18), [single]($cx + $sx * 38), [single]($cy + $sy * 38))
-    }
-}
+
 
 # ---- 5. 多尺寸输出（256/48/32/16） ----
 $sizes = @(256, 48, 32, 16)

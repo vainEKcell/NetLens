@@ -75,20 +75,29 @@ html, body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+#nav-toggle {
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--dim);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.13s;
+}
+#nav-toggle:hover { color: var(--accent); border-color: var(--accent); }
 #brand {
-  display: flex; align-items: center; gap: 11px;
-  font-size: 17px; font-weight: 800; letter-spacing: 0.4px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 2px 4px 14px;
   white-space: nowrap;
-  padding-right: 20px;
-  border-right: 1px solid var(--border);
 }
-#brand .dot {
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 14px var(--accent);
-}
+#brand img { border-radius: 6px; }
+#brand-name { font-size: 15.5px; font-weight: 800; letter-spacing: 0.3px; }
+#sidebar.collapsed #brand { justify-content: center; padding: 2px 0 14px; }
+#sidebar.collapsed #nav-toggle { padding: 4px 0; width: 100%; text-align: center; }
 .tb-check {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: 9px;
   color: var(--dim);
   font-size: 12.5px;
   cursor: pointer;
@@ -100,7 +109,7 @@ html, body {
 #tb-search { width: 210px; }
 #topbar .spacer { flex: 1; }
 
-#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding: 0 22px; }
+#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding: 0 14px; width: 116px; }
 #topbar .metric + .metric { border-left: 1px solid var(--border); }
 #topbar .metric .label { font-size: 10.5px; color: var(--faint); font-weight: 600; letter-spacing: 0.5px; }
 #topbar .metric .value {
@@ -153,6 +162,10 @@ html, body {
   flex-direction: column;
   padding: 12px;
 }
+#sidebar.collapsed { width: 66px; padding: 12px 8px; }
+#sidebar.collapsed .nav-item span,
+#sidebar.collapsed .ver { display: none; }
+#sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
 #nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .nav-item {
   position: relative;
@@ -403,11 +416,27 @@ input[type="checkbox"]:checked::after {
 .advice { color: var(--dim); font-size: 12.5px; line-height: 1.65; padding-left: 15px; text-indent: -15px; }
 
 /* 总览布局 */
-#overview-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 14px; align-items: start; }
-#detail-panel { position: sticky; top: 0; }
-#detail-panel .empty { color: var(--faint); text-align: center; padding: 46px 8px; font-size: 12.5px; line-height: 1.7; }
-#detail-panel .path { font-family: var(--mono); font-size: 11px; word-break: break-all; color: var(--dim); }
-#detail-panel .conn { font-family: var(--mono); font-size: 11px; color: var(--dim); padding: 2.5px 0; }
+/* 总览：单列表格拉满，详情走右侧滑入覆盖层 */
+#overview-wrap { display: block; }
+
+/* 详情覆盖层：自右滑入，覆盖于表格之上（不常驻占位） */
+#detail-overlay {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 372px;
+  background: var(--panel);
+  border-left: 1px solid var(--border-strong);
+  box-shadow: -20px 0 46px rgba(0, 0, 0, 0.5);
+  transform: translateX(105%);
+  transition: transform 0.22s ease;
+  z-index: 600;
+  padding: 16px 18px;
+  overflow: auto;
+}
+#detail-overlay.open { transform: translateX(0); }
+#detail-overlay .empty { color: var(--faint); text-align: center; padding: 46px 8px; font-size: 12.5px; line-height: 1.7; }
+#detail-overlay .path { font-family: var(--mono); font-size: 11px; word-break: break-all; color: var(--dim); }
+#detail-overlay .conn { font-family: var(--mono); font-size: 11px; color: var(--dim); padding: 2.5px 0; }
 .evidence-item {
   margin-bottom: 10px;
   font-size: 12.5px; line-height: 1.55;
@@ -448,10 +477,10 @@ input[type="checkbox"]:checked::after {
   --ag-border-color: var(--border);
   --ag-row-hover-color: var(--accent-soft);
   --ag-selected-row-background-color: var(--accent-soft);
-  --ag-font-size: 13px;
+  --ag-font-size: 13.5px;
   --ag-font-family: inherit;
   --ag-header-height: 36px;
-  --ag-row-height: 32px;
+  --ag-row-height: 34px;
   --ag-cell-horizontal-padding: 12px;
   border-radius: var(--radius);
   overflow: hidden;

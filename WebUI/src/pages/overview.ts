@@ -81,22 +81,15 @@ const gridOptions: GridOptions = {
 
 export function render(root: HTMLElement): void {
   root.innerHTML = `
-    <div id="overview-wrap">
-      <div id="ov-left">
-        <div class="grid-toolbar" id="ov-toolbar">
-          <div class="page-head">
-            <h1>${t("ov.title")}</h1>
-            <div class="sub">${t("ov.sub")}</div>
-          </div>
-        </div>
-        <div class="ag-theme-nw" id="ov-grid" style="height: calc(100vh - 240px);"></div>
+    <div class="grid-toolbar" id="ov-toolbar">
+      <div class="page-head">
+        <h1>${t("ov.title")}</h1>
+        <div class="sub">${t("ov.sub")}</div>
       </div>
-      <div class="card" id="detail-panel"></div>
-    </div>`;
+    </div>
+    <div class="ag-theme-nw" id="ov-grid" style="height: calc(100vh - 168px);"></div>`;
   api = createGrid(document.getElementById("ov-grid")!, gridOptions);
-  detailBody = document.getElementById("detail-panel")!;
-  selectedPidEl = detailBody;
-  renderDetailEmpty();
+  detailBody = document.getElementById("detail-body")!;
 
   // 行悬浮快捷信息（委托：ag-row → rowData 摘要）
   const gridEl = document.getElementById("ov-grid")!;
@@ -121,7 +114,8 @@ export function render(root: HTMLElement): void {
 }
 
 function renderDetailEmpty(): void {
-  detailBody.innerHTML = `<div class="empty">${t("ov.detail.empty")}</div>`;
+  const ov = document.getElementById("detail-overlay")!;
+  ov.classList.remove("open");
 }
 
 export function onSnapshot(s: Snapshot): void {
@@ -132,10 +126,12 @@ export function onSnapshot(s: Snapshot): void {
 
 function renderDetail(s: Snapshot): void {
   const d = s.detail;
+  const overlay = document.getElementById("detail-overlay")!;
   if (!d) {
-    if (selectedPidEl && detailBody.childElementCount <= 1) renderDetailEmpty();
+    overlay.classList.remove("open");
     return;
   }
+  overlay.classList.add("open");
   const sigText = d.signature ?? "—";
   const v = d.verdict;
   const evHtml = v && v.evidence.length
@@ -165,7 +161,10 @@ function renderDetail(s: Snapshot): void {
     : "";
 
   detailBody.innerHTML = `
-    <h2>${t("ov.detail.title")}</h2>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <h2 style="margin:0;">${t("ov.detail.title")}</h2>
+      <button class="btn" id="d-close" style="padding:2px 10px;">✕</button>
+    </div>
     <div class="big" style="margin-bottom:6px;">${escapeHtml(d.name)} <span class="unit">PID ${d.pid}</span></div>
     ${verdictBadge}
     ${summaryHtml}
@@ -203,6 +202,10 @@ function renderDetail(s: Snapshot): void {
   (detailBody.querySelector("#d-block") as HTMLButtonElement).onclick = () => sendCommand("block", { pid: d.pid });
   (detailBody.querySelector("#d-trust") as HTMLButtonElement).onclick = () => sendCommand("toggleTrust", { pid: d.pid });
   (detailBody.querySelector("#d-folder") as HTMLButtonElement).onclick = () => sendCommand("openFolder", { pid: d.pid });
+  (detailBody.querySelector("#d-close") as HTMLButtonElement).onclick = () => {
+    document.getElementById("detail-overlay")!.classList.remove("open");
+    sendCommand("select", { pid: -1 });
+  };
 }
 
 function verdictText(risk: number): string {

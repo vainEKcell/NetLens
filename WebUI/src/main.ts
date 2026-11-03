@@ -1,6 +1,7 @@
 import { initBridge, onSnapshot, sendCommand, fmtSpeed, fmtBytes, Snapshot } from "./api";
 import { initSpark, pushPoint } from "./chart";
 import { initTooltip } from "./tooltip";
+import { initContextGuard } from "./menu";
 import { t, setLang, agLocale } from "./i18n";
 import * as overview from "./pages/overview";
 import * as destinations from "./pages/destinations";
@@ -89,8 +90,11 @@ const searchEl = document.getElementById("tb-search") as HTMLInputElement;
 let paused = false;
 function setPaused(v: boolean): void {
   paused = v;
-  pauseBtn.textContent = paused ? t("tb.resume") : t("tb.pause");
+  pauseBtn.title = paused ? t("tb.resume") : t("tb.pause");
   pauseBtn.classList.toggle("paused", paused);
+  const icp = document.getElementById("ic-pause") as HTMLElement;
+  const icgo = document.getElementById("ic-play") as HTMLElement;
+  if (icp && icgo) { icp.style.display = paused ? "none" : ""; icgo.style.display = paused ? "" : "none"; }
 }
 
 pauseBtn.addEventListener("click", () => sendCommand(paused ? "resume" : "pause"));
@@ -142,10 +146,22 @@ darkMedia.addEventListener("change", () => {
   if (lastThemeSetting === "auto") applyTheme(darkMedia.matches ? "light" : "dark");
 });
 
+// ===== 侧栏收放（顶部 « 按钮切换） =====
+const sidebar = document.getElementById("sidebar")!;
+const navToggle = document.getElementById("nav-toggle") as HTMLButtonElement;
+function setCollapsed(v: boolean): void {
+  sidebar.classList.toggle("collapsed", v);
+  navToggle.classList.toggle("collapsed", v);
+  localStorage.setItem("nl-nav-collapsed", v ? "1" : "0");
+}
+navToggle.addEventListener("click", () => setCollapsed(!sidebar.classList.contains("collapsed")));
+if (localStorage.getItem("nl-nav-collapsed") === "1") setCollapsed(true);
+
 // ===== 启动 =====
 initBridge();
 initSpark();
 initTooltip();
+initContextGuard();
 navigate();
 
 onSnapshot((s: Snapshot) => {
