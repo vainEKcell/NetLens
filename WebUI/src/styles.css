@@ -15,7 +15,7 @@
   --accent: #4d8dff;
   --accent2: #8b6cff;
   --accent-soft: rgba(77, 141, 255, 0.16);
-  --accent-line: linear-gradient(90deg, #4d8dff, #8b6cff);
+  --accent-line: linear-gradient(90deg, #4d8dff, #6fb0ff);
   --green: #2fd08a;
   --blue: #4da8ff;
   --amber: #f5a623;
@@ -38,7 +38,7 @@
   --accent: #2f6bff;
   --accent2: #7442e8;
   --accent-soft: rgba(47, 107, 255, 0.1);
-  --accent-line: linear-gradient(90deg, #2f6bff, #7442e8);
+  --accent-line: linear-gradient(90deg, #2f6bff, #5f95ff);
   --green: #0fa968;
   --blue: #2f7fe8;
   --amber: #d98a12;
@@ -56,7 +56,7 @@ html, body {
   overflow: hidden;
   background:
     radial-gradient(900px 420px at 28% -8%, var(--bg-glow), transparent 65%),
-    radial-gradient(700px 380px at 90% 110%, rgba(139, 108, 255, 0.05), transparent 60%),
+    radial-gradient(700px 380px at 90% 110%, rgba(95, 149, 255, 0.04), transparent 60%),
     var(--bg);
 }
 
@@ -84,7 +84,7 @@ html, body {
 }
 #brand .dot {
   width: 12px; height: 12px; border-radius: 50%;
-  background: var(--accent-line);
+  background: var(--accent);
   box-shadow: 0 0 14px var(--accent);
 }
 .tb-check {
@@ -195,10 +195,7 @@ html, body {
 .page-head { margin-bottom: 16px; }
 .page-head h1 {
   font-size: 23px; font-weight: 800; letter-spacing: 0.2px;
-  background: var(--accent-line);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--fg);
 }
 .page-head .sub { color: var(--dim); font-size: 12.5px; margin-top: 4px; }
 
@@ -252,7 +249,7 @@ html, body {
 }
 .btn:hover { border-color: var(--accent); color: var(--accent); }
 .btn.primary {
-  background: var(--accent-line);
+  background: var(--accent);
   border: none;
   color: #fff;
   font-weight: 700;
@@ -303,7 +300,7 @@ input[type="checkbox"] {
 }
 input[type="checkbox"]:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 input[type="checkbox"]:checked {
-  background: var(--accent-line);
+  background: var(--accent);
   border-color: transparent;
 }
 input[type="checkbox"]:checked::after {

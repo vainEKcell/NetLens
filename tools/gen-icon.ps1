@@ -1,5 +1,7 @@
-﻿# 生成应用图标 Assets\app.ico
-# 设计：深空渐变圆角底 + 金属蓝盾牌 + 流量脉冲线（ECG 风格），256px 绘制，含 256/48/32/16 四档
+﻿# NetLens 应用图标生成：Assets\app.ico
+# 设计（贴合品牌内核「透镜·看清每进程流量」）：
+#   深空圆角方底 + 电蓝→青渐变圆环（透镜镜圈）+ 圈内三节点网络连线（进程流量图谱）
+#   + 镜片高光。元素少线条粗，16px 缩小仍可辨。256px 绘制，输出 256/48/32/16 四档。
 # 用法: powershell -ExecutionPolicy Bypass -File tools\gen-icon.ps1
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -24,73 +26,55 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
     return $p
 }
 
-# ---- 1. 背景：深空纵向渐变圆角方 ----
+# ---- 1. 背景：深空对角渐变圆角方（左上电蓝微光 → 右下深空） ----
 $bgPath = New-RoundedRectPath 8 8 240 240 56
 $bgRect = New-Object System.Drawing.Rectangle 0, 0, 256, 256
 $bgBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
     $bgRect,
-    [System.Drawing.Color]::FromArgb(255, 30, 42, 68),
-    [System.Drawing.Color]::FromArgb(255, 10, 14, 22),
-    [System.Drawing.Drawing2D.LinearGradientMode]::Vertical)
+    [System.Drawing.Color]::FromArgb(255, 22, 34, 58),
+    [System.Drawing.Color]::FromArgb(255, 7, 10, 18),
+    [System.Drawing.Drawing2D.LinearGradientMode]::BackwardDiagonal)
 $g.FillPath($bgBrush, $bgPath)
-$borderPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 72, 96, 140)), 4
+$borderPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 64, 86, 130)), 3
 $g.DrawPath($borderPen, $bgPath)
 
-# ---- 2. 盾牌：蓝灰渐变 + 亮蓝描边 ----
-$shield = New-Object System.Drawing.Drawing2D.GraphicsPath
-$shield.AddLines([System.Drawing.PointF[]]@(
-    (New-Object System.Drawing.PointF 58, 52),
-    (New-Object System.Drawing.PointF 198, 52),
-    (New-Object System.Drawing.PointF 198, 116)
-))
-$shield.AddBezier(
-    (New-Object System.Drawing.PointF 198, 116),
-    (New-Object System.Drawing.PointF 196, 166),
-    (New-Object System.Drawing.PointF 170, 198),
-    (New-Object System.Drawing.PointF 128, 214))
-$shield.AddBezier(
-    (New-Object System.Drawing.PointF 128, 214),
-    (New-Object System.Drawing.PointF 86, 198),
-    (New-Object System.Drawing.PointF 60, 166),
-    (New-Object System.Drawing.PointF 58, 116))
-$shield.CloseFigure()
+# ---- 2. 透镜镜圈：电蓝→青渐变粗描边圆环 ----
+$cx = 128.0; $cy = 126.0
+$ringR = 74.0
+$ringRect = New-Object System.Drawing.Rectangle ([int]($cx - $ringR)), ([int]($cy - $ringR)), ([int]($ringR * 2)), ([int]($ringR * 2))
+$ringBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
+    $ringRect,
+    [System.Drawing.Color]::FromArgb(255, 77, 141, 255),
+    [System.Drawing.Color]::FromArgb(255, 80, 214, 220),
+    [System.Drawing.Drawing2D.LinearGradientMode]::ForwardDiagonal)
+$ringPen = New-Object System.Drawing.Pen ($ringBrush), 13
+$g.DrawEllipse($ringPen, $ringRect)
 
-$shRect = New-Object System.Drawing.Rectangle 0, 40, 256, 190
-$shBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-    $shRect,
-    [System.Drawing.Color]::FromArgb(255, 52, 74, 116),
-    [System.Drawing.Color]::FromArgb(255, 20, 30, 48),
-    [System.Drawing.Drawing2D.LinearGradientMode]::Vertical)
-$g.FillPath($shBrush, $shield)
-$shieldPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 122, 176, 255)), 6
-$shieldPen.LineJoin = 'Round'
-$g.DrawPath($shieldPen, $shield)
-
-# 内衬细描边（层次感）
-$innerPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(70, 160, 200, 255)), 2
-$g.DrawPath($innerPen, $shield)
-
-# ---- 3. 流量脉冲线（青绿 ECG，先辉光后亮线） ----
-$pts = [System.Drawing.PointF[]]@(
-    (New-Object System.Drawing.PointF 76, 138),
-    (New-Object System.Drawing.PointF 106, 138),
-    (New-Object System.Drawing.PointF 121, 104),
-    (New-Object System.Drawing.PointF 140, 172),
-    (New-Object System.Drawing.PointF 155, 138),
-    (New-Object System.Drawing.PointF 184, 138)
+# ---- 3. 圈内网络图谱：三节点 + 连线（进程流量关系） ----
+$nodeR = 7.5
+$nodes = @(
+    @{ x = 128; y = 84 },
+    @{ x = 92;  y = 146 },
+    @{ x = 164; y = 146 }
 )
-$glow = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(70, 76, 232, 160)), 12
-$glow.LineJoin = 'Round'; $glow.StartCap = 'Round'; $glow.EndCap = 'Round'
-$g.DrawLines($glow, $pts)
-$line = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 96, 244, 168)), 5
-$line.LineJoin = 'Round'; $line.StartCap = 'Round'; $line.EndCap = 'Round'
-$g.DrawLines($line, $pts)
+$linkPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(180, 120, 180, 255)), 3.5
+$g.DrawLine($linkPen, [single]$nodes[0].x, [single]$nodes[0].y, [single]$nodes[1].x, [single]$nodes[1].y)
+$g.DrawLine($linkPen, [single]$nodes[0].x, [single]$nodes[0].y, [single]$nodes[2].x, [single]$nodes[2].y)
+$g.DrawLine($linkPen, [single]$nodes[1].x, [single]$nodes[1].y, [single]$nodes[2].x, [single]$nodes[2].y)
+$nodeBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 190, 235, 255))
+foreach ($n in $nodes) {
+    $g.FillEllipse($nodeBrush, [single]($n.x - $nodeR), [single]($n.y - $nodeR), $nodeR * 2, $nodeR * 2)
+}
 
-# ---- 4. 顶部小信号点（雷达扫描感） ----
-$dot = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 122, 176, 255))
-$g.FillEllipse($dot, 118, 66, 20, 20)
-$halo = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(90, 122, 176, 255)), 3
-$g.DrawEllipse($halo, 112, 60, 32, 32)
+# ---- 4. 镜片质感：左上弧形高光 + 中心光斑 ----
+$hlPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(120, 235, 245, 255)), 5
+$g.DrawArc($hlPen, ([int]($cx - $ringR + 16)), ([int]($cy - $ringR + 16)), ([int]($ringR * 2 - 32)), ([int]($ringR * 2 - 32)), 130, 80)
+$glowPath = New-Object System.Drawing.Drawing2D.GraphicsPath
+$glowPath.AddEllipse([single]($cx - 14), [single]($cy - 20), 28, 28)
+$glowBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush $glowPath
+$glowBrush.CenterColor = [System.Drawing.Color]::FromArgb(90, 220, 240, 255)
+$glowBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 220, 240, 255))
+$g.FillPath($glowBrush, $glowPath)
 
 # ---- 5. 多尺寸输出（256/48/32/16） ----
 $sizes = @(256, 48, 32, 16)
@@ -125,3 +109,5 @@ foreach ($e in $pngs) { $bw.Write($e.Data) }
 $bw.Close(); $fs.Close()
 
 Write-Output "图标已生成: $outFile（256/48/32/16 四档）"
+# 预览图（人工验收用）
+$bmp.Save((Join-Path $PSScriptRoot '..\verify\icon-preview.png'), [System.Drawing.Imaging.ImageFormat]::Png)
