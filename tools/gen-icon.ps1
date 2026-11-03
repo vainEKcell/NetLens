@@ -1,7 +1,7 @@
-﻿﻿# NetLens 应用图标生成：Assets\app.ico
-# 设计（贴合品牌内核「透镜·看清每进程流量」）：
-#   深空圆角方底 + 电蓝→青渐变圆环（透镜镜圈）+ 圈内三节点网络连线（进程流量图谱）
-#   + 镜片高光。元素少线条粗，16px 缩小仍可辨。256px 绘制，输出 256/48/32/16 四档。
+﻿# NetLens 应用图标生成：Assets\app.ico
+# 设计 v4（贴合品牌内核「网络节点 · 连接」）：
+#   纯黑圆角方底 + 左下偏心发光点 + 扁平放射细线向斜右上发散（点线结合、长度透视聚拢感）
+#   元素仅点与线，无面。256px 绘制，输出 256/48/32/16 四档。
 # 用法: powershell -ExecutionPolicy Bypass -File tools\gen-icon.ps1
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -26,44 +26,50 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
     return $p
 }
 
-# ---- 1. 背景：深空对角渐变圆角方（无边框，简洁现代） ----
+# ---- 1. 背景：纯黑圆角方 ----
 $bgPath = New-RoundedRectPath 8 8 240 240 56
-$bgRect = New-Object System.Drawing.Rectangle 0, 0, 256, 256
-$bgBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-    $bgRect,
-    [System.Drawing.Color]::FromArgb(255, 20, 30, 52),
-    [System.Drawing.Color]::FromArgb(255, 6, 9, 16),
-    [System.Drawing.Drawing2D.LinearGradientMode]::BackwardDiagonal)
-$g.FillPath($bgBrush, $bgPath)
+$g.FillPath([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 8, 9, 12)), $bgPath)
 
-$cx = 128.0; $cy = 128.0
+# ---- 2. 偏心发光点：左下约 1/3 处，歪斜不居中 ----
+$px = 86.0; $py = 170.0
+$pr = 13.0
+$haloPath = New-Object System.Drawing.Drawing2D.GraphicsPath
+$haloPath.AddEllipse([single]($px - 34), [single]($py - 34), 68, 68)
+$haloBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush $haloPath
+$haloBrush.CenterColor = [System.Drawing.Color]::FromArgb(150, 77, 141, 255)
+$haloBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 77, 141, 255))
+$g.FillPath($haloBrush, $haloPath)
+$core = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 235, 244, 255))
+$g.FillEllipse($core, [single]($px - $pr), [single]($py - $pr), $pr * 2, $pr * 2)
 
-# ---- 2. 光圈六叶：细窄叶片、大间隙（简洁现代），电蓝↔青交替渐变 ----
-$leafOuter = 92.0
-for ($i = 0; $i -lt 6; $i++) {
-    $rot = $i * 60
-    $state = $g.Save()
-    $g.TranslateTransform($cx, $cy)
-    $g.RotateTransform($rot)
-    $leafRect = New-Object System.Drawing.Rectangle ([int](-$leafOuter)), ([int](-$leafOuter)), ([int]($leafOuter * 2)), ([int]($leafOuter * 2))
-    $c1 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 88, 150, 255) } else { [System.Drawing.Color]::FromArgb(255, 72, 205, 225) }
-    $c2 = if ($i % 2 -eq 0) { [System.Drawing.Color]::FromArgb(255, 52, 96, 205) } else { [System.Drawing.Color]::FromArgb(255, 40, 150, 185) }
-    $leafBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-        $leafRect, $c1, $c2, [System.Drawing.Drawing2D.LinearGradientMode]::Vertical)
-    # 细窄叶片：起始 12°、扫 36°（间隙 24°，现代留白感）
-    $g.FillPie($leafBrush, [int](-$leafOuter), [int](-$leafOuter), [int]($leafOuter * 2), [int]($leafOuter * 2), 12, 36)
-    $g.Restore($state)
+# ---- 3. 放射细线：从点向斜右上发散（扇形扩张 + 长度透视），末端带小点 ----
+$rays = @(
+    @{ a = -80; len = 88;  c = [System.Drawing.Color]::FromArgb(255, 120, 175, 255) },
+    @{ a = -64; len = 118; c = [System.Drawing.Color]::FromArgb(255, 235, 244, 255) },
+    @{ a = -49; len = 96;  c = [System.Drawing.Color]::FromArgb(255, 80, 214, 220) },
+    @{ a = -34; len = 148; c = [System.Drawing.Color]::FromArgb(255, 235, 244, 255) },
+    @{ a = -20; len = 126; c = [System.Drawing.Color]::FromArgb(255, 120, 175, 255) },
+    @{ a = -8;  len = 168; c = [System.Drawing.Color]::FromArgb(255, 235, 244, 255) }
+)
+foreach ($r in $rays) {
+    $rad = $r.a * [System.Math]::PI / 180.0
+    $dx = [System.Math]::Cos($rad)
+    $dy = [System.Math]::Sin($rad)
+    $inner = $pr + 10
+    $x1 = [single]($px + $dx * $inner)
+    $y1 = [single]($py + $dy * $inner)
+    $x2 = [single]($px + $dx * ($inner + $r.len))
+    $y2 = [single]($py + $dy * ($inner + $r.len))
+    $pen = New-Object System.Drawing.Pen ($r.c), 4.5
+    $pen.StartCap = 'Round'; $pen.EndCap = 'Round'
+    $g.DrawLine($pen, $x1, $y1, $x2, $y2)
+    $tipR = 4.5
+    $tip = New-Object System.Drawing.SolidBrush ($r.c)
+    $g.FillEllipse($tip, [single]($x2 - $tipR), [single]($y2 - $tipR), $tipR * 2, $tipR * 2)
+    $tip.Dispose(); $pen.Dispose()
 }
 
-# ---- 3. 中心：小孔深色 + 细发光环（点缀，不大面积） ----
-$holeR = 20.0
-$holeBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 8, 12, 20))
-$g.FillEllipse($holeBrush, [single]($cx - $holeR), [single]($cy - $holeR), $holeR * 2, $holeR * 2)
-$holeRing = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(230, 130, 190, 255)), 3
-$g.DrawEllipse($holeRing, [single]($cx - $holeR), [single]($cy - $holeR), $holeR * 2, $holeR * 2)
-
-
-# ---- 5. 多尺寸输出（256/48/32/16） ----
+# ---- 4. 多尺寸输出（256/48/32/16） ----
 $sizes = @(256, 48, 32, 16)
 $pngs = @()
 foreach ($sz in $sizes) {
@@ -95,6 +101,7 @@ foreach ($e in $pngs) {
 foreach ($e in $pngs) { $bw.Write($e.Data) }
 $bw.Close(); $fs.Close()
 
-Write-Output "图标已生成: $outFile（256/48/32/16 四档）"
 # 预览图（人工验收用）
 $bmp.Save((Join-Path $PSScriptRoot '..\verify\icon-preview.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+$g.Dispose(); $bmp.Dispose()
+Write-Output "ICO written: $outFile"
