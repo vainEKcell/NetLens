@@ -73,7 +73,8 @@ export function render(root: HTMLElement): void {
   rootEl = root;
   streamApi = createGrid(document.getElementById("dns-stream")!, {
     columnDefs: streamCols, rowData: [],
-    defaultColDef: { sortable: false, resizable: true },
+    autoSizeStrategy: { type: 'fitGridWidth' },
+  defaultColDef: { sortable: false, resizable: true },
     suppressCellFocus: true,
   cellFlashDuration: 0,
   cellFadeDuration: 0, getRowId: (p) => String(p.data.__i),

@@ -33,16 +33,20 @@ public sealed class SnapshotBuilder
             down += s.DownSpeed;
             upAll += s.UpTotal;
             downAll += s.DownTotal;
+            var pinfo = _tracker.Get(pid);
             rows.Add(new
             {
                 pid,
-                name = _tracker.Get(pid).Name,
+                name = pinfo.Name,
                 down = Math.Round(s.DownSpeed, 0),
                 up = Math.Round(s.UpSpeed, 0),
                 downTotal = s.DownTotal,
                 upTotal = s.UpTotal,
                 conns = _vm.ConnectionsOf(pid).Count,
                 risk = _vm.GetVerdictFor(pid)?.RiskByte ?? 0,
+                path = pinfo.Path,
+                vendor = pinfo.Company,
+                signature = pinfo.SignatureSubject ?? pinfo.Signature.ToString(),
             });
         }
 
@@ -94,16 +98,20 @@ public sealed class SnapshotBuilder
         {
             up += s.UpSpeed;
             down += s.DownSpeed;
+            var pinfo = _tracker.Get(pid);
             rows.Add(new
             {
                 pid,
-                name = _tracker.Get(pid).Name,
+                name = pinfo.Name,
                 down = Math.Round(s.DownSpeed, 0),
                 up = Math.Round(s.UpSpeed, 0),
                 downTotal = s.DownTotal,
                 upTotal = s.UpTotal,
                 conns = _vm.ConnectionsOf(pid).Count,
                 risk = _vm.GetVerdictFor(pid)?.RiskByte ?? 0,
+                path = pinfo.Path,
+                vendor = pinfo.Company,
+                signature = pinfo.SignatureSubject ?? pinfo.Signature.ToString(),
             });
         }
         return new { rows, selectedPid = _selectedPid };

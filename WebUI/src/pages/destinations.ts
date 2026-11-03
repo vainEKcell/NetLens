@@ -22,12 +22,12 @@ const cols: ColDef[] = [
   { headerName: t("dst.col.down"), headerValueGetter: () => t("dst.col.down"), field: "DownText", width: 110, type: "rightAligned", cellClass: "text-blue" },
   { headerName: t("dst.col.last"), headerValueGetter: () => t("dst.col.last"), field: "LastText", width: 100, type: "rightAligned", cellClass: "text-dim" },
   { headerName: t("dst.col.processes"), headerValueGetter: () => t("dst.col.processes"), field: "ProcessesText", flex: 1.2, cellClass: "text-dim" },
-  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
 
 const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
+  autoSizeStrategy: { type: 'fitGridWidth' },
   defaultColDef: { sortable: true, resizable: true },
   getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   suppressCellFocus: true,

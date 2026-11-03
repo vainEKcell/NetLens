@@ -313,6 +313,32 @@ input[type="checkbox"]:checked::after {
   transform: rotate(42deg);
 }
 
+/* 右键菜单 */
+#nw-context-menu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 190px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  display: none;
+}
+#nw-context-menu.open { display: block; }
+.ctx-item {
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  cursor: pointer;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.ctx-item:hover { background: var(--accent-soft); color: var(--accent); }
+.ctx-item.danger { color: var(--red); }
+.ctx-item.danger:hover { background: rgba(255, 92, 92, 0.12); color: var(--red); }
+.ctx-sep { height: 1px; background: var(--border); margin: 5px 8px; }
+
 /* 主题化 tooltip */
 .nw-tooltip {
   position: fixed;
@@ -435,6 +461,11 @@ input[type="checkbox"]:checked::after {
   border-bottom: 1px solid var(--border-strong);
 }
 .ag-theme-nw .ag-header-cell-text { font-weight: 700; }
+/* 列名居中（数据对齐保持按列） */
+.ag-theme-nw .ag-header-cell-label {
+  justify-content: center;
+  width: 100%;
+}
 
 /* 表格工具行（标题左 / 排序右，同属表格范畴） */
 .grid-toolbar {

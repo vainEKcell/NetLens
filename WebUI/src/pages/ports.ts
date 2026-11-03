@@ -24,12 +24,12 @@ const cols: ColDef[] = [
     cellClass: (p) => (String(p.value).includes("所有") || String(p.value).includes("任意") ? "risk-low" : "text-dim") },
   { headerName: t("port.col.pid"), headerValueGetter: () => t("port.col.pid"), field: "Pid", width: 80, type: "rightAligned" },
   { headerName: t("port.col.process"), headerValueGetter: () => t("port.col.process"), field: "Process", flex: 1 },
-  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
 
 const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
+  autoSizeStrategy: { type: 'fitGridWidth' },
   defaultColDef: { sortable: true, resizable: true },
   getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   suppressCellFocus: true,

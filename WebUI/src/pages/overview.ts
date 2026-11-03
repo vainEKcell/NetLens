@@ -2,6 +2,7 @@ import { createGrid, GridOptions, ColDef, ModuleRegistry, AllCommunityModule } f
 import { Snapshot, OverviewRow, fmtSpeed, fmtBytes, riskClass, sendCommand } from "../api";
 import { t, agLocale } from "../i18n";
 import { mountSortControl } from "../sortctl";
+import { show as showMenu } from "../menu";
 import "./../styles.css";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -26,8 +27,26 @@ const columnDefs: ColDef[] = [
   { headerName: t("ov.col.upTotal"), headerValueGetter: () => t("ov.col.upTotal"), field: "upTotal", width: 100, type: "rightAligned",
     valueFormatter: (p) => fmtBytes(p.value as number) },
   { headerName: t("ov.col.conns"), headerValueGetter: () => t("ov.col.conns"), field: "conns", width: 76, type: "rightAligned" },
-  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
+
+function rowTip(row: OverviewRow): string {
+  const parts = [row.path ?? "", row.vendor ?? ""].filter(Boolean);
+  if (row.risk >= 2) parts.push(t(`ov.risk.${row.risk}`));
+  return parts.join("　");
+}
+
+function ctxMenu(ev: MouseEvent, row: OverviewRow): void {
+  showMenu(ev.clientX, ev.clientY, [
+    { label: t("ctx.taskmgr"), action: () => sendCommand("openTaskmgr", { pid: row.pid }) },
+    { label: t("ctx.kill"), danger: true, action: () => sendCommand("kill", { pid: row.pid }) },
+    { label: "", sep: true },
+    { label: t("ctx.folder"), action: () => sendCommand("openFolder", { pid: row.pid }) },
+    { label: t("ctx.block"), danger: true, action: () => sendCommand("block", { pid: row.pid }) },
+    { label: "", sep: true },
+    { label: t("ctx.select"), action: () => sendCommand("select", { pid: row.pid }) },
+    { label: t("ctx.copyPid"), action: () => navigator.clipboard.writeText(String(row.pid)) },
+  ]);
+}
 
 function nameCell(params: { value: string; data?: OverviewRow }): HTMLElement {
   const span = document.createElement("span");
@@ -40,6 +59,7 @@ const gridOptions: GridOptions = {
   columnDefs,
   rowData: [],
   // 列头点击排序已由页头排序控件承担（总览专属），此处禁用避免双入口
+  autoSizeStrategy: { type: 'fitGridWidth' },
   defaultColDef: { sortable: false, resizable: true },
   getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   rowSelection: { mode: "singleRow", checkboxes: false },
@@ -50,6 +70,12 @@ const gridOptions: GridOptions = {
   onRowClicked: (e) => {
     const row = e.data as OverviewRow | undefined;
     if (row) sendCommand("select", { pid: row.pid });
+  },
+  onCellContextMenu: (e) => {
+    const row = e.data as OverviewRow | undefined;
+    if (!row) return;
+    e.event?.preventDefault();
+    ctxMenu(e.event as MouseEvent, row);
   },
 };
 
@@ -71,6 +97,16 @@ export function render(root: HTMLElement): void {
   detailBody = document.getElementById("detail-panel")!;
   selectedPidEl = detailBody;
   renderDetailEmpty();
+
+  // 行悬浮快捷信息（委托：ag-row → rowData 摘要）
+  const gridEl = document.getElementById("ov-grid")!;
+  gridEl.addEventListener("mouseover", (e) => {
+    const rowEl = (e.target as HTMLElement).closest(".ag-row") as HTMLElement | null;
+    if (!rowEl) return;
+    const idx = parseInt(rowEl.getAttribute("row-index") ?? "-1", 10);
+    const row = api?.getDisplayedRowAtIndex(idx)?.data as OverviewRow | undefined;
+    if (row) rowEl.setAttribute("data-tip", rowTip(row));
+  });
 
   const toolbar = document.getElementById("ov-toolbar") as HTMLElement;
   mountSortControl(toolbar, api, [

@@ -9,6 +9,9 @@ export interface OverviewRow {
   upTotal: number;
   conns: number;
   risk: number;
+  path: string | null;
+  vendor: string | null;
+  signature: string | null;
 }
 
 export interface DetailInfo {

@@ -6,9 +6,8 @@
 </head>
 <body>
   <div id="app">
-    <!-- 常驻状态栏：品牌最左（惯例），其后监控控件，右侧数据与曲线 -->
+    <!-- 常驻状态栏：品牌在侧栏顶部（一体），状态栏=监控控件+数据+曲线（曲线占满剩余宽度） -->
     <header id="topbar">
-      <div id="brand"><span class="dot"></span>NetLens</div>
       <button id="btn-pause">暂停监控</button>
       <label class="tb-check"><input type="checkbox" id="tb-loopback" /><span id="tb-loopback-label">隐藏回环</span></label>
       <label class="tb-check"><input type="checkbox" id="tb-flagged" /><span id="tb-flagged-label">仅看可疑</span></label>
@@ -26,11 +25,26 @@
         <span class="label" id="lbl-session">会话累计</span>
         <span class="value small" id="tb-session">—</span>
       </div>
-      <div id="spark"><canvas id="spark-canvas" width="220" height="44"></canvas></div>
+      <!-- 曲线 flex 占满剩余宽度：数字长短变化不影响其尺寸 -->
+      <div id="spark"><canvas id="spark-canvas" width="260" height="44"></canvas></div>
     </header>
     <div id="body">
       <aside id="sidebar">
+        <div id="brand">
+          <svg viewBox="0 0 16 16" width="20" height="20" fill="none" stroke="url(#lg)" stroke-width="1.6">
+            <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#4d8dff"/><stop offset="1" stop-color="#50d6dc"/>
+            </linearGradient></defs>
+            <circle cx="8" cy="8" r="5.8"/>
+            <path d="M8 4.6L11.4 10.6H4.6z" stroke-width="1.2"/>
+            <circle cx="8" cy="4.6" r="1.3" fill="#4d8dff" stroke="none"/>
+            <circle cx="11.4" cy="10.6" r="1.3" fill="#50d6dc" stroke="none"/>
+            <circle cx="4.6" cy="10.6" r="1.3" fill="#8b6cff" stroke="none"/>
+          </svg>
+          <span id="brand-name">NetLens</span>
+        </div>
         <nav id="nav"></nav>
+        <button id="nav-collapse" title="收起/展开导航"></button>
         <div class="ver">0.1.5 · alpha</div>
       </aside>
       <main id="content"></main>

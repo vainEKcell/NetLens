@@ -25,6 +25,7 @@ const cols: ColDef[] = [
 const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
+  autoSizeStrategy: { type: 'fitGridWidth' },
   defaultColDef: { sortable: true, resizable: true },
   getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   suppressCellFocus: true,

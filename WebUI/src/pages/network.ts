@@ -50,6 +50,7 @@ function monoCell(p: { value: string }): HTMLElement {
 const adaptersOptions: GridOptions = {
   columnDefs: adapterCols,
   rowData: [],
+  autoSizeStrategy: { type: 'fitGridWidth' },
   defaultColDef: { sortable: false, resizable: true },
   getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   suppressCellFocus: true,

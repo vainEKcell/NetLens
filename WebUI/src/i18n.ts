@@ -13,8 +13,8 @@ const zh: Record<string, string> = {
   // 总览
   "ov.title": "总览", "ov.sub": "每进程实时流量 · 点击行查看详情与处置",
   "ov.col.pid": "PID", "ov.col.name": "进程", "ov.col.risk": "风险",
-  "ov.col.down": "↓ 速度", "ov.col.up": "↑ 速度", "ov.col.downTotal": "↓ 累计",
-  "ov.col.upTotal": "↑ 累计", "ov.col.conns": "连接",
+  "ov.col.down": "速度 ↓", "ov.col.up": "速度 ↑", "ov.col.downTotal": "累计 ↓",
+  "ov.col.upTotal": "累计 ↑", "ov.col.conns": "连接",
   "ov.detail.empty": "点击左侧进程行<br/>查看详情、判定与处置",
   "ov.detail.title": "进程详情", "ov.detail.verdict": "判定与证据",
   "ov.detail.services": "承载服务", "ov.detail.conns": "当前连接",
@@ -62,8 +62,8 @@ const zh: Record<string, string> = {
   "ev.col.detail": "目标 / 内容", "ev.col.bytes": "数据量",
   // 目的地
   "dst.title": "目的地排行", "dst.sub": "按远端地址聚合的会话累计流量（域名优先显示）",
-  "dst.col.display": "目的地", "dst.col.scope": "范围", "dst.col.up": "↑ 累计",
-  "dst.col.down": "↓ 累计", "dst.col.last": "最近活动", "dst.col.processes": "涉及进程",
+  "dst.col.display": "目的地", "dst.col.scope": "范围", "dst.col.up": "累计 ↑",
+  "dst.col.down": "累计 ↓", "dst.col.last": "最近活动", "dst.col.processes": "涉及进程",
   // 端口
   "port.title": "监听端口", "port.sub": "本机监听端口与对外暴露面（所有地址 = 可被局域网/公网访问）",
   "port.col.proto": "协议", "port.col.port": "端口", "port.col.bind": "绑定地址",
@@ -104,6 +104,8 @@ const zh: Record<string, string> = {
   "ph.sub": "功能当前仍可通过启动 NetLens 时不加 --spike 参数使用完整 WPF 界面",
   // AG Grid
   "sort.label": "排序",
+  "ctx.taskmgr": "打开任务管理器", "ctx.kill": "结束进程", "ctx.folder": "打开所在文件夹",
+  "ctx.block": "禁止联网", "ctx.select": "在详情中查看", "ctx.copyPid": "复制 PID",
   "ag.noRows": "暂无数据",
   "cfg.what.dns": "DNS 服务器", "cfg.what.proxy": "系统代理 (WinINET)",
   "cfg.what.winhttp": "WinHTTP 代理", "cfg.what.hosts": "hosts 文件",
@@ -201,6 +203,8 @@ const en: Record<string, string> = {
   "ph.title": "This page will move to the new UI in a later release",
   "ph.sub": "Without the --spike argument NetLens still offers the full WPF interface",
   "sort.label": "Sort",
+  "ctx.taskmgr": "Open Task Manager", "ctx.kill": "End process", "ctx.folder": "Open folder",
+  "ctx.block": "Block network", "ctx.select": "Inspect in details", "ctx.copyPid": "Copy PID",
   "ag.noRows": "No data",
   "cfg.what.dns": "DNS servers", "cfg.what.proxy": "System proxy (WinINet)",
   "cfg.what.winhttp": "WinHTTP proxy", "cfg.what.hosts": "hosts file",

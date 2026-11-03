@@ -31,12 +31,12 @@ const cols: ColDef[] = [
     } },
   { headerName: t("ev.col.bytes"), headerValueGetter: () => t("ev.col.bytes"), field: "bytes", width: 92, type: "rightAligned",
     valueFormatter: (p) => (p.value ? String(p.value) : "") },
-  { headerName: "", colId: "fill", flex: 1, minWidth: 24, sortable: false, suppressMovable: true, cellRenderer: () => "" },
 ];
 
 const gridOptions: GridOptions = {
   columnDefs: cols,
   rowData: [],
+  autoSizeStrategy: { type: 'fitGridWidth' },
   defaultColDef: { sortable: false, resizable: true },
   getLocaleText: (p: { key: string; defaultValue: string }) => { const l = agLocale(); return l[p.key] ?? p.defaultValue; },
   suppressCellFocus: true,

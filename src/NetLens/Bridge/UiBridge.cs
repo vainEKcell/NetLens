@@ -65,6 +65,13 @@ public sealed class UiBridge
                     _vm.ToggleTrustForSelection();
                     break;
                 }
+                case "openTaskmgr":
+                {
+                    var tm = root.GetProperty("pid").GetInt32();
+                    _vm.SelectProcessByPid(tm);
+                    _vm.OpenTaskManager();
+                    break;
+                }
                 case "openFolder":
                 {
                     var ofd = root.GetProperty("pid").GetInt32();
