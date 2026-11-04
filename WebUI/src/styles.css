@@ -191,7 +191,7 @@ html, body {
   display: flex;
   flex-direction: column;
   padding: 12px 10px 8px;
-  transition: width 0.18s ease;
+  transition: width 0.26s cubic-bezier(0.3, 1.15, 0.4, 1);
   overflow: hidden;
 }
 #sidebar.collapsed { width: 56px; padding: 12px 6px 8px; }
@@ -200,22 +200,23 @@ html, body {
 #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
 #nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 
-/* 展开动效：菜单项自上而下阶梯弹出，带轻微弹性（收起时不播） */
+/* 展开动效：菜单项自上而下阶梯弹出，明显弹性（收起时不播） */
 #sidebar:not(.collapsed) .nav-item {
-  animation: nav-stagger 0.32s cubic-bezier(0.22, 1.25, 0.36, 1) backwards;
+  animation: nav-stagger 0.46s cubic-bezier(0.2, 1.5, 0.32, 1) backwards;
 }
-#sidebar:not(.collapsed) .nav-item:nth-child(1) { animation-delay: 20ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(2) { animation-delay: 60ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(3) { animation-delay: 100ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(4) { animation-delay: 140ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(5) { animation-delay: 180ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(6) { animation-delay: 220ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(7) { animation-delay: 260ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(8) { animation-delay: 300ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(9) { animation-delay: 340ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(1) { animation-delay: 40ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(2) { animation-delay: 95ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(3) { animation-delay: 150ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(4) { animation-delay: 205ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(5) { animation-delay: 260ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(6) { animation-delay: 315ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(7) { animation-delay: 370ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(8) { animation-delay: 425ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(9) { animation-delay: 480ms; }
 @keyframes nav-stagger {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateX(-26px) scale(0.92); }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 .nav-item {
   position: relative;

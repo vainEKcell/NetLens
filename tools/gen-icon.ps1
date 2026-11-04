@@ -1,10 +1,9 @@
 ﻿# NetLens 应用图标生成：Assets\app.ico
-# 设计 v11 —— 棱镜（prism）主题的等粗线条版（v10 用户反馈修订）：
-#   三角棱镜顺时针倾斜 12°（打破"播放键指向右"的箭头感，纯棱镜截面）；
-#   全部线条统一等粗（= 三角描边 8px 基准），扁平线条语言；
-#   出射光束全白、无末端节点（v10 的彩色色散与端点按反馈去除），亮度分层表达"分解后渐弱"；
-#   三条光路（入射 / 棱内折射 / 出射扇）等宽不同亮度：亮 → 暗 → 亮。
-# 输出 256/48/32/16 四档：小尺寸不缩放，按尺寸独立绘制并加粗描边。
+# 设计 v13 —— 中心对称双棱镜（logo 兼作收放按钮、会旋转，故取 180° 旋转对称构图）：
+#   左右两个线框三角顶点相对（蝶形）；一条水平光路自左端圆点贯穿双棱镜至右端圆点
+#   ——双向流量在 NetLens 中心交汇、分解；中心间隙向上/向下对称谱出两条色散线。
+#   全部线条等粗（= 三角描边 8px 基准），扁平点线语言，黑底。
+# 输出 16~256 全帧位：小尺寸不缩放，按尺寸独立绘制并加粗描边。
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
@@ -22,16 +21,11 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
     return $p
 }
 
-# 点绕中心顺时针旋转（屏幕坐标 y 向下，θ>0 即视觉顺时针）
-function Rotate-Point([float]$x, [float]$y, [float]$cx, [float]$cy, [float]$deg) {
-    $rad = $deg * [System.Math]::PI / 180.0
-    $c = [System.Math]::Cos($rad); $s = [System.Math]::Sin($rad)
-    $dx = $x - $cx; $dy = $y - $cy
-    return @{ x = [single]($cx + $dx * $c - $dy * $s); y = [single]($cy + $dx * $s + $dy * $c) }
-}
-
 # 画布基准 256，所有几何在基准坐标系中定义，绘制时按 scale 缩放、线宽按 boost 加粗
-# $simple=$true 时使用小尺寸简化构图：三角占满画布主体，出射仅三条光束
+# v13：中心对称双棱镜（蝶形）——logo 兼作收放按钮会旋转，图形绕中心转 180° 与自身重合
+#   左右两个线框三角顶点相对；一条水平光路自左端圆点贯穿双棱镜至右端圆点
+#   （双向流量在 NetLens 中心交汇分解）；中心间隙向上/向下对称谱出两条色散线。
+# $simple=$true 时使用小尺寸简化构图：仅双三角 + 主光路 + 两端圆点
 function Draw-Prism([System.Drawing.Graphics]$g, [float]$scale, [float]$boost, [bool]$simple) {
     $g.SmoothingMode = 'AntiAlias'
     $g.PixelOffsetMode = 'HighQuality'
@@ -44,76 +38,52 @@ function Draw-Prism([System.Drawing.Graphics]$g, [float]$scale, [float]$boost, [
 
     $white = [System.Drawing.Color]::FromArgb(248, 240, 246, 255)
     $lineW = [float](8.0 * $scale * $boost)   # 全图统一线宽 = 三角描边
+    $cy = 132.0                                # 光路水平线（构图垂直中心）
 
-    # ---- 2. 三角棱镜：原始几何（顶点朝右），绕自身中心倾斜 12°（顶点偏向右上，与出射方向一致） ----
-    if ($simple) {
-        $ax = 62; $ay = 84; $bx = 62; $by = 204; $cx = 163; $cy = 144
-    } else {
-        $ax = 64; $ay = 108; $bx = 64; $by = 192; $cx = 137; $cy = 150
-    }
-    $gx = ($ax + $bx + $cx) / 3.0; $gy = ($ay + $by + $cy) / 3.0
-    $t = Rotate-Point $ax $ay $gx $gy (-12.0)
-    $b = Rotate-Point $bx $by $gx $gy (-12.0)
-    $c = Rotate-Point $cx $cy $gx $gy (-12.0)
-    $mid = Rotate-Point $ax ((($ay + $by) / 2.0)) $gx $gy (-12.0)   # 左面（入射面）中点
-
-    $triPath = New-Object System.Drawing.Drawing2D.GraphicsPath
+    # ---- 2. 双三角（蝶形）：顶点相对，中心留 14px 间隙 ----
+    # 左三角：竖边 (52,92)-(52,172)，顶点 (121,132)；右三角为中心对称镜像
     $triPen = New-Object System.Drawing.Pen ($white), $lineW
     $triPen.StartCap = 'Round'; $triPen.EndCap = 'Round'
     $triPen.LineJoin = 'Round'
-    $triPath.AddLine([single]($t.x * $scale), [single]($t.y * $scale), [single]($b.x * $scale), [single]($b.y * $scale))
-    $triPath.AddLine([single]($b.x * $scale), [single]($b.y * $scale), [single]($c.x * $scale), [single]($c.y * $scale))
-    $triPath.CloseFigure()
-    $g.DrawPath($triPen, $triPath)
-    $triPath.Dispose(); $triPen.Dispose()
+    foreach ($side in @('L', 'R')) {
+        $path = New-Object System.Drawing.Drawing2D.GraphicsPath
+        if ($side -eq 'L') {
+            $path.AddLine([single](52 * $scale), [single](92 * $scale), [single](52 * $scale), [single](172 * $scale))
+            $path.AddLine([single](52 * $scale), [single](172 * $scale), [single](121 * $scale), [single]($cy * $scale))
+        } else {
+            $path.AddLine([single](204 * $scale), [single](92 * $scale), [single](204 * $scale), [single](172 * $scale))
+            $path.AddLine([single](204 * $scale), [single](172 * $scale), [single](135 * $scale), [single]($cy * $scale))
+        }
+        $path.CloseFigure()
+        $g.DrawPath($triPen, $path)
+        $path.Dispose()
+    }
+    $triPen.Dispose()
 
-    # ---- 3. 入射光束：左缘起点圆点 → 倾斜后左面中点（水平打入） ----
-    $inStartX = 24; if ($simple) { $inStartX = 16 }
-    $inDotR = [float](7.5 * $scale * $boost)
-    $inDot = New-Object System.Drawing.SolidBrush ($white)
-    $g.FillEllipse($inDot, [single]($inStartX * $scale - $inDotR), [single]($mid.y * $scale - $inDotR), $inDotR * 2, $inDotR * 2)
-    $inDot.Dispose()
-    $inPen = New-Object System.Drawing.Pen ($white), $lineW
-    $inPen.StartCap = 'Round'; $inPen.EndCap = 'Round'
-    $g.DrawLine($inPen, [single]($inStartX * $scale), [single]($mid.y * $scale), [single]($mid.x * $scale), [single]($mid.y * $scale))
-    $inPen.Dispose()
+    # ---- 3. 水平主光路：左端圆点 → 贯穿双棱镜 → 右端圆点（双向对流的交汇线） ----
+    $dotR = [float](7.5 * $scale * $boost)
+    $dot = New-Object System.Drawing.SolidBrush ($white)
+    $g.FillEllipse($dot, [single](24 * $scale - $dotR), [single]($cy * $scale - $dotR), $dotR * 2, $dotR * 2)
+    $g.FillEllipse($dot, [single](232 * $scale - $dotR), [single]($cy * $scale - $dotR), $dotR * 2, $dotR * 2)
+    $dot.Dispose()
+    $mainPen = New-Object System.Drawing.Pen ($white), $lineW
+    $mainPen.StartCap = 'Round'; $mainPen.EndCap = 'Round'
+    $g.DrawLine($mainPen, [single](24 * $scale), [single]($cy * $scale), [single](232 * $scale), [single]($cy * $scale))
+    $mainPen.Dispose()
 
-    # ---- 4. 穿棱折射线：入射点 → 右顶点（棱镜内部，暗一档；等宽；小尺寸省略） ----
+    # ---- 4. 中心谱线：自双顶点间隙沿竖直对称向上/向下谱出（色散意象，180° 对称） ----
     if (-not $simple) {
-        $refCol = [System.Drawing.Color]::FromArgb(140, 240, 246, 255)
-        $refPen = New-Object System.Drawing.Pen ($refCol), $lineW
-        $refPen.StartCap = 'Round'; $refPen.EndCap = 'Round'
-        $g.DrawLine($refPen, [single]($mid.x * $scale), [single]($mid.y * $scale), [single]($c.x * $scale), [single]($c.y * $scale))
-        $refPen.Dispose()
-    }
-
-    # ---- 5. 出射光束：从右顶点向右上扇形散开 ----
-    # v12 反馈落实：全白、等粗、无端点，且光束更疏（间隔 20°，不密集）
-    $ray1 = [System.Drawing.Color]::FromArgb(248, 240, 246, 255)
-    $ray2 = [System.Drawing.Color]::FromArgb(225, 240, 246, 255)
-    $ray3 = [System.Drawing.Color]::FromArgb(198, 240, 246, 255)
-    if ($simple) {
-        $outRays = @(
-            @{ a = -25; len = 106; c = $ray1 },
-            @{ a = -50; len = 92;  c = $ray2 },
-            @{ a = -75; len = 66;  c = $ray3 }
-        )
-    } else {
-        $outRays = @(
-            @{ a = -20; len = 106; c = $ray1 },
-            @{ a = -40; len = 118; c = $ray1 },
-            @{ a = -60; len = 98;  c = $ray2 },
-            @{ a = -80; len = 70;  c = $ray3 }
-        )
-    }
-    foreach ($r in $outRays) {
-        $rad2 = $r.a * [System.Math]::PI / 180.0
-        $dx = [System.Math]::Cos($rad2); $dy = [System.Math]::Sin($rad2)
-        $pen = New-Object System.Drawing.Pen ($r.c), $lineW
-        $pen.StartCap = 'Round'; $pen.EndCap = 'Round'
-        $ex = ($c.x + $dx * $r.len) * $scale; $ey = ($c.y + $dy * $r.len) * $scale
-        $g.DrawLine($pen, [single]($c.x * $scale), [single]($c.y * $scale), [single]$ex, [single]$ey)
-        $pen.Dispose()
+        $rayCol = [System.Drawing.Color]::FromArgb(205, 240, 246, 255)
+        $rayPen = New-Object System.Drawing.Pen ($rayCol), $lineW
+        $rayPen.StartCap = 'Round'; $rayPen.EndCap = 'Round'
+        foreach ($ang in @(-90.0, 90.0)) {
+            $rad2 = $ang * [System.Math]::PI / 180.0
+            $len = 55
+            $ex = (128 + [System.Math]::Cos($rad2) * $len) * $scale
+            $ey = ($cy + [System.Math]::Sin($rad2) * $len) * $scale
+            $g.DrawLine($rayPen, [single](128 * $scale), [single]($cy * $scale), [single]$ex, [single]$ey)
+        }
+        $rayPen.Dispose()
     }
 }
 

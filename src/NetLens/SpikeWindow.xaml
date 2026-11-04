@@ -9,13 +9,16 @@
                       GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
     </WindowChrome.WindowChrome>
     <Window.Resources>
+        <!-- 标题栏主题色：默认深色值，ApplyCaptionTheme 按主题覆盖（DynamicResource 联动） -->
+        <SolidColorBrush x:Key="CapFg" Color="#B9C1D1"/>
+        <SolidColorBrush x:Key="CapHover" Color="#1B2130"/>
         <ControlTemplate x:Key="WcBtn" TargetType="Button">
             <Border x:Name="bd" Background="Transparent" Width="46" Height="40">
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="bd" Property="Background" Value="#1B2130"/>
+                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource CapHover}"/>
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -31,21 +34,21 @@
         </ControlTemplate>
     </Window.Resources>
     <DockPanel>
-        <Grid DockPanel.Dock="Top" Height="40" Background="#0A0C12">
+        <Grid x:Name="CaptionBar" DockPanel.Dock="Top" Height="40" Background="#0A0C12">
             <StackPanel Orientation="Horizontal" Margin="14 0 0 0" VerticalAlignment="Center">
                 <Image x:Name="CaptionIcon" Width="22" Height="22"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
                 <TextBlock Text="NetLens" Margin="10 0 0 0" FontSize="13" FontWeight="SemiBold"
-                           Foreground="#D6DCE8" VerticalAlignment="Center"/>
+                           Foreground="{DynamicResource CapFg}" VerticalAlignment="Center"/>
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal"
                         WindowChrome.IsHitTestVisibleInChrome="True">
                 <Button x:Name="BtnMin" Template="{StaticResource WcBtn}" Click="OnMin"
-                        Foreground="#B9C1D1" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+                        Foreground="{DynamicResource CapFg}" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
                 <Button x:Name="BtnMax" Template="{StaticResource WcBtn}" Click="OnMax"
-                        Foreground="#B9C1D1" Content="&#xE922;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+                        Foreground="{DynamicResource CapFg}" Content="&#xE922;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
                 <Button Template="{StaticResource WcCloseBtn}" Click="OnClose"
-                        Foreground="#B9C1D1" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+                        Foreground="{DynamicResource CapFg}" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
             </StackPanel>
         </Grid>
         <wv2:WebView2 x:Name="Web"/>

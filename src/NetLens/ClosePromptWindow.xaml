@@ -5,23 +5,33 @@
         ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
         Width="420" SizeToContent="Height" ResizeMode="NoResize">
     <Window.Resources>
+        <!-- 主题色（默认深色值；构造时按 ThemeService.CurrentEffective 覆盖） -->
+        <SolidColorBrush x:Key="CdlgBg" Color="#11141B"/>
+        <SolidColorBrush x:Key="CdlgBorder" Color="#2A3040"/>
+        <SolidColorBrush x:Key="CdlgTitleFg" Color="#EEF1F7"/>
+        <SolidColorBrush x:Key="CdlgTextFg" Color="#C4CBD9"/>
+        <SolidColorBrush x:Key="CdlgDimFg" Color="#9AA3B5"/>
+        <SolidColorBrush x:Key="CdlgBtnBg" Color="#0F1218"/>
+        <SolidColorBrush x:Key="CdlgBtnBorder" Color="#3A4254"/>
+        <SolidColorBrush x:Key="CdlgBtnBorderHover" Color="#5A6C94"/>
+        <SolidColorBrush x:Key="CdlgBtnBgHover" Color="#171C27"/>
         <!-- 次按钮：描边 -->
         <ControlTemplate x:Key="CdlgBtn" TargetType="Button">
-            <Border x:Name="bd" Background="#0F1218" BorderBrush="#3A4254" BorderThickness="1"
-                    CornerRadius="8" Padding="16 8">
+            <Border x:Name="bd" Background="{DynamicResource CdlgBtnBg}" BorderBrush="{DynamicResource CdlgBtnBorder}"
+                    BorderThickness="1" CornerRadius="8" Padding="16 8">
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="bd" Property="BorderBrush" Value="#5A6C94"/>
-                    <Setter TargetName="bd" Property="Background" Value="#171C27"/>
+                    <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource CdlgBtnBorderHover}"/>
+                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource CdlgBtnBgHover}"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter TargetName="bd" Property="Background" Value="#12161F"/>
+                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource CdlgBtnBg}"/>
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
-        <!-- 主按钮：accent 填充 -->
+        <!-- 主按钮：accent 填充（深浅主题同用蓝） -->
         <ControlTemplate x:Key="CdlgPrimaryBtn" TargetType="Button">
             <Border x:Name="bd" Background="#3D7EFF" CornerRadius="8" Padding="16 8">
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -36,8 +46,8 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
     </Window.Resources>
-    <Border x:Name="Root" Background="#11141B" BorderBrush="#2A3040" BorderThickness="1"
-            CornerRadius="12" Margin="16" Padding="24 20 24 18">
+    <Border x:Name="Root" Background="{DynamicResource CdlgBg}" BorderBrush="{DynamicResource CdlgBorder}"
+            BorderThickness="1" CornerRadius="12" Margin="16" Padding="24 20 24 18">
         <Border.Effect>
             <DropShadowEffect ShadowDepth="2" BlurRadius="16" Opacity="0.55"/>
         </Border.Effect>
@@ -47,27 +57,28 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Image x:Name="AppIcon" Width="26" Height="26" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock x:Name="TitleText" Margin="12 0 0 0" FontSize="15" FontWeight="SemiBold"
-                               Foreground="#EEF1F7" VerticalAlignment="Center"/>
+                               Foreground="{DynamicResource CdlgTitleFg}" VerticalAlignment="Center"/>
                 </StackPanel>
                 <Button x:Name="BtnCancel" Width="28" Height="28" HorizontalAlignment="Right"
                         VerticalAlignment="Center" Cursor="Hand"
                         Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                        Background="Transparent" Foreground="#9AA3B5" BorderThickness="0"
+                        Background="Transparent" Foreground="{DynamicResource CdlgDimFg}" BorderThickness="0"
                         Click="OnCancel"/>
             </Grid>
             <TextBlock x:Name="AskText" Margin="2 16 0 0" FontSize="13" TextWrapping="Wrap"
-                       Foreground="#C4CBD9" LineHeight="21"/>
+                       Foreground="{DynamicResource CdlgTextFg}" LineHeight="21"/>
             <!-- 按钮行：居中对称（主动作在前） -->
             <StackPanel Orientation="Horizontal" Margin="0 18 0 0" HorizontalAlignment="Center">
                 <Button x:Name="BtnTray" Cursor="Hand" Margin="0 0 12 0"
                         FontSize="13" FontWeight="Medium" Foreground="#FFFFFF"
                         Template="{StaticResource CdlgPrimaryBtn}" Click="OnTray"/>
-                <Button x:Name="BtnExit" Cursor="Hand" FontSize="13" FontWeight="Medium" Foreground="#E8EDF5"
+                <Button x:Name="BtnExit" Cursor="Hand" FontSize="13" FontWeight="Medium"
+                        Foreground="{DynamicResource CdlgTextFg}"
                         Template="{StaticResource CdlgBtn}" Click="OnExit"/>
             </StackPanel>
             <!-- 记住选择 -->
             <CheckBox x:Name="Remember" Margin="2 16 0 0" Cursor="Hand"
-                      Content="{DynamicResource cdlg.remember}" FontSize="12.5" Foreground="#9AA3B5"/>
+                      Content="{DynamicResource cdlg.remember}" FontSize="12.5" Foreground="{DynamicResource CdlgDimFg}"/>
         </StackPanel>
     </Border>
 </Window>

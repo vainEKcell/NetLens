@@ -27,8 +27,29 @@ public partial class SpikeWindow : Window
         _initialPage = initialPage;
         LoadCaptionIcon();
         WindowEffects.SetWindowIcon(this);
+        ApplyCaptionTheme(ThemeService.CurrentEffective);
+        ThemeService.ThemeApplied += OnThemeChanged;
         Loaded += async (_, _) => await InitWeb();
-        Closed += (_, _) => _bridge.Detach();
+        Closed += (_, _) => { ThemeService.ThemeApplied -= OnThemeChanged; _bridge.Detach(); };
+    }
+
+    /// 标题栏跟随深浅主题（设置切换或系统 auto 校准时触发）
+    private void OnThemeChanged(string effective) => ApplyCaptionTheme(effective);
+
+    private void ApplyCaptionTheme(string effective)
+    {
+        bool light = effective == "light";
+        Resources["CapFg"] = new System.Windows.Media.SolidColorBrush(
+            light ? System.Windows.Media.Color.FromRgb(0x3A, 0x42, 0x50)
+                  : System.Windows.Media.Color.FromRgb(0xB9, 0xC1, 0xD1));
+        Resources["CapHover"] = new System.Windows.Media.SolidColorBrush(
+            light ? System.Windows.Media.Color.FromRgb(0xD5, 0xDC, 0xE8)
+                  : System.Windows.Media.Color.FromRgb(0x1B, 0x21, 0x30));
+        var bar = light
+            ? System.Windows.Media.Color.FromRgb(0xE9, 0xED, 0xF5)
+            : System.Windows.Media.Color.FromRgb(0x0A, 0x0C, 0x12);
+        CaptionBar.Background = new System.Windows.Media.SolidColorBrush(bar);
+        Background = CaptionBar.Background;
     }
 
     protected override void OnSourceInitialized(EventArgs e)

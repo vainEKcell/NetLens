@@ -38,6 +38,21 @@ public partial class ClosePromptWindow : Window
         Root.MouseLeftButtonDown += (_, _) => DragMove();
     }
 
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        if (ThemeService.CurrentEffective != "light") return;
+        Resources["CdlgBg"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF4, 0xF6, 0xFB));
+        Resources["CdlgBorder"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD0, 0xD8, 0xE4));
+        Resources["CdlgTitleFg"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x1A, 0x22, 0x30));
+        Resources["CdlgTextFg"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3C, 0x44, 0x54));
+        Resources["CdlgDimFg"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6B, 0x76, 0x8C));
+        Resources["CdlgBtnBg"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xFF, 0xFF));
+        Resources["CdlgBtnBorder"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xC5, 0xCE, 0xDD));
+        Resources["CdlgBtnBorderHover"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x8F, 0x9F, 0xB8));
+        Resources["CdlgBtnBgHover"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEE, 0xF2, 0xF8));
+    }
+
     private void OnTray(object sender, RoutedEventArgs e)
     {
         Result = PromptResult.ToTray;

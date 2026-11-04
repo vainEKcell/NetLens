@@ -10,6 +10,13 @@ public static class ThemeService
     private static string _requested = "auto";
     private static string _lastApplied = "";
 
+    /// 当前生效主题（dark / light）。尚未应用过时按请求值即时解析。
+    public static string CurrentEffective => _lastApplied == "" ? Resolve(_requested) : _lastApplied;
+
+    /// 主题实际发生变化后触发（参数 = 生效主题 dark / light）。
+    /// 供 WPF 壳层元素（自绘标题栏、弹窗）跟随主题刷新。
+    public static event Action<string>? ThemeApplied;
+
     public static bool SystemPrefersLight()
     {
         try
@@ -37,5 +44,6 @@ public static class ThemeService
                 md.RemoveAt(i);
         md.Add(new ResourceDictionary { Source = new Uri($"pack://application:,,,/Themes/Palette.{t}.xaml") });
         UiBrushes.Refresh(t);
+        ThemeApplied?.Invoke(t);
     }
 }
