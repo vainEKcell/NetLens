@@ -30,38 +30,35 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
 $bgPath = New-RoundedRectPath 8 8 240 240 56
 $g.FillPath([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 8, 9, 12)), $bgPath)
 
-# ---- 2. 放射中心：偏左（非画布中心），完整 360° 放射 ----
-$cx = 96.0; $cy = 128.0
-
-# 中心圆点（实心白）
-$coreR = 10.0
-$core = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 235, 244, 255))
-$g.FillEllipse($core, [single]($cx - $coreR), [single]($cy - $coreR), $coreR * 2, $coreR * 2)
-
-# ---- 3. 放射线：非均匀角度（黄金角散布） + 线长自适应到方框边界（离边远则长、近则短） ----
-$frameL = 24.0; $frameT = 24.0; $frameR2 = 232.0; $frameB = 232.0   # 内缩后的可视边界
-$margin = 18.0
-$count = 13
-for ($i = 0; $i -lt $count; $i++) {
-    # 黄金角散布：自然非均匀、可重现
-    $angDeg = (137.508 * $i) % 360.0
-    $rad = $angDeg * [System.Math]::PI / 180.0
+# ---- 2. 有机放射：偏左中心，粗圆头白线、非对称角度与长度（手绘示意复刻） ----
+$cx = 84.0; $cy = 132.0
+$innerR = 10.0
+# 手绘示意复刻：角度（度）+ 长度 + 线宽——右上密集多长线，其余方向少量短线
+$rays = @(
+    @{ a = -78;  len = 96;  w = 10 },   # 右上（最长）
+    @{ a = -62;  len = 118; w = 10 },   # 右上（最长）
+    @{ a = -46;  len = 108; w = 10 },   # 右上
+    @{ a = -31;  len = 96;  w = 10 },   # 右上
+    @{ a = -16;  len = 86;  w = 10 },   # 右
+    @{ a = 6;    len = 96;  w = 10 },   # 右下（最长）
+    @{ a = 22;   len = 74;  w = 10 },   # 右下
+    @{ a = 44;   len = 62;  w = 10 },   # 下
+    @{ a = 112;  len = 52;  w = 10 },   # 左下（短）
+    @{ a = 148;  len = 48;  w = 10 },   # 左（短）
+    @{ a = -148; len = 46;  w = 10 },   # 左上（短）
+    @{ a = -118; len = 44;  w = 10 }    # 上（短）
+)
+foreach ($r in $rays) {
+    $rad = $r.a * [System.Math]::PI / 180.0
     $dx = [System.Math]::Cos($rad)
-    $dy = [System.Drawing.Math]::Sin($rad)
-    if ([System.Math]::Abs($dx) -lt 0.0001) { $dx = 0.0001 }
-    if ([System.Math]::Abs($dy) -lt 0.0001) { $dy = 0.0001 }
-    # 从中心沿方向到方框边界的距离
-    $tx = $(if ($dx -gt 0) { ($frameR2 - $cx) / $dx } else { ($frameL - $cx) / $dx })
-    $ty = $(if ($dy -gt 0) { ($frameB - $cy) / $dy } else { ($frameT - $cy) / $dy })
-    $dist = [System.Math]::Min([System.Math]::Abs($tx), [System.Math]::Abs($ty)) - $margin
-    if ($dist -lt 26) { $dist = 26 }
-    $penW = [single](3.0 + 2.0 * ($dist / 170.0))   # 越长的线略粗（贴近观察）
-    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 235, 244, 255)), $penW
+    $dy = [System.Math]::Sin($rad)
+    $x1 = [single]($cx + $dx * $innerR)
+    $y1 = [single]($cy + $dy * $innerR)
+    $x2 = [single]($cx + $dx * ($innerR + $r.len))
+    $y2 = [single]($cy + $dy * ($innerR + $r.len))
+    $w = [single]$r.w
+    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 228, 232, 240)), $w
     $pen.StartCap = 'Round'; $pen.EndCap = 'Round'
-    $x1 = [single]($cx + $dx * 18.0)
-    $y1 = [single]($cy + $dy * 18.0)
-    $x2 = [single]($cx + $dx * ($dist))
-    $y2 = [single]($cy + $dy * ($dist))
     $g.DrawLine($pen, $x1, $y1, $x2, $y2)
     $pen.Dispose()
 }
