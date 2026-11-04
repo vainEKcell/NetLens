@@ -26,7 +26,14 @@ export function render(root: HTMLElement): void {
               <option value="dark">${t("set.theme.dark")}</option>
               <option value="light">${t("set.theme.light")}</option>
             </select>
+            <span class="k">${t("set.close")}</span>
+            <select id="set-close">
+              <option value="ask">${t("set.close.ask")}</option>
+              <option value="exit">${t("set.close.exit")}</option>
+              <option value="tray">${t("set.close.tray")}</option>
+            </select>
           </div>
+          <div class="hint">${t("set.close.hint")}</div>
           <div class="hint">${t("set.lang.hint")}</div>
         </div>
 
@@ -94,6 +101,8 @@ export function render(root: HTMLElement): void {
     sendCommand("setLanguage", { value: (e.target as HTMLSelectElement).value });
   (document.getElementById("set-theme") as HTMLSelectElement).onchange = (e) =>
     sendCommand("setTheme", { value: (e.target as HTMLSelectElement).value });
+  (document.getElementById("set-close") as HTMLSelectElement).onchange = (e) =>
+    sendCommand("setCloseAction", { value: (e.target as HTMLSelectElement).value });
   (document.getElementById("set-baseline") as HTMLSelectElement).onchange = (e) =>
     sendCommand("setBaselineDays", { value: parseInt((e.target as HTMLSelectElement).value, 10) });
   (document.getElementById("set-evidence") as HTMLSelectElement).onchange = (e) =>
@@ -121,14 +130,17 @@ let lastSettingsApplied = "";
 export function onSnapshot(s: Snapshot): void {
   if (!rootEl) return;
   const st = s.settings;
-  const state = JSON.stringify([st.language, st.theme, st.baselineDays, st.evidenceDays, st.evidenceCap, st.baselinePaused, st.hideLoopback]);
+  const state = JSON.stringify([st.language, st.theme, st.closeAction, st.baselineDays, st.evidenceDays, st.evidenceCap, st.baselinePaused, st.hideLoopback]);
   if (state === lastSettingsApplied) return;
   lastSettingsApplied = state;
 
   const lang = document.getElementById("set-lang") as HTMLSelectElement;
   const theme = document.getElementById("set-theme") as HTMLSelectElement;
+  const closeSel = document.getElementById("set-close") as HTMLSelectElement;
   if (document.activeElement !== lang) lang.value = st.language;
   if (document.activeElement !== theme) theme.value = st.theme;
+  if (document.activeElement !== closeSel && ["ask", "exit", "tray"].includes(st.closeAction))
+    closeSel.value = st.closeAction;
 
   const bl = document.getElementById("set-baseline") as HTMLSelectElement;
   const ev = document.getElementById("set-evidence") as HTMLSelectElement;

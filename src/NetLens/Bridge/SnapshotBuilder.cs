@@ -76,6 +76,7 @@ public sealed class SnapshotBuilder
             {
                 language = _vm.Settings.Language,
                 theme = _vm.Settings.Theme,
+                closeAction = _vm.Settings.CloseAction,
                 baselineDays = _vm.Settings.BaselineRetentionDays,
                 evidenceDays = _vm.Settings.EvidenceRetentionDays,
                 evidenceCap = _vm.Settings.EvidenceMaxSizeMB,

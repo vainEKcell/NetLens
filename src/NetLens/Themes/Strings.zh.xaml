@@ -396,6 +396,15 @@
     <sys:String x:Key="dlg.csvFilter">CSV 文件 (*.csv)|*.csv</sys:String>
     <sys:String x:Key="tray.show">显示主界面</sys:String>
     <sys:String x:Key="tray.exit">退出</sys:String>
+    <sys:String x:Key="cdlg.title">关闭 NetLens</sys:String>
+    <sys:String x:Key="cdlg.ask">要退出 NetLens，还是最小化到系统托盘继续监控？</sys:String>
+    <sys:String x:Key="cdlg.tray">最小化到托盘</sys:String>
+    <sys:String x:Key="cdlg.exit">退出程序</sys:String>
+    <sys:String x:Key="cdlg.remember">记住我的选择，不再询问</sys:String>
+    <sys:String x:Key="set.close">关闭窗口时</sys:String>
+    <sys:String x:Key="set.close.ask">每次询问</sys:String>
+    <sys:String x:Key="set.close.exit">直接退出程序</sys:String>
+    <sys:String x:Key="set.close.tray">最小化到系统托盘</sys:String>
     <sys:String x:Key="conn.none">无连接</sys:String>
     <sys:String x:Key="conn.stateUnknown">状态{0}</sys:String>
     <sys:String x:Key="id.signed">签名身份</sys:String>

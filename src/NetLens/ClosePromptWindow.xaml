@@ -1,0 +1,72 @@
+<Window x:Class="NetLens.ClosePromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        Width="420" SizeToContent="Height" ResizeMode="NoResize">
+    <Window.Resources>
+        <!-- 次按钮：描边 -->
+        <ControlTemplate x:Key="CdlgBtn" TargetType="Button">
+            <Border x:Name="bd" Background="#0F1218" BorderBrush="#3A4254" BorderThickness="1"
+                    CornerRadius="8" Padding="16 8">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="bd" Property="BorderBrush" Value="#5A6C94"/>
+                    <Setter TargetName="bd" Property="Background" Value="#171C27"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="bd" Property="Background" Value="#12161F"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <!-- 主按钮：accent 填充 -->
+        <ControlTemplate x:Key="CdlgPrimaryBtn" TargetType="Button">
+            <Border x:Name="bd" Background="#3D7EFF" CornerRadius="8" Padding="16 8">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="bd" Property="Background" Value="#558DFF"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="bd" Property="Background" Value="#2F6BE8"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+    </Window.Resources>
+    <Border x:Name="Root" Background="#11141B" BorderBrush="#2A3040" BorderThickness="1"
+            CornerRadius="12" Margin="16" Padding="24 20 24 18">
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="2" BlurRadius="16" Opacity="0.55"/>
+        </Border.Effect>
+        <StackPanel>
+            <!-- 标题行：图标 + 标题 + 取消 -->
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image x:Name="AppIcon" Width="26" Height="26" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock x:Name="TitleText" Margin="12 0 0 0" FontSize="15" FontWeight="SemiBold"
+                               Foreground="#EEF1F7" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button x:Name="BtnCancel" Width="28" Height="28" HorizontalAlignment="Right"
+                        VerticalAlignment="Center" Content="✕" Cursor="Hand"
+                        Background="Transparent" Foreground="#9AA3B5" BorderThickness="0"
+                        FontSize="12" Click="OnCancel"/>
+            </Grid>
+            <TextBlock x:Name="AskText" Margin="2 16 0 0" FontSize="13" TextWrapping="Wrap"
+                       Foreground="#C4CBD9" LineHeight="21"/>
+            <!-- 按钮行：主动作（托盘）在前，次动作（退出）在后 -->
+            <StackPanel Orientation="Horizontal" Margin="0 18 0 0" HorizontalAlignment="Right">
+                <Button x:Name="BtnTray" Cursor="Hand" Margin="0 0 10 0"
+                        FontSize="13" FontWeight="Medium" Foreground="#FFFFFF"
+                        Template="{StaticResource CdlgPrimaryBtn}" Click="OnTray"/>
+                <Button x:Name="BtnExit" Cursor="Hand" FontSize="13" FontWeight="Medium" Foreground="#E8EDF5"
+                        Template="{StaticResource CdlgBtn}" Click="OnExit"/>
+            </StackPanel>
+            <!-- 记住选择 -->
+            <CheckBox x:Name="Remember" Margin="2 16 0 0" Cursor="Hand"
+                      Content="{DynamicResource cdlg.remember}" FontSize="12.5" Foreground="#9AA3B5"/>
+        </StackPanel>
+    </Border>
+</Window>

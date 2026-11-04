@@ -410,6 +410,15 @@
     <sys:String x:Key="dlg.csvFilter">CSV files (*.csv)|*.csv</sys:String>
     <sys:String x:Key="tray.show">Show main window</sys:String>
     <sys:String x:Key="tray.exit">Exit</sys:String>
+    <sys:String x:Key="cdlg.title">Close NetLens</sys:String>
+    <sys:String x:Key="cdlg.ask">Exit NetLens, or minimize to the system tray and keep monitoring?</sys:String>
+    <sys:String x:Key="cdlg.tray">Minimize to tray</sys:String>
+    <sys:String x:Key="cdlg.exit">Exit program</sys:String>
+    <sys:String x:Key="cdlg.remember">Remember my choice and stop asking</sys:String>
+    <sys:String x:Key="set.close">When the window closes</sys:String>
+    <sys:String x:Key="set.close.ask">Ask every time</sys:String>
+    <sys:String x:Key="set.close.exit">Exit the program</sys:String>
+    <sys:String x:Key="set.close.tray">Minimize to the system tray</sys:String>
     <sys:String x:Key="conn.none">No connection</sys:String>
     <sys:String x:Key="conn.stateUnknown">State {0}</sys:String>
     <sys:String x:Key="sp.title">Bandwidth test</sys:String>

@@ -9,6 +9,17 @@ namespace NetLens;
 public partial class App : Application
 {
     private static Mutex? _mutex;
+    private static TrayIconService? _tray;
+
+    /// 托盘“退出”发出的明确退出请求：CloseGuard 放行，不再弹询问窗
+    public static bool ForceExitRequested { get; private set; }
+
+    /// 托盘菜单“退出”：设置标志后关闭主窗口（走统一关闭链路）
+    public static void RequestExit()
+    {
+        ForceExitRequested = true;
+        (Current.MainWindow as Window)?.Close();
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -51,7 +62,16 @@ public partial class App : Application
         MainWindow = main;
         main.Show();
 
+        // 托盘为 App 层常驻：无论 classic 还是 WebView2 窗口，托盘行为一致
+        _tray = new TrayIconService(main);
+
         base.OnStartup(e);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _tray?.Dispose();
+        base.OnExit(e);
     }
 
     private static Exception? Flatten(Exception? ex)

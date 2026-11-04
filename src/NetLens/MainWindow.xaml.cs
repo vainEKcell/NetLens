@@ -2,8 +2,6 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Hardcodet.Wpf.TaskbarNotification;
 using NetLens.Services;
 using NetLens.ViewModels;
 
@@ -12,7 +10,6 @@ namespace NetLens;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _vm;
-    private readonly TaskbarIcon _tray = new();
 
     private FrameworkElement[]? _pages;
 
@@ -31,7 +28,6 @@ public partial class MainWindow : Window
             PageOverview, PageDestinations, PageDns, PagePorts,
             PageEvents, PageBlocking, PageNetwork, PageNetCheck, PageSettings,
         };
-        InitTray();
     }
 
     private void OnNavChanged(object sender, SelectionChangedEventArgs e)
@@ -41,39 +37,10 @@ public partial class MainWindow : Window
             _pages[i].Visibility = i == Nav.SelectedIndex ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void InitTray()
+    protected override void OnClosing(CancelEventArgs e)
     {
-        try
-        {
-            // BitmapImage 默认取 ICO 最小帧（16px），高 DPI 托盘上发虚；
-            // 用 BitmapDecoder 显式取最大帧，失败再退回默认
-            var decoder = BitmapDecoder.Create(new Uri("pack://application:,,,/Assets/app.ico"),
-                BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-            var best = decoder.Frames.OrderByDescending(f => f.PixelWidth).First();
-            _tray.IconSource = best;
-        }
-        catch (Exception ex)
-        {
-            Log.Error("托盘图标加载失败，使用空图标兜底", ex);
-        }
-        _tray.ToolTipText = "NetLens";
-        _tray.TrayLeftMouseUp += (_, _) => RestoreFromTray();
-
-        var menu = new ContextMenu();
-        var show = new MenuItem { Header = L10n.T("tray.show") };
-        show.Click += (_, _) => RestoreFromTray();
-        var exit = new MenuItem { Header = L10n.T("tray.exit") };
-        exit.Click += (_, _) => Close();
-        menu.Items.Add(show);
-        menu.Items.Add(exit);
-        _tray.ContextMenu = menu;
-    }
-
-    private void RestoreFromTray()
-    {
-        Show();
-        WindowState = WindowState.Normal;
-        Activate();
+        if (CloseGuard.Intercept(this, _vm.Settings)) e.Cancel = true;
+        base.OnClosing(e);
     }
 
     protected override void OnStateChanged(EventArgs e)
@@ -84,7 +51,6 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        _tray?.Dispose();
         _vm?.Dispose();
         base.OnClosed(e);
     }

@@ -21,6 +21,9 @@ public sealed class AppSettings
     /// 界面主题：auto（跟随系统）/ dark / light
     public string Theme { get; set; } = "auto";
 
+    /// 关闭主窗口时的行为：ask（每次询问）/ exit（直接退出）/ tray（最小化到系统托盘）
+    public string CloseAction { get; set; } = "ask";
+
     /// 用户允许名单（SoftwareIdentity 键）。处置层：用户的信任决定优先于引擎判定。
     public List<string> TrustedIdentityKeys { get; set; } = new();
     /// 允许名单的展示名（键 → 名称）

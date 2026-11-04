@@ -137,6 +137,10 @@ public sealed class UiBridge
                     _vm.Settings.Save();
                     ThemeService.Apply(_vm.Settings.Theme);
                     break;
+                case "setCloseAction":
+                    _vm.Settings.CloseAction = root.GetProperty("value").GetString() ?? _vm.Settings.CloseAction;
+                    _vm.Settings.Save();
+                    break;
                 case "setBaselineDays":
                     _vm.SetBaselineRetention(root.GetProperty("value").GetInt32());
                     break;
