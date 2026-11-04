@@ -61,24 +61,25 @@ html, body {
 }
 
 /* 一体化壳：状态栏与侧栏/内容视觉融合（贴合左右底边，顶部留 8px 呼吸） */
-/* 一体化壳：贴窗口四边（顶栏零边距），仅底部 1px 分隔线区分区域 */
+/* 一体化壳：顶部贴边；右侧/底部留白带（窗口背景色露出），系统投影落在留白上不贴内容 */
 #app {
   display: flex; flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - 10px);
+  margin: 0 10px 10px 0;
   background: var(--panel);
+  border-radius: 0 0 14px 0;
   overflow: hidden;
 }
 #body { flex: 1; display: flex; min-height: 0; }
 
 /* ============ 常驻状态栏 ============ */
 /* 常驻状态栏：与壳融合（无独立边框底），底部 1px 分隔 */
-/* 常驻状态栏：贴窗口顶边（零边距），底部 1px 分隔 */
+/* 常驻状态栏：贴窗口顶边；无底线（侧栏区融合，内容区的分隔线由 #content 上缘承担） */
 #topbar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 16px 9px;
-  border-bottom: 1px solid var(--border);
   min-width: 0;
 }
 /* 顶栏左段两行：搜索框 / 复选框（紧凑居中于搜索框下）；暂停监控在 topbar 直接层级与 logo 同行 */
@@ -185,23 +186,22 @@ html, body {
 
 
 /* ============ 侧栏 ============ */
-/* 一体化融合：与壳同底、右侧 1px 分隔、无独立圆角阴影；导航文字量小，做窄（204px） */
+/* 书签式导航：无右侧分隔线、与顶栏融合；菜单项自窗口左缘探出、右端大圆弧（书签形） */
 #sidebar {
   width: 204px;
   flex-shrink: 0;
-  border-right: 1px solid var(--border);
-  background: var(--panel);
+  background: transparent;
   display: flex;
   flex-direction: column;
-  padding: 12px 10px 8px;
+  padding: 10px 8px 8px 0;
   transition: width 0.26s cubic-bezier(0.3, 1.15, 0.4, 1);
   overflow: hidden;
 }
-#sidebar.collapsed { width: 56px; padding: 12px 6px 8px; }
+#sidebar.collapsed { width: 60px; padding: 10px 8px 8px 0; }
 #sidebar.collapsed .nav-item span,
 #sidebar.collapsed .ver { display: none; }
 #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
-#nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+#nav { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 
 /* 展开动效：菜单项自上而下阶梯弹出，明显弹性（收起时不播） */
 #sidebar:not(.collapsed) .nav-item {
@@ -221,12 +221,14 @@ html, body {
   60%  { opacity: 1; }
   to   { opacity: 1; transform: translateX(0) scale(1); }
 }
+/* 书签形菜单项：左缘贴窗口边（无左圆角），右端大圆弧；未选中常显淡底书签、选中 accent */
 .nav-item {
   position: relative;
   display: flex; align-items: center;
   gap: 11px;
-  padding: 10px 14px;
-  border-radius: 9px;
+  padding: 10px 16px 10px 18px;
+  border-radius: 0 18px 18px 0;
+  background: var(--panel2);
   color: var(--dim);
   cursor: pointer;
   user-select: none;
@@ -234,27 +236,20 @@ html, body {
   font-weight: 500;
   transition: background 0.13s, color 0.13s;
 }
-.nav-item:hover { background: var(--panel2); color: var(--fg); }
+.nav-item:hover { background: var(--accent-soft); color: var(--fg); }
 .nav-item.active {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 700;
 }
-.nav-item.active::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 20%; bottom: 20%;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--accent-line);
-}
 .nav-ico { flex: 0 0 auto; opacity: 0.8; }
 .nav-item:hover .nav-ico { opacity: 1; }
 .nav-item.active .nav-ico { color: var(--accent); opacity: 1; }
-#sidebar .ver { padding: 10px 12px 2px; color: var(--faint); font-size: 11px; }
+#sidebar .ver { padding: 10px 12px 2px 18px; color: var(--faint); font-size: 11px; }
 
 /* ============ 内容区 ============ */
-#content { flex: 1; overflow: auto; padding: 4px 20px 18px; min-width: 0; }
+/* 内容区：上缘 1px 分隔线（仅横贯内容侧，侧栏区无线融合） */
+#content { flex: 1; overflow: auto; padding: 12px 20px 18px; min-width: 0; border-top: 1px solid var(--border); }
 .page { display: none; animation: fadein 0.18s ease; }
 .page.active { display: block; }
 @keyframes fadein { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
