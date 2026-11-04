@@ -50,15 +50,16 @@
                                Foreground="#EEF1F7" VerticalAlignment="Center"/>
                 </StackPanel>
                 <Button x:Name="BtnCancel" Width="28" Height="28" HorizontalAlignment="Right"
-                        VerticalAlignment="Center" Content="✕" Cursor="Hand"
+                        VerticalAlignment="Center" Cursor="Hand"
+                        Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10"
                         Background="Transparent" Foreground="#9AA3B5" BorderThickness="0"
-                        FontSize="12" Click="OnCancel"/>
+                        Click="OnCancel"/>
             </Grid>
             <TextBlock x:Name="AskText" Margin="2 16 0 0" FontSize="13" TextWrapping="Wrap"
                        Foreground="#C4CBD9" LineHeight="21"/>
-            <!-- 按钮行：主动作（托盘）在前，次动作（退出）在后 -->
-            <StackPanel Orientation="Horizontal" Margin="0 18 0 0" HorizontalAlignment="Right">
-                <Button x:Name="BtnTray" Cursor="Hand" Margin="0 0 10 0"
+            <!-- 按钮行：居中对称（主动作在前） -->
+            <StackPanel Orientation="Horizontal" Margin="0 18 0 0" HorizontalAlignment="Center">
+                <Button x:Name="BtnTray" Cursor="Hand" Margin="0 0 12 0"
                         FontSize="13" FontWeight="Medium" Foreground="#FFFFFF"
                         Template="{StaticResource CdlgPrimaryBtn}" Click="OnTray"/>
                 <Button x:Name="BtnExit" Cursor="Hand" FontSize="13" FontWeight="Medium" Foreground="#E8EDF5"

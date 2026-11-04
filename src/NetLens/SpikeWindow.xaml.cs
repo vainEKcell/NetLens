@@ -1,9 +1,11 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Microsoft.Web.WebView2.Core;
 using NetLens.Bridge;
+using NetLens.Native;
 using NetLens.Services;
 using NetLens.ViewModels;
 
@@ -26,6 +28,12 @@ public partial class SpikeWindow : Window
         LoadCaptionIcon();
         Loaded += async (_, _) => await InitWeb();
         Closed += (_, _) => _bridge.Detach();
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        WindowEffects.ApplyRoundedCorners(this); // 无边框窗口恢复 Win11 圆角
     }
 
     private readonly string _initialPage;
