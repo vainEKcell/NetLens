@@ -84,7 +84,7 @@ html, body {
 /* 顶栏左段：上行=暂停+搜索组（按钮内嵌右侧），下行=复选 */
 .tb-left { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .tb-row1 { display: flex; align-items: center; gap: 10px; }
-.tb-row2 { display: flex; align-items: center; gap: 16px; }
+.tb-row2 { display: flex; align-items: center; justify-content: center; gap: 16px; }
 .tb-check {
   display: inline-flex; align-items: center; gap: 9px;
   font-size: 12px;
@@ -113,14 +113,19 @@ html, body {
 }
 .search-group button:hover { color: var(--accent); background: var(--accent-soft); }
 
+/* 暂停监控：文字按钮，与搜索框同行等高（input 高 33px = padding 8 + 字 13 + 边框） */
 #btn-pause {
-  display: flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px;
+  display: inline-flex; align-items: center;
+  padding: 7px 14px;
   border: 1px solid var(--border-strong);
   border-radius: 9px;
   background: var(--panel2);
   color: var(--fg);
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
   transition: all 0.15s;
 }
 #btn-pause:hover { border-color: var(--accent); color: var(--accent); }
@@ -129,7 +134,7 @@ html, body {
 #topbar .spacer { flex: 1; }
 
 /* 指标：固定宽度防数字顶曲线；不可压缩、不可重叠 */
-#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; width: 92px; flex-shrink: 0; }
+#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding: 0 11px; width: 84px; flex-shrink: 0; }
 #topbar .metric + .metric { border-left: 1px solid var(--border); }
 
 /* 窄窗多级让位：先藏会话累计，再藏曲线；上传/下载核心指标始终可见 */
@@ -151,26 +156,25 @@ html, body {
 #brand-name {
   font-size: 16px; font-weight: 800; letter-spacing: 0.4px;
   white-space: nowrap;
-  padding-right: 12px;
-  border-right: 1px solid var(--border);
 }
 .tb-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; }
+/* 指标：字体降两档（19→16 / 12.5→11.5），宽度收紧，flex-shrink:0 防覆盖 */
 #topbar .metric .label { font-size: 10.5px; color: var(--faint); font-weight: 600; letter-spacing: 0.5px; }
 #topbar .metric .value {
-  font-size: 19px; font-weight: 800;
+  font-size: 16px; font-weight: 800;
   font-variant-numeric: tabular-nums;
   font-family: var(--mono);
   white-space: nowrap;
 }
 #topbar .metric .value.up { color: var(--green); }
 #topbar .metric .value.down { color: var(--blue); }
-#topbar .metric .value.small { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+#topbar .metric .value.small { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 
 #spark {
   position: relative;
-  flex: 0 1 260px;
-  min-width: 130px;
-  height: 48px;
+  flex: 0 1 224px;
+  min-width: 118px;
+  height: 44px;
   margin-left: 8px;
   overflow: hidden;
   border-radius: 9px;

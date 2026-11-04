@@ -92,9 +92,8 @@ function setPaused(v: boolean): void {
   paused = v;
   pauseBtn.title = paused ? t("tb.resume") : t("tb.pause");
   pauseBtn.classList.toggle("paused", paused);
-  const icp = document.getElementById("ic-pause") as HTMLElement;
-  const icgo = document.getElementById("ic-play") as HTMLElement;
-  if (icp && icgo) { icp.style.display = paused ? "none" : ""; icgo.style.display = paused ? "" : "none"; }
+  const label = document.getElementById("pause-label");
+  if (label) label.textContent = paused ? t("tb.resume") : t("tb.pause");
 }
 
 pauseBtn.addEventListener("click", () => sendCommand(paused ? "resume" : "pause"));

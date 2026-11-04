@@ -160,7 +160,8 @@ export function onSnapshot(fn: Listener): void {
 }
 
 export function sendCommand(name: string, extra: Record<string, unknown> = {}): void {
-  window.chrome.webview.postMessage({ name, ...extra });
+  // 独立浏览器预览无 WebView2 宿主：静默忽略命令，页面仍可渲染布局
+  window.chrome?.webview?.postMessage({ name, ...extra });
 }
 
 export function latestSnapshot(): Snapshot | null {
@@ -192,7 +193,8 @@ export function dispatch(s: Snapshot): void {
 }
 
 export function initBridge(): void {
-  window.chrome.webview.addEventListener("message", (ev) => {
+  // 独立浏览器预览无 WebView2 宿主：不接桥但页面照常渲染（无实时数据）
+  window.chrome?.webview?.addEventListener("message", (ev) => {
     const msg = ev.data as Snapshot;
     if (msg && msg.type === "snapshot") dispatch(msg);
   });

@@ -62,7 +62,7 @@ export function render(root: HTMLElement): void {
             </select>
             <span class="k">${t("set.baselinePause")}</span>
             <label style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="set-pause" style="width:auto;" /> ${t("set.baselinePause.hint")}
+              <input type="checkbox" id="set-pause" /> ${t("set.baselinePause.hint")}
             </label>
           </div>
           <div class="hint" id="set-storage" style="margin-top:8px;">—</div>
@@ -79,7 +79,7 @@ export function render(root: HTMLElement): void {
           <div class="kv" style="grid-template-columns: 90px 220px; row-gap: 10px;">
             <span class="k">${t("set.loopback")}</span>
             <label style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="set-loopback" style="width:auto;" /> ${t("set.loopback.hint")}
+              <input type="checkbox" id="set-loopback" /> ${t("set.loopback.hint")}
             </label>
             <span class="k">${t("set.search")}</span>
             <input type="text" id="set-search" placeholder="${t("set.search.ph")}" style="width: 100%;" />
