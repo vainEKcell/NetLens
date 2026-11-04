@@ -85,6 +85,10 @@ function Draw-Mark([System.Drawing.Graphics]$g, [float]$ss, [float]$boost) {
     # ---- 3. 竖直谱线：上下延长为射线（切割背景） ----
     Draw-GlowLine $g $cx (132 * $ss - 92 * $ss) $cx (132 * $ss + 92 * $ss) ([float]($lw * 0.9)) $rayMain $glowC
 
+    # ---- 3b. 棱镜镜片：左上→右下对角贯穿线（-45° 镜面，与光轴交汇产生折射叙事） ----
+    $d = 100 * $ss
+    Draw-GlowLine $g ($cx - $d) ($cy - $d) ($cx + $d) ($cy + $d) ([float]($lw * 0.9)) $mainC $glowC
+
     # ---- 4. 水平光轴：贯穿直线 + 两端圆点 ----
     Draw-GlowLine $g (24 * $ss) $cy (232 * $ss) $cy $lw $mainC $glowC
     Draw-GlowDot $g (24 * $ss) $cy ([float](7.5 * $ss * $boost)) $mainC $glowC
@@ -132,8 +136,13 @@ foreach ($e in $pngs) {
 foreach ($e in $pngs) { $bw.Write($e.Data) }
 $bw.Close(); $fs.Close()
 
-# ---- brand.png 同步 + 小尺寸实拍条 ----
+# ---- brand.png 同步 + 前端 dist 重建（管线关键：应用加载的是 dist，不重建则置顶栏 logo 不更新） ----
 Copy-Item (Join-Path $root 'verify\icon-preview.png') $brandFile -Force
+Push-Location (Join-Path $root 'WebUI')
+& cmd /c "npm run build 2>&1" | Select-Object -Last 1
+Pop-Location
+if (-not (Test-Path (Join-Path $root 'WebUI\dist\brand.png'))) { throw "dist build failed - brand.png missing" }
+Copy-Item (Join-Path $root 'WebUI\dist\brand.png') (Join-Path $root 'verify\diag-dist-brand.png') -Force
 $strip = New-Object System.Drawing.Bitmap 360, 80
 $gs = [System.Drawing.Graphics]::FromImage($strip)
 $gs.Clear([System.Drawing.Color]::FromArgb(255, 40, 40, 46))
