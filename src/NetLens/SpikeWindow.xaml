@@ -38,7 +38,8 @@
                 <TextBlock Text="NetLens" Margin="10 0 0 0" FontSize="13" FontWeight="SemiBold"
                            Foreground="#D6DCE8" VerticalAlignment="Center"/>
             </StackPanel>
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
                 <Button x:Name="BtnMin" Template="{StaticResource WcBtn}" Click="OnMin"
                         Foreground="#B9C1D1" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
                 <Button x:Name="BtnMax" Template="{StaticResource WcBtn}" Click="OnMax"

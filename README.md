@@ -63,7 +63,7 @@ NetWatch/                     仓库根（项目名沿袭旧名，程序现名 N
 S:\ZWorker\NetWatch\src\NetLens\bin\Debug\net10.0-windows\NetLens.exe
 ```
 
-调试界面通过启动参数直达：`--spike:overview`（其余页面同名：destinations / dns / ports / events / blocking / network / netcheck / settings）。
+直接启动即为 alpha 新界面（总览页）。启动参数：`--spike:页面名` 直达指定页（destinations / dns / ports / events / blocking / network / netcheck / settings）；`--classic` 进入 classic WPF 旧界面。
 
 ### 更新流程（改完代码后）
 
