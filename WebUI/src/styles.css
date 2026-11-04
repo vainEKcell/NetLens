@@ -74,13 +74,22 @@ html, body {
 
 /* ============ 常驻状态栏 ============ */
 /* 常驻状态栏：与壳融合（无独立边框底），底部 1px 分隔 */
-/* 常驻状态栏：贴窗口顶边；无底线（侧栏区融合，内容区的分隔线由 #content 上缘承担） */
+/* 常驻状态栏：贴窗口顶边；分隔线为「┌」形——竖线锚定品牌名右侧（固定，不随侧栏伸缩），
+   向下贯穿顶栏后在底部向右折为横线（topbar::after），侧栏开合不再牵动线条 */
 #topbar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 16px 9px;
   min-width: 0;
+  position: relative;
+}
+#topbar::after {
+  content: "";
+  position: absolute;
+  left: 140px; right: 0; bottom: 0;
+  height: 1px;
+  background: var(--border);
 }
 /* 顶栏左段两行：搜索框 / 复选框（紧凑居中于搜索框下）；暂停监控在 topbar 直接层级与 logo 同行 */
 .tb-left { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
@@ -157,7 +166,7 @@ html, body {
   font-size: 16px; font-weight: 800; letter-spacing: 0.4px;
   white-space: nowrap;
 }
-.tb-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; }
+.tb-sep { width: 1px; height: auto; align-self: stretch; background: var(--border); margin: 6px 4px 0; }
 /* 指标：字体降两档（19→16 / 12.5→11.5），宽度收紧，flex-shrink:0 防覆盖 */
 #topbar .metric .label { font-size: 10.5px; color: var(--faint); font-weight: 600; letter-spacing: 0.5px; }
 #topbar .metric .value {
@@ -248,8 +257,8 @@ html, body {
 #sidebar .ver { padding: 10px 12px 2px 18px; color: var(--faint); font-size: 11px; }
 
 /* ============ 内容区 ============ */
-/* 内容区：上缘 1px 分隔线（仅横贯内容侧，侧栏区无线融合） */
-#content { flex: 1; overflow: auto; padding: 12px 20px 18px; min-width: 0; border-top: 1px solid var(--border); }
+/* 内容区：顶部分隔线由 #topbar::after 承担（与品牌右侧竖线对接成「┌」形） */
+#content { flex: 1; overflow: auto; padding: 12px 20px 18px; min-width: 0; }
 .page { display: none; animation: fadein 0.18s ease; }
 .page.active { display: block; }
 @keyframes fadein { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
