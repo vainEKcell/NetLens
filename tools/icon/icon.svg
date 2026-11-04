@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- NetLens 图标 v17：中心对称纯线条 + 斜置水晶棱镜（透视六边形，仅左右轴对称） -->
+  <!-- 叙事：水平光轴贯穿水晶镜片，双向流量在中心交汇、沿晶轴折射分解 -->
+  <defs>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.5"/>
+    </filter>
+  </defs>
+
+  <!-- 背景：近黑圆角方 -->
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="#07080C"/>
+
+  <!-- 辉光层：主线同形加宽冷白高斯模糊 -->
+  <g stroke="#BED6FF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.15" filter="url(#glow)">
+    <line x1="24" y1="132" x2="232" y2="132"/>
+    <line x1="128" y1="40" x2="128" y2="224"/>
+    <polygon points="18,132 68,108 188,108 238,132 198,162 58,162" transform="rotate(45 128 132)"/>
+  </g>
+
+  <!-- 主线层 -->
+  <g stroke="#F4F8FF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- 棱镜水晶：细长六边形，左右两尖，透视（上边短 120 / 下边长 140，短轴上 24 下 30），斜置 45° -->
+    <polygon points="18,132 68,108 188,108 238,132 198,162 58,162" transform="rotate(45 128 132)"/>
+    <!-- 竖直谱线：上下延伸切割背景 -->
+    <line x1="128" y1="40" x2="128" y2="224" stroke-width="7.2" stroke-opacity="0.86"/>
+    <!-- 水平光轴 -->
+    <line x1="24" y1="132" x2="232" y2="132"/>
+  </g>
+
+  <!-- 光轴两端信号点（辉光圈 + 实心） -->
+  <g>
+    <circle cx="24" cy="132" r="16" fill="#BED6FF" opacity="0.15"/>
+    <circle cx="232" cy="132" r="16" fill="#BED6FF" opacity="0.15"/>
+    <circle cx="24" cy="132" r="7.5" fill="#F4F8FF"/>
+    <circle cx="232" cy="132" r="7.5" fill="#F4F8FF"/>
+  </g>
+</svg>

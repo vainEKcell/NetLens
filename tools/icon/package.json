@@ -1,0 +1,13 @@
+{
+  "name": "netlens-icon-pipeline",
+  "private": true,
+  "type": "module",
+  "description": "NetLens 图标生产管线：SVG 矢量源 → resvg 渲染多尺寸 → ICO 打包 → 同步 brand/dist → shell 缓存刷新 → exe 内嵌自检",
+  "scripts": {
+    "build": "node build.mjs",
+    "verify": "node build.mjs --verify-only"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}
