@@ -88,23 +88,22 @@ function Draw-Prism([System.Drawing.Graphics]$g, [float]$scale, [float]$boost, [
     }
 
     # ---- 5. 出射光束：从右顶点向右上扇形散开 ----
-    # v11 反馈落实：全白、统一等粗（= 三角描边）、无末端节点；亮度分层表达分解后渐弱
+    # v12 反馈落实：全白、等粗、无端点，且光束更疏（间隔 20°，不密集）
     $ray1 = [System.Drawing.Color]::FromArgb(248, 240, 246, 255)
     $ray2 = [System.Drawing.Color]::FromArgb(225, 240, 246, 255)
     $ray3 = [System.Drawing.Color]::FromArgb(198, 240, 246, 255)
     if ($simple) {
         $outRays = @(
             @{ a = -25; len = 106; c = $ray1 },
-            @{ a = -45; len = 92;  c = $ray2 },
-            @{ a = -65; len = 66;  c = $ray3 }
+            @{ a = -50; len = 92;  c = $ray2 },
+            @{ a = -75; len = 66;  c = $ray3 }
         )
     } else {
         $outRays = @(
-            @{ a = -18; len = 106; c = $ray1 },
-            @{ a = -32; len = 118; c = $ray1 },
-            @{ a = -46; len = 106; c = $ray2 },
-            @{ a = -60; len = 90;  c = $ray2 },
-            @{ a = -74; len = 68;  c = $ray3 }
+            @{ a = -20; len = 106; c = $ray1 },
+            @{ a = -40; len = 118; c = $ray1 },
+            @{ a = -60; len = 98;  c = $ray2 },
+            @{ a = -80; len = 70;  c = $ray3 }
         )
     }
     foreach ($r in $outRays) {
@@ -119,10 +118,15 @@ function Draw-Prism([System.Drawing.Graphics]$g, [float]$scale, [float]$boost, [
 }
 
 # ---- 多尺寸输出：各自独立绘制（小尺寸加粗描边），不做整图缩放 ----
+# 帧覆盖 16~256 全档（含 20/24 高 DPI 任务栏档与 64/128 大图标档），避免高分辨率显示取帧糊
 $sizes = @(
     @{ px = 256; boost = 1.0 },
+    @{ px = 128; boost = 1.15 },
+    @{ px = 64;  boost = 1.3 },
     @{ px = 48;  boost = 1.7 },
     @{ px = 32;  boost = 2.2 },
+    @{ px = 24;  boost = 2.5 },
+    @{ px = 20;  boost = 2.8 },
     @{ px = 16;  boost = 3.0 }
 )
 $pngs = @()

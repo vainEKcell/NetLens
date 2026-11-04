@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using NetLens.Native;
 using NetLens.Services;
 using NetLens.ViewModels;
 
@@ -17,6 +18,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         _vm = vm;
+        WindowEffects.SetWindowIcon(this);
         DataContext = _vm;
         _vm.ChartPush += (u, d) => Chart.Push(u, d);
         _vm.NavigateToEventsRequested += () => Nav.SelectedIndex = 4; // 事件流（网络体检移至网络配置之后）

@@ -26,6 +26,7 @@ public partial class SpikeWindow : Window
         _bridge = new UiBridge(snapshots, vm);
         _initialPage = initialPage;
         LoadCaptionIcon();
+        WindowEffects.SetWindowIcon(this);
         Loaded += async (_, _) => await InitWeb();
         Closed += (_, _) => _bridge.Detach();
     }

@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 
 namespace NetLens.Native;
 
@@ -28,5 +29,24 @@ public static class WindowEffects
             DwmSetWindowAttribute(helper.Handle, DWMWA_BORDER_COLOR, ref none, sizeof(int));
         }
         catch { /* 非 Win11：保持直角 */ }
+    }
+
+    /// 窗口图标：显式取 ICO 中 ≤64px 的最大帧，高 DPI 标题栏/任务栏不再依赖系统从小帧缩放。
+    public static void SetWindowIcon(System.Windows.Window w)
+    {
+        try
+        {
+            var decoder = BitmapDecoder.Create(new Uri("pack://application:,,,/Assets/app.ico"),
+                BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            var frame = decoder.Frames
+                .Where(f => f.PixelWidth <= 64)
+                .OrderByDescending(f => f.PixelWidth)
+                .FirstOrDefault() ?? decoder.Frames.OrderByDescending(f => f.PixelWidth).First();
+            w.Icon = frame;
+        }
+        catch
+        {
+            // 图标加载失败时保持 exe 内嵌图标兜底
+        }
     }
 }
