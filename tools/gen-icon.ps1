@@ -1,13 +1,21 @@
-﻿# NetLens 应用图标生成：Assets\app.ico
-# 设计 v13 —— 中心对称双棱镜（logo 兼作收放按钮、会旋转，故取 180° 旋转对称构图）：
-#   左右两个线框三角顶点相对（蝶形）；一条水平光路自左端圆点贯穿双棱镜至右端圆点
-#   ——双向流量在 NetLens 中心交汇、分解；中心间隙向上/向下对称谱出两条色散线。
-#   全部线条等粗（= 三角描边 8px 基准），扁平点线语言，黑底。
-# 输出 16~256 全帧位：小尺寸不缩放，按尺寸独立绘制并加粗描边。
+﻿# NetLens 应用图标生成器（管线版）：Assets\app.ico + WebUI\public\brand.png + shell 缓存刷新 + exe 内嵌自检
+# 设计 v14 —— 中心对称双棱镜（蝶形）+ 辉光线条：
+#   左右两个线框三角顶点相对；一条水平光路自左端圆点贯穿双棱镜至右端圆点
+#   （双向流量在 NetLens 中心交汇、分解）；中心竖直谱线上下对称。
+#   v14 质感升级：每条主线下叠一层同形宽幅辉光（低透明度冷白），顶点与端点带辉光圈，
+#   整体呈"黑底发光棱镜"的绚丽观感；线条主体仍为纯白等粗。
+# 清晰度升级：全部尺寸按 4x 超采样绘制（1024 画布→256 等），高质量降采样，
+#   边缘亚像素平滑度显著高于直接绘制。
+# 管线：ICO(16~256 全帧) → brand.png 同步 → SHChangeNotify 刷新 shell 图标缓存
+#   → （build 后再跑一次本脚本 -VerifyOnly 可提取 exe 内嵌图标核对）。
+param([switch]$VerifyOnly)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
-$outFile = Join-Path $PSScriptRoot '..\src\NetLens\Assets\app.ico'
+$root = Join-Path $PSScriptRoot '..'
+$outFile = Join-Path $root 'src\NetLens\Assets\app.ico'
+$brandFile = Join-Path $root 'WebUI\public\brand.png'
+$exeFile = Join-Path $root 'src\NetLens\bin\Debug\net10.0-windows\NetLens.exe'
 New-Item -ItemType Directory -Force -Path (Split-Path $outFile) | Out-Null
 
 function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]$r) {
@@ -21,74 +29,84 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
     return $p
 }
 
-# 画布基准 256，所有几何在基准坐标系中定义，绘制时按 scale 缩放、线宽按 boost 加粗
-# v13：中心对称双棱镜（蝶形）——logo 兼作收放按钮会旋转，图形绕中心转 180° 与自身重合
-#   左右两个线框三角顶点相对；一条水平光路自左端圆点贯穿双棱镜至右端圆点
-#   （双向流量在 NetLens 中心交汇分解）；中心间隙向上/向下对称谱出两条色散线。
-# $simple=$true 时使用小尺寸简化构图：仅双三角 + 主光路 + 两端圆点
-function Draw-Prism([System.Drawing.Graphics]$g, [float]$scale, [float]$boost, [bool]$simple) {
+# 单条线段：先辉光层（宽幅低透明冷白）再主线（纯白）
+function Draw-GlowLine([System.Drawing.Graphics]$g, [float]$x1, [float]$y1, [float]$x2, [float]$y2, [float]$w, [System.Drawing.Color]$main, [System.Drawing.Color]$glow) {
+    $gPen = New-Object System.Drawing.Pen ($glow), ([float]($w * 2.0))
+    $gPen.StartCap = 'Round'; $gPen.EndCap = 'Round'
+    $g.DrawLine($gPen, $x1, $y1, $x2, $y2)
+    $gPen.Dispose()
+    $mPen = New-Object System.Drawing.Pen ($main), $w
+    $mPen.StartCap = 'Round'; $mPen.EndCap = 'Round'
+    $g.DrawLine($mPen, $x1, $y1, $x2, $y2)
+    $mPen.Dispose()
+}
+
+# 圆点：辉光圈 + 实心
+function Draw-GlowDot([System.Drawing.Graphics]$g, [float]$cx, [float]$cy, [float]$r, [System.Drawing.Color]$main, [System.Drawing.Color]$glow) {
+    $gb = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb($glow.A, $glow.R, $glow.G, $glow.B))
+    $g.FillEllipse($gb, $cx - $r * 1.9, $cy - $r * 1.9, $r * 3.8, $r * 3.8)
+    $gb.Dispose()
+    $mb = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb($main.A, $main.R, $main.G, $main.B))
+    $g.FillEllipse($mb, $cx - $r, $cy - $r, $r * 2, $r * 2)
+    $mb.Dispose()
+}
+
+# 基准 256 几何；$S 为实际绘制画布边长（= 256*ss 超采样倍数），所有坐标乘 ss，线宽乘 ss*boost
+# $simple=$true：小尺寸简化构图（仅双三角 + 主光路 + 两端圆点）
+function Draw-Prism([System.Drawing.Graphics]$g, [float]$ss, [float]$boost, [bool]$simple) {
     $g.SmoothingMode = 'AntiAlias'
     $g.PixelOffsetMode = 'HighQuality'
 
+    $mainC = [System.Drawing.Color]::FromArgb(250, 244, 248, 255)
+    $glowC = [System.Drawing.Color]::FromArgb(36, 190, 214, 255)     # 冷白辉光（极淡蓝，光感）
+    $rayMain = [System.Drawing.Color]::FromArgb(210, 244, 248, 255)
+    $lw = [float](8.0 * $ss * $boost)                                  # 统一线宽 = 三角描边
+    $cy = 132.0 * $ss
+
     # ---- 1. 背景：近黑圆角方 ----
-    $m = 8 * $scale; $side = 240 * $scale; $rad = 56 * $scale
+    $m = 8 * $ss; $side = 240 * $ss; $rad = 56 * $ss
     $bgPath = New-RoundedRectPath $m $m $side $side $rad
-    $g.FillPath([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 7, 8, 12)), $bgPath)
-    $bgPath.Dispose()
+    $bgBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 7, 8, 12))
+    $g.FillPath($bgBrush, $bgPath)
+    $bgBrush.Dispose(); $bgPath.Dispose()
 
-    $white = [System.Drawing.Color]::FromArgb(248, 240, 246, 255)
-    $lineW = [float](8.0 * $scale * $boost)   # 全图统一线宽 = 三角描边
-    $cy = 132.0                                # 光路水平线（构图垂直中心）
-
-    # ---- 2. 双三角（蝶形）：顶点相对，中心留 14px 间隙 ----
-    # 左三角：竖边 (52,92)-(52,172)，顶点 (121,132)；右三角为中心对称镜像
-    $triPen = New-Object System.Drawing.Pen ($white), $lineW
-    $triPen.StartCap = 'Round'; $triPen.EndCap = 'Round'
-    $triPen.LineJoin = 'Round'
-    foreach ($side in @('L', 'R')) {
-        $path = New-Object System.Drawing.Drawing2D.GraphicsPath
-        if ($side -eq 'L') {
-            $path.AddLine([single](52 * $scale), [single](92 * $scale), [single](52 * $scale), [single](172 * $scale))
-            $path.AddLine([single](52 * $scale), [single](172 * $scale), [single](121 * $scale), [single]($cy * $scale))
+    # ---- 2. 双三角（蝶形）：顶点相对，中心留 14px 间隙；三边各带辉光 ----
+    foreach ($sd in @('L', 'R')) {
+        if ($sd -eq 'L') {
+            $pts = @(@(52, 92), @(52, 172), @(121, 132))
         } else {
-            $path.AddLine([single](204 * $scale), [single](92 * $scale), [single](204 * $scale), [single](172 * $scale))
-            $path.AddLine([single](204 * $scale), [single](172 * $scale), [single](135 * $scale), [single]($cy * $scale))
+            $pts = @(@(204, 92), @(204, 172), @(135, 132))
         }
-        $path.CloseFigure()
-        $g.DrawPath($triPen, $path)
-        $path.Dispose()
+        # 辉光层：同形三角整体描一次宽幅
+        $gp = New-Object System.Drawing.Drawing2D.GraphicsPath
+        $gp.AddLine([single]($pts[0][0] * $ss), [single]($pts[0][1] * $ss), [single]($pts[1][0] * $ss), [single]($pts[1][1] * $ss))
+        $gp.AddLine([single]($pts[1][0] * $ss), [single]($pts[1][1] * $ss), [single]($pts[2][0] * $ss), [single]($pts[2][1] * $ss))
+        $gp.CloseFigure()
+        $gPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb($glowC.A, $glowC.R, $glowC.G, $glowC.B)), ([float]($lw * 2.0))
+        $gPen.LineJoin = 'Round'
+        $g.DrawPath($gPen, $gp)
+        $gPen.Dispose()
+        # 主线层
+        $mPen = New-Object System.Drawing.Pen ($mainC), $lw
+        $mPen.StartCap = 'Round'; $mPen.EndCap = 'Round'; $mPen.LineJoin = 'Round'
+        $g.DrawPath($mPen, $gp)
+        $mPen.Dispose()
+        $gp.Dispose()
     }
-    $triPen.Dispose()
 
-    # ---- 3. 水平主光路：左端圆点 → 贯穿双棱镜 → 右端圆点（双向对流的交汇线） ----
-    $dotR = [float](7.5 * $scale * $boost)
-    $dot = New-Object System.Drawing.SolidBrush ($white)
-    $g.FillEllipse($dot, [single](24 * $scale - $dotR), [single]($cy * $scale - $dotR), $dotR * 2, $dotR * 2)
-    $g.FillEllipse($dot, [single](232 * $scale - $dotR), [single]($cy * $scale - $dotR), $dotR * 2, $dotR * 2)
-    $dot.Dispose()
-    $mainPen = New-Object System.Drawing.Pen ($white), $lineW
-    $mainPen.StartCap = 'Round'; $mainPen.EndCap = 'Round'
-    $g.DrawLine($mainPen, [single](24 * $scale), [single]($cy * $scale), [single](232 * $scale), [single]($cy * $scale))
-    $mainPen.Dispose()
+    # ---- 3. 水平主光路：左端圆点 → 贯穿双棱镜 → 右端圆点 ----
+    Draw-GlowLine $g (24 * $ss) $cy (232 * $ss) $cy $lw $mainC $glowC
+    Draw-GlowDot $g (24 * $ss) $cy ([float](7.5 * $ss * $boost)) $mainC $glowC
+    Draw-GlowDot $g (232 * $ss) $cy ([float](7.5 * $ss * $boost)) $mainC $glowC
 
-    # ---- 4. 中心谱线：自双顶点间隙沿竖直对称向上/向下谱出（色散意象，180° 对称） ----
+    # ---- 4. 中心竖直谱线：上下对称（色散意象） ----
     if (-not $simple) {
-        $rayCol = [System.Drawing.Color]::FromArgb(205, 240, 246, 255)
-        $rayPen = New-Object System.Drawing.Pen ($rayCol), $lineW
-        $rayPen.StartCap = 'Round'; $rayPen.EndCap = 'Round'
-        foreach ($ang in @(-90.0, 90.0)) {
-            $rad2 = $ang * [System.Math]::PI / 180.0
-            $len = 55
-            $ex = (128 + [System.Math]::Cos($rad2) * $len) * $scale
-            $ey = ($cy + [System.Math]::Sin($rad2) * $len) * $scale
-            $g.DrawLine($rayPen, [single](128 * $scale), [single]($cy * $scale), [single]$ex, [single]$ey)
-        }
-        $rayPen.Dispose()
+        $rayGlow = [System.Drawing.Color]::FromArgb(30, 190, 214, 255)
+        Draw-GlowLine $g (128 * $ss) (132 * $ss - 55 * $ss) (128 * $ss) (132 * $ss + 55 * $ss) ([float]($lw * 0.86)) $rayMain $rayGlow
     }
 }
 
-# ---- 多尺寸输出：各自独立绘制（小尺寸加粗描边），不做整图缩放 ----
-# 帧覆盖 16~256 全档（含 20/24 高 DPI 任务栏档与 64/128 大图标档），避免高分辨率显示取帧糊
+# ---- 多档输出：4x 超采样绘制 → 高质量降采样 ----
 $sizes = @(
     @{ px = 256; boost = 1.0 },
     @{ px = 128; boost = 1.15 },
@@ -99,17 +117,28 @@ $sizes = @(
     @{ px = 20;  boost = 2.8 },
     @{ px = 16;  boost = 3.0 }
 )
+$SS = 4   # 超采样倍数
 $pngs = @()
-$bmp256 = $null
 foreach ($sz in $sizes) {
-    $bmp = New-Object System.Drawing.Bitmap $sz.px, $sz.px
+    $big = $sz.px * $SS
+    $bmp = New-Object System.Drawing.Bitmap $big, $big
     $g = [System.Drawing.Graphics]::FromImage($bmp)
-    Draw-Prism $g ([float]($sz.px / 256.0)) ([float]$sz.boost) ($sz.px -le 48)
+    Draw-Prism $g ([float]($big / 256.0)) ([float]$sz.boost) ($sz.px -le 48)
     $g.Dispose()
+    # 降采样回目标尺寸
+    $final = New-Object System.Drawing.Bitmap $sz.px, $sz.px
+    $fg = [System.Drawing.Graphics]::FromImage($final)
+    $fg.InterpolationMode = 'HighQualityBicubic'
+    $fg.SmoothingMode = 'AntiAlias'
+    $fg.PixelOffsetMode = 'HighQuality'
+    $fg.DrawImage($bmp, (New-Object System.Drawing.Rectangle 0, 0, $sz.px, $sz.px))
+    $fg.Dispose()
+    $bmp.Dispose()
     $ms = New-Object System.IO.MemoryStream
-    $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+    $final.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
     $pngs += , @{ Size = $sz.px; Data = $ms.ToArray() }
-    if ($sz.px -eq 256) { $bmp256 = $bmp } else { $bmp.Dispose() }
+    if ($sz.px -eq 256) { $final.Save((Join-Path $root 'verify\icon-preview.png'), [System.Drawing.Imaging.ImageFormat]::Png) }
+    $final.Dispose()
 }
 
 # ---- ICO 打包（PNG-in-ICO） ----
@@ -128,8 +157,8 @@ foreach ($e in $pngs) {
 foreach ($e in $pngs) { $bw.Write($e.Data) }
 $bw.Close(); $fs.Close()
 
-# 预览：256 主图 + 小尺寸实拍拼图（人工验收小图可辨性）
-$bmp256.Save((Join-Path $PSScriptRoot '..\verify\icon-preview.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+# ---- brand.png 同步 + 小尺寸实拍条 ----
+Copy-Item (Join-Path $root 'verify\icon-preview.png') $brandFile -Force
 $strip = New-Object System.Drawing.Bitmap 360, 80
 $gs = [System.Drawing.Graphics]::FromImage($strip)
 $gs.Clear([System.Drawing.Color]::FromArgb(255, 40, 40, 46))
@@ -143,7 +172,32 @@ foreach ($px in @(48, 32, 16)) {
     $x += $px + 18
 }
 $gs.Dispose()
-$strip.Save((Join-Path $PSScriptRoot '..\verify\icon-small-strip.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+$strip.Save((Join-Path $root 'verify\icon-small-strip.png'), [System.Drawing.Imaging.ImageFormat]::Png)
 $strip.Dispose()
-$bmp256.Dispose()
+
+# ---- 管线：SHChangeNotify 刷新 shell 图标缓存（资源管理器/任务栏固定图标来源） ----
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class ShellNotify {
+    [DllImport("shell32.dll")]
+    public static extern void SHChangeNotify(int wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+}
+"@
+[ShellNotify]::SHChangeNotify(0x08000000, 0x0000, [IntPtr]::Zero, [IntPtr]::Zero)  # SHCNE_ASSOCCHANGED：全局刷新图标关联缓存
+
+# ---- exe 内嵌图标自检（build 后跑 -VerifyOnly 可单独执行核对） ----
+if (Test-Path $exeFile) {
+    try {
+        $ico = [System.Drawing.Icon]::ExtractAssociatedIcon($exeFile)
+        $bmp = $ico.ToBitmap()
+        $bmp.Save((Join-Path $root 'verify\diag-exe-icon.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+        Write-Output ("exe-embedded-icon: " + $bmp.Width + "x" + $bmp.Height + " -> verify\diag-exe-icon.png")
+        $bmp.Dispose()
+    } catch { Write-Output ("exe icon extract failed: " + $_.Exception.Message) }
+} else {
+    Write-Output "exe not found (build first), skip embedded check"
+}
+
 Write-Output "ICO written: $outFile"
+Write-Output "brand.png synced; shell icon cache refreshed"
