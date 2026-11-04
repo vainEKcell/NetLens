@@ -1,37 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-  <!-- NetLens 图标 v17：中心对称纯线条 + 斜置水晶棱镜（透视六边形，仅左右轴对称） -->
-  <!-- 叙事：水平光轴贯穿水晶镜片，双向流量在中心交汇、沿晶轴折射分解 -->
+  <!-- NetLens 图标 v18：v2 渐变透镜环 + 三节点网络图，元素增强版 -->
+  <!-- 品牌内核「透镜·看清每进程流量」：深空底 + 电蓝→青渐变镜圈 + 圈内进程流量图谱 + 镜片高光 -->
   <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16223A"/>
+      <stop offset="1" stop-color="#070A12"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4D8DFF"/>
+      <stop offset="1" stop-color="#50D6DC"/>
+    </linearGradient>
     <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="3.5"/>
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6"/>
     </filter>
   </defs>
 
-  <!-- 背景：近黑圆角方 -->
-  <rect x="8" y="8" width="240" height="240" rx="56" fill="#07080C"/>
+  <!-- 背景：深空对角渐变圆角方 + 细边框 -->
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)" stroke="#405682" stroke-width="3"/>
 
-  <!-- 辉光层：主线同形加宽冷白高斯模糊 -->
-  <g stroke="#BED6FF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.15" filter="url(#glow)">
-    <line x1="24" y1="132" x2="232" y2="132"/>
-    <line x1="128" y1="40" x2="128" y2="224"/>
-    <polygon points="18,132 68,108 188,108 238,132 198,162 58,162" transform="rotate(45 128 132)"/>
+  <!-- 镜圈辉光层 -->
+  <circle cx="128" cy="126" r="84" fill="none" stroke="#4D8DFF" stroke-width="20" opacity="0.22" filter="url(#glow)"/>
+
+  <!-- 透镜镜圈：电蓝→青渐变粗环（增强：半径 84 / 描边 15） -->
+  <circle cx="128" cy="126" r="84" fill="none" stroke="url(#ring)" stroke-width="15"/>
+
+  <!-- 圈内网络图谱：三节点 + 连线（增强：节点 11 / 连线 6） -->
+  <g stroke="#78B4FF" stroke-width="6" stroke-opacity="0.92" stroke-linecap="round">
+    <line x1="128" y1="78" x2="87" y2="153"/>
+    <line x1="128" y1="78" x2="169" y2="153"/>
+    <line x1="87" y1="153" x2="169" y2="153"/>
+  </g>
+  <g fill="#BEEBFF">
+    <circle cx="128" cy="78" r="11"/>
+    <circle cx="87" cy="153" r="11"/>
+    <circle cx="169" cy="153" r="11"/>
   </g>
 
-  <!-- 主线层 -->
-  <g stroke="#F4F8FF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <!-- 棱镜水晶：细长六边形，左右两尖，透视（上边短 120 / 下边长 140，短轴上 24 下 30），斜置 45° -->
-    <polygon points="18,132 68,108 188,108 238,132 198,162 58,162" transform="rotate(45 128 132)"/>
-    <!-- 竖直谱线：上下延伸切割背景 -->
-    <line x1="128" y1="40" x2="128" y2="224" stroke-width="7.2" stroke-opacity="0.86"/>
-    <!-- 水平光轴 -->
-    <line x1="24" y1="132" x2="232" y2="132"/>
-  </g>
-
-  <!-- 光轴两端信号点（辉光圈 + 实心） -->
-  <g>
-    <circle cx="24" cy="132" r="16" fill="#BED6FF" opacity="0.15"/>
-    <circle cx="232" cy="132" r="16" fill="#BED6FF" opacity="0.15"/>
-    <circle cx="24" cy="132" r="7.5" fill="#F4F8FF"/>
-    <circle cx="232" cy="132" r="7.5" fill="#F4F8FF"/>
-  </g>
+  <!-- 镜片质感：左上弧形高光 + 中心光斑 -->
+  <path d="M 64.1 102.7 A 68 68 0 0 1 139.8 59" fill="none" stroke="#EBF5FF" stroke-width="7" stroke-opacity="0.7" stroke-linecap="round"/>
+  <circle cx="122" cy="100" r="17" fill="#DCF0FF" opacity="0.45" filter="url(#soft)"/>
 </svg>
