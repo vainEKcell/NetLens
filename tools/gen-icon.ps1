@@ -51,17 +51,20 @@ function Draw-GlowDot([System.Drawing.Graphics]$g, [float]$cx, [float]$cy, [floa
     $mb.Dispose()
 }
 
-# 基准 256 几何；$S 为实际绘制画布边长（= 256*ss 超采样倍数），所有坐标乘 ss，线宽乘 ss*boost
-# $simple=$true：小尺寸简化构图（仅双三角 + 主光路 + 两端圆点）
-function Draw-Prism([System.Drawing.Graphics]$g, [float]$ss, [float]$boost, [bool]$simple) {
+# v15：纯线条星芒（无封闭图形），中心对称，射线切割背景
+#   水平光轴：两端圆点 + 贯穿直线（入射轴）
+#   竖直谱线：延长为上下射线（用户点名的中线）
+#   分解扇：从中心向右上/左下两个对角各散出两条射线（棱镜"分解"意象，180° 对称）
+function Draw-Mark([System.Drawing.Graphics]$g, [float]$ss, [float]$boost) {
     $g.SmoothingMode = 'AntiAlias'
     $g.PixelOffsetMode = 'HighQuality'
 
     $mainC = [System.Drawing.Color]::FromArgb(250, 244, 248, 255)
-    $glowC = [System.Drawing.Color]::FromArgb(36, 190, 214, 255)     # 冷白辉光（极淡蓝，光感）
-    $rayMain = [System.Drawing.Color]::FromArgb(210, 244, 248, 255)
-    $lw = [float](8.0 * $ss * $boost)                                  # 统一线宽 = 三角描边
+    $rayMain = [System.Drawing.Color]::FromArgb(214, 244, 248, 255)
+    $glowC = [System.Drawing.Color]::FromArgb(36, 190, 214, 255)
+    $lw = [float](8.0 * $ss * $boost)
     $cy = 132.0 * $ss
+    $cx = 128.0 * $ss
 
     # ---- 1. 背景：近黑圆角方 ----
     $m = 8 * $ss; $side = 240 * $ss; $rad = 56 * $ss
@@ -70,76 +73,48 @@ function Draw-Prism([System.Drawing.Graphics]$g, [float]$ss, [float]$boost, [boo
     $g.FillPath($bgBrush, $bgPath)
     $bgBrush.Dispose(); $bgPath.Dispose()
 
-    # ---- 2. 双三角（蝶形）：顶点相对，中心留 14px 间隙；三边各带辉光 ----
-    foreach ($sd in @('L', 'R')) {
-        if ($sd -eq 'L') {
-            $pts = @(@(52, 92), @(52, 172), @(121, 132))
-        } else {
-            $pts = @(@(204, 92), @(204, 172), @(135, 132))
-        }
-        # 辉光层：同形三角整体描一次宽幅
-        $gp = New-Object System.Drawing.Drawing2D.GraphicsPath
-        $gp.AddLine([single]($pts[0][0] * $ss), [single]($pts[0][1] * $ss), [single]($pts[1][0] * $ss), [single]($pts[1][1] * $ss))
-        $gp.AddLine([single]($pts[1][0] * $ss), [single]($pts[1][1] * $ss), [single]($pts[2][0] * $ss), [single]($pts[2][1] * $ss))
-        $gp.CloseFigure()
-        $gPen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb($glowC.A, $glowC.R, $glowC.G, $glowC.B)), ([float]($lw * 2.0))
-        $gPen.LineJoin = 'Round'
-        $g.DrawPath($gPen, $gp)
-        $gPen.Dispose()
-        # 主线层
-        $mPen = New-Object System.Drawing.Pen ($mainC), $lw
-        $mPen.StartCap = 'Round'; $mPen.EndCap = 'Round'; $mPen.LineJoin = 'Round'
-        $g.DrawPath($mPen, $gp)
-        $mPen.Dispose()
-        $gp.Dispose()
+    # ---- 2. 分解扇：右上两条 + 左下两条（180° 对称） ----
+    foreach ($ang in @(-25.0, -55.0, 155.0, 125.0)) {
+        $rad2 = $ang * [System.Math]::PI / 180.0
+        $len = $(if ([System.Math]::Abs($ang) -eq 25 -or [System.Math]::Abs($ang) -eq 155) { 118 } else { 95 })
+        $ex = $cx + [System.Math]::Cos($rad2) * $len * $ss
+        $ey = $cy + [System.Math]::Sin($rad2) * $len * $ss
+        Draw-GlowLine $g $cx $cy ([float]$ex) ([float]$ey) ([float]($lw * 0.9)) $rayMain $glowC
     }
 
-    # ---- 3. 水平主光路：左端圆点 → 贯穿双棱镜 → 右端圆点 ----
+    # ---- 3. 竖直谱线：上下延长为射线（切割背景） ----
+    Draw-GlowLine $g $cx (132 * $ss - 92 * $ss) $cx (132 * $ss + 92 * $ss) ([float]($lw * 0.9)) $rayMain $glowC
+
+    # ---- 4. 水平光轴：贯穿直线 + 两端圆点 ----
     Draw-GlowLine $g (24 * $ss) $cy (232 * $ss) $cy $lw $mainC $glowC
     Draw-GlowDot $g (24 * $ss) $cy ([float](7.5 * $ss * $boost)) $mainC $glowC
     Draw-GlowDot $g (232 * $ss) $cy ([float](7.5 * $ss * $boost)) $mainC $glowC
-
-    # ---- 4. 中心竖直谱线：上下对称（色散意象） ----
-    if (-not $simple) {
-        $rayGlow = [System.Drawing.Color]::FromArgb(30, 190, 214, 255)
-        Draw-GlowLine $g (128 * $ss) (132 * $ss - 55 * $ss) (128 * $ss) (132 * $ss + 55 * $ss) ([float]($lw * 0.86)) $rayMain $rayGlow
-    }
 }
 
-# ---- 多档输出：4x 超采样绘制 → 高质量降采样 ----
-$sizes = @(
-    @{ px = 256; boost = 1.0 },
-    @{ px = 128; boost = 1.15 },
-    @{ px = 64;  boost = 1.3 },
-    @{ px = 48;  boost = 1.7 },
-    @{ px = 32;  boost = 2.2 },
-    @{ px = 24;  boost = 2.5 },
-    @{ px = 20;  boost = 2.8 },
-    @{ px = 16;  boost = 3.0 }
-)
-$SS = 4   # 超采样倍数
+# ---- 多档输出：单源渲染（1024 超采样母版一张），所有帧从母版降采样 ----
+#   保证任务栏 32/48 帧与应用内 256 版观感完全一致（此前各帧独立加粗绘制导致两边不一致）
+$sizes = @(256, 128, 64, 48, 32, 24, 20, 16)
+$SS = 4
 $pngs = @()
+$master = New-Object System.Drawing.Bitmap (256 * $SS), (256 * $SS)
+$mg = [System.Drawing.Graphics]::FromImage($master)
+Draw-Mark $mg ([float](256 * $SS / 256.0)) 1.0
+$mg.Dispose()
 foreach ($sz in $sizes) {
-    $big = $sz.px * $SS
-    $bmp = New-Object System.Drawing.Bitmap $big, $big
-    $g = [System.Drawing.Graphics]::FromImage($bmp)
-    Draw-Prism $g ([float]($big / 256.0)) ([float]$sz.boost) ($sz.px -le 48)
-    $g.Dispose()
-    # 降采样回目标尺寸
-    $final = New-Object System.Drawing.Bitmap $sz.px, $sz.px
+    $final = New-Object System.Drawing.Bitmap $sz, $sz
     $fg = [System.Drawing.Graphics]::FromImage($final)
     $fg.InterpolationMode = 'HighQualityBicubic'
     $fg.SmoothingMode = 'AntiAlias'
     $fg.PixelOffsetMode = 'HighQuality'
-    $fg.DrawImage($bmp, (New-Object System.Drawing.Rectangle 0, 0, $sz.px, $sz.px))
+    $fg.DrawImage($master, (New-Object System.Drawing.Rectangle 0, 0, $sz, $sz))
     $fg.Dispose()
-    $bmp.Dispose()
     $ms = New-Object System.IO.MemoryStream
     $final.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
-    $pngs += , @{ Size = $sz.px; Data = $ms.ToArray() }
-    if ($sz.px -eq 256) { $final.Save((Join-Path $root 'verify\icon-preview.png'), [System.Drawing.Imaging.ImageFormat]::Png) }
+    $pngs += , @{ Size = $sz; Data = $ms.ToArray() }
+    if ($sz -eq 256) { $final.Save((Join-Path $root 'verify\icon-preview.png'), [System.Drawing.Imaging.ImageFormat]::Png) }
     $final.Dispose()
 }
+$master.Dispose()
 
 # ---- ICO 打包（PNG-in-ICO） ----
 $fs = [System.IO.File]::Create($outFile)
