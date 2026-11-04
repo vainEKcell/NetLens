@@ -10,13 +10,17 @@ public static class WindowEffects
 {
     private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
     private const int DWMWA_BORDER_COLOR = 34;
+    private const int DWMWA_NCRENDERING_POLICY = 2;
     private const int DWMWCP_ROUND = 2;              // 圆角
+    private const int DWMNCRP_DISABLED = 2;          // 关闭 DWM 非客户区渲染（含系统投影阴影）
     private const int DWMWA_COLOR_NONE = unchecked((int)0xFFFFFFFE); // 不画 1px 系统边框
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
 
     /// 句柄就绪后调用（OnSourceInitialized）。圆角 + 去系统边框线，与深色 UI 融合。
+    /// 同时关闭 DWM 阴影：深色主题下融入背景不可见，浅色主题下窗口右侧/下方的
+    /// “景深阴影带”会显形，自绘窗口用边框分层即可。
     public static void ApplyRoundedCorners(System.Windows.Window w)
     {
         try
@@ -27,6 +31,8 @@ public static class WindowEffects
             DwmSetWindowAttribute(helper.Handle, DWMWA_WINDOW_CORNER_PREFERENCE, ref pref, sizeof(int));
             int none = DWMWA_COLOR_NONE;
             DwmSetWindowAttribute(helper.Handle, DWMWA_BORDER_COLOR, ref none, sizeof(int));
+            int ncrp = DWMNCRP_DISABLED;
+            DwmSetWindowAttribute(helper.Handle, DWMWA_NCRENDERING_POLICY, ref ncrp, sizeof(int));
         }
         catch { /* 非 Win11：保持直角 */ }
     }

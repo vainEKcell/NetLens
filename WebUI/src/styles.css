@@ -81,10 +81,9 @@ html, body {
   border-bottom: 1px solid var(--border);
   min-width: 0;
 }
-/* 顶栏左段：上行=暂停+搜索组（按钮内嵌右侧），下行=复选 */
-.tb-left { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-.tb-row1 { display: flex; align-items: center; gap: 10px; }
-.tb-row2 { display: flex; align-items: center; justify-content: center; gap: 16px; }
+/* 顶栏左段两行：搜索框 / 复选框（紧凑居中于搜索框下）；暂停监控在 topbar 直接层级与 logo 同行 */
+.tb-left { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.tb-row2 { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; }
 .tb-check {
   display: inline-flex; align-items: center; gap: 9px;
   font-size: 12px;
@@ -96,9 +95,9 @@ html, body {
 .tb-check:hover { color: var(--fg); }
 .tb-check input[type="checkbox"] { margin: 0; }
 
-/* 搜索组：按钮内嵌框内右侧（半切式）；窄窗可收缩 */
-.search-group { position: relative; display: flex; align-items: center; min-width: 0; }
-.search-group input[type="text"] { flex: 0 1 200px; min-width: 120px; padding-right: 38px; }
+/* 搜索组：占满左段宽度（复选行相对其居中）；按钮内嵌框内右侧（半切式）；窄窗可收缩 */
+.search-group { position: relative; display: flex; align-items: center; min-width: 0; align-self: stretch; }
+.search-group input[type="text"] { flex: 1 1 200px; min-width: 120px; padding-right: 38px; }
 .search-group button {
   position: absolute;
   right: 5px;
@@ -133,8 +132,8 @@ html, body {
 
 #topbar .spacer { flex: 1; }
 
-/* 指标：固定宽度防数字顶曲线；不可压缩、不可重叠 */
-#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding: 0 11px; width: 84px; flex-shrink: 0; }
+/* 指标：右缘为基准——宽度随数字位数自适应（向左延伸），min-width 防过窄；右端曲线位置不动 */
+#topbar .metric { display: flex; flex-direction: column; gap: 2px; padding: 0 11px; width: auto; min-width: 84px; flex-shrink: 0; }
 #topbar .metric + .metric { border-left: 1px solid var(--border); }
 
 /* 窄窗多级让位：先藏会话累计，再藏曲线；上传/下载核心指标始终可见 */
