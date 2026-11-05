@@ -210,24 +210,24 @@ html, body {
 #sidebar.collapsed .nav-item span,
 #sidebar.collapsed .ver { display: none; }
 #sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
-#nav { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+#nav { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 
-/* 展开动效：菜单项自上而下阶梯弹出，明显弹性（收起时不播） */
+/* 展开动效：菜单项自上而下逐个弹出（步进 95ms、时长 0.62s），节奏清晰可感（收起时不播） */
 #sidebar:not(.collapsed) .nav-item {
-  animation: nav-stagger 0.46s cubic-bezier(0.2, 1.5, 0.32, 1) backwards;
+  animation: nav-stagger 0.62s cubic-bezier(0.2, 1.4, 0.3, 1) backwards;
 }
-#sidebar:not(.collapsed) .nav-item:nth-child(1) { animation-delay: 40ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(2) { animation-delay: 95ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(3) { animation-delay: 150ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(4) { animation-delay: 205ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(5) { animation-delay: 260ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(6) { animation-delay: 315ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(7) { animation-delay: 370ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(8) { animation-delay: 425ms; }
-#sidebar:not(.collapsed) .nav-item:nth-child(9) { animation-delay: 480ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(1) { animation-delay: 60ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(2) { animation-delay: 155ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(3) { animation-delay: 250ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(4) { animation-delay: 345ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(5) { animation-delay: 440ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(6) { animation-delay: 535ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(7) { animation-delay: 630ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(8) { animation-delay: 725ms; }
+#sidebar:not(.collapsed) .nav-item:nth-child(9) { animation-delay: 820ms; }
 @keyframes nav-stagger {
-  from { opacity: 0; transform: translateX(-26px) scale(0.92); }
-  60%  { opacity: 1; }
+  from { opacity: 0; transform: translateX(-34px) scale(0.9); }
+  55%  { opacity: 1; }
   to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 /* 书签形菜单项：左缘贴窗口边（无左圆角），右端大圆弧；未选中常显淡底书签、选中 accent */
