@@ -8,7 +8,8 @@ import * as destinations from "./pages/destinations";
 import * as dns from "./pages/dns";
 import * as ports from "./pages/ports";
 import * as events from "./pages/events";
-import { maybeAutoTour } from "./tour";
+import * as guide from "./pages/guide";
+import { maybeShowLogoTip } from "./tour";
 import * as blocking from "./pages/blocking";
 import * as network from "./pages/network";
 import * as netcheck from "./pages/netcheck";
@@ -16,7 +17,7 @@ import * as settings from "./pages/settings";
 
 type PageModule = { render(root: HTMLElement): void; onSnapshot(s: Snapshot): void };
 const pageModules: Record<string, PageModule> = {
-  overview, destinations, dns, ports, events, blocking, network, netcheck, settings,
+  overview, destinations, dns, ports, events, blocking, network, netcheck, settings, guide,
 };
 
 // 16px 线性图标（stroke: currentColor，与文字同色）
@@ -30,6 +31,7 @@ const ICONS: Record<string, string> = {
   network: '<rect x="1.5" y="1.5" width="13" height="9" rx="1.5"/><path d="M5.5 13h5M8 10.5V13"/>',
   netcheck: '<path d="M1.5 9.5l3-3 2.5 2.5 4-5 3.5 3.5"/><path d="M1.5 13h13"/>',
   settings: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2.2M8 12.3v2.2M1.5 8h2.2M12.3 8h2.2M3.4 3.4l1.6 1.6M11 11l1.6 1.6M12.6 3.4L11 5M5 11l-1.6 1.6"/>',
+  guide: '<path d="M2.5 2.5h4.2c.7 0 1.3.6 1.3 1.3v9.7c0-.7-.6-1.3-1.3-1.3H2.5z"/><path d="M13.5 2.5H9.3c-.7 0-1.3.6-1.3 1.3v9.7c0-.7.6-1.3 1.3-1.3h4.2z"/>',
 };
 
 const NAV: { id: string; titleKey: string }[] = [
@@ -42,6 +44,7 @@ const NAV: { id: string; titleKey: string }[] = [
   { id: "network",      titleKey: "nav.network" },
   { id: "netcheck",     titleKey: "nav.netcheck" },
   { id: "settings",     titleKey: "nav.settings" },
+  { id: "guide",        titleKey: "nav.guide" },
 ];
 
 // ===== 布局 =====
@@ -163,7 +166,15 @@ initSpark();
 initTooltip();
 initContextGuard();
 navigate();
-maybeAutoTour();
+maybeShowLogoTip();
+
+// Ctrl+B：收起 / 展开左侧导航（与 logo 等效）
+window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && (e.key === "b" || e.key === "B")) {
+    e.preventDefault();
+    document.getElementById("nav-toggle")?.click();
+  }
+});
 
 onSnapshot((s: Snapshot) => {
   if (s.settings.theme !== lastThemeSetting) {

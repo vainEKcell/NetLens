@@ -1,6 +1,5 @@
 import { Snapshot, sendCommand } from "../api";
 import { t } from "../i18n";
-import { replayTour } from "../tour";
 
 let rootEl: HTMLElement | null = null;
 
@@ -72,7 +71,7 @@ export function render(root: HTMLElement): void {
             <button class="btn" id="set-audit" style="display:none;">${t("set.audit")}</button>
           </div>
           <div style="margin-top:10px;">
-            <button class="btn" id="set-tour">${t("tour.rerun")}</button>
+            <button class="btn" id="set-guide">${t("set.openGuide")}</button>
           </div>
         </div>
       </div>
@@ -117,7 +116,7 @@ export function render(root: HTMLElement): void {
     sendCommand("setBaselinePaused", { value: (e.target as HTMLInputElement).checked });
   (document.getElementById("set-cleanup") as HTMLButtonElement).onclick = () => sendCommand("cleanupNow");
   (document.getElementById("set-audit") as HTMLButtonElement).onclick = () => sendCommand("enableAudit");
-  (document.getElementById("set-tour") as HTMLButtonElement).onclick = () => replayTour();
+  (document.getElementById("set-guide") as HTMLButtonElement).onclick = () => { location.hash = "#/guide"; };
   (document.getElementById("set-loopback") as HTMLInputElement).onchange = (e) =>
     sendCommand("setHideLoopback", { value: (e.target as HTMLInputElement).checked });
   (document.getElementById("set-export") as HTMLButtonElement).onclick = () => sendCommand("exportEvents");
