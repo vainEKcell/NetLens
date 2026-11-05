@@ -91,6 +91,21 @@ export function render(root: HTMLElement): void {
   api = createGrid(document.getElementById("ov-grid")!, gridOptions);
   detailBody = document.getElementById("detail-body")!;
 
+  // 详情打开时：点击行=切换内容；点击覆盖层与表格以外的任何区域=收起；Esc=收起
+  document.addEventListener("click", (e) => {
+    const shade = document.getElementById("detail-shade");
+    if (!shade?.classList.contains("open")) return;
+    const t = e.target as HTMLElement;
+    if (t.closest("#detail-overlay")) return;          // 覆盖层内部（含 ✕）自行处理
+    if (t.closest(".ag-row")) return;                  // 行点击=切换详情内容
+    sendCommand("select", { pid: -1 });                // 其余区域一律收起
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const shade = document.getElementById("detail-shade");
+    if (shade?.classList.contains("open")) sendCommand("select", { pid: -1 });
+  });
+
   // 行悬浮快捷信息（委托：ag-row → rowData 摘要）
   const gridEl = document.getElementById("ov-grid")!;
   gridEl.addEventListener("mouseover", (e) => {
@@ -127,11 +142,14 @@ export function onSnapshot(s: Snapshot): void {
 function renderDetail(s: Snapshot): void {
   const d = s.detail;
   const overlay = document.getElementById("detail-overlay")!;
+  const shade = document.getElementById("detail-shade")!;
   if (!d) {
     overlay.classList.remove("open");
+    shade.classList.remove("open");
     return;
   }
   overlay.classList.add("open");
+  shade.classList.add("open");
   const sigText = d.signature ?? "—";
   const v = d.verdict;
   const evHtml = v && v.evidence.length

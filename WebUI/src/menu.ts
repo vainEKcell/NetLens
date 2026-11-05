@@ -26,14 +26,14 @@ export function hide(): void {
   menuEl?.classList.remove("open");
 }
 
-/// 系统性修复：浏览器原生右键菜单（刷新/另存为/打印/检查）覆盖自定义菜单。
-/// 全局接管 contextmenu：目标在表格数据区（.ag-row / [data-ctx]）内时阻止原生菜单；
-/// 输入框等可编辑元素放行原生菜单。
+/// 系统性修复：浏览器原生右键菜单（刷新/另存为/打印/检查）在桌面应用语境无实际用途，
+/// 全局接管 contextmenu：可编辑元素（输入框等）放行原生菜单以保留粘贴/剪切；
+/// 表格数据区由各表自己弹自定义处置菜单；其余区域一律静默阻止（不弹任何菜单）。
 export function initContextGuard(): void {
   document.addEventListener("contextmenu", (e) => {
     const target = e.target as HTMLElement;
     if (target.closest("input, textarea, [contenteditable]")) return; // 可编辑区放行
-    if (target.closest(".ag-row, [data-ctx]")) e.preventDefault();    // 数据区由各表自己弹自定义菜单
+    e.preventDefault();                                               // 其余区域静默
   });
 }
 

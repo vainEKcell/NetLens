@@ -477,9 +477,19 @@ input[type="checkbox"]:checked::after {
 /* 总览：单列表格拉满，详情走右侧滑入覆盖层 */
 #overview-wrap { display: block; }
 
+/* 详情打开时的视觉遮挡：其余区域轻微暗化（行点击可切换内容，点空白收起） */
+#detail-shade {
+  position: fixed; inset: 0; z-index: 590;
+  background: rgba(2, 4, 8, 0.32);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+#detail-shade.open { opacity: 1; }
+
 /* 详情覆盖层：自右滑入，覆盖于表格之上（不常驻占位） */
 #detail-overlay {
   position: fixed;
+  z-index: 601;
   top: 10px; right: 10px; bottom: 10px;
   width: 372px;
   background: var(--panel);
@@ -488,7 +498,6 @@ input[type="checkbox"]:checked::after {
   box-shadow: -20px 0 46px rgba(0, 0, 0, 0.5);
   transform: translateX(calc(100% + 20px));
   transition: transform 0.22s ease;
-  z-index: 600;
   padding: 14px 16px;
   overflow: auto;
 }
