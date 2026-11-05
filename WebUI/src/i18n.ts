@@ -3,7 +3,7 @@ export type Lang = "zh" | "en";
 
 const zh: Record<string, string> = {
   // 导航
-  "nav.overview": "总览", "nav.destinations": "目的地排行", "nav.dns": "DNS 安全",
+  "nav.overview": "总览", "nav.destinations": "流量去向", "nav.dns": "DNS 安全",
   "nav.ports": "监听端口", "nav.events": "事件流", "nav.blocking": "拦截名单",
   "nav.network": "网络配置", "nav.netcheck": "网络体检", "nav.settings": "设置",
   // 顶栏
@@ -154,7 +154,7 @@ const zh: Record<string, string> = {
 };
 
 const en: Record<string, string> = {
-  "nav.overview": "Overview", "nav.destinations": "Destinations", "nav.dns": "DNS Security",
+  "nav.overview": "Overview", "nav.destinations": "Traffic", "nav.dns": "DNS Security",
   "nav.ports": "Listening Ports", "nav.events": "Event Stream", "nav.blocking": "Blocklist",
   "nav.network": "Network Config", "nav.netcheck": "Network Check", "nav.settings": "Settings",
   "tb.up": "Upload", "tb.down": "Download", "tb.session": "Session totals",

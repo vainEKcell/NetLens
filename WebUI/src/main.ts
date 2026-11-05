@@ -157,9 +157,11 @@ darkMedia.addEventListener("change", () => {
 const sidebar = document.getElementById("sidebar")!;
 const navToggle = document.getElementById("nav-toggle") as HTMLButtonElement;
 
-// 以选中（或悬停）项为焦点：越远的书签越短，焦点满宽——hover 移动时呈转轮式滚动
-const NAV_WIDTHS = [184, 172, 162, 154, 148]; // 距焦点 0/1/2/3/≥4 档（px）
+// 以选中（或悬停）项为焦点：越远的书签越短，焦点满宽——hover 停留 140ms 才转移焦点，
+// 避免鼠标扫过时整列抖动；梯度幅度加大让"动了"看得出来
+const NAV_WIDTHS = [184, 166, 152, 142]; // 距焦点 0/1/2/≥3 档（px，下限仍包住文字）
 let navFocus: HTMLElement | null = null;
+let navHoverTimer = 0;
 
 function navItems(): HTMLElement[] {
   return Array.from(nav.querySelectorAll<HTMLElement>(".nav-item"));
@@ -181,9 +183,12 @@ function updateNavWidths(): void {
 
 nav.addEventListener("mouseover", (e) => {
   const it = (e.target as HTMLElement).closest<HTMLElement>(".nav-item");
-  if (it && it !== navFocus) { navFocus = it; updateNavWidths(); }
+  if (!it || it === navFocus) return;
+  window.clearTimeout(navHoverTimer);
+  navHoverTimer = window.setTimeout(() => { navFocus = it; updateNavWidths(); }, 140); // 停留才转移焦点
 });
 nav.addEventListener("mouseleave", () => {
+  window.clearTimeout(navHoverTimer);
   if (navFocus) { navFocus = null; updateNavWidths(); }
 });
 
