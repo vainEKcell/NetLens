@@ -54,7 +54,17 @@ public static class TaskManagerLauncher
                 }
                 await Task.Delay(600);
 
-                // 按进程名匹配行：优先 SelectionItem，退回 Invoke
+                // 首选：Win11 任务管理器搜索框（支持按 PID 过滤）——直接写入 PID
+                var searchBox = win.FindFirst(TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
+                if (searchBox != null && searchBox.TryGetCurrentPattern(ValuePattern.Pattern, out var vp))
+                {
+                    ((ValuePattern)vp).SetValue(pid.ToString());
+                    await Task.Delay(500); // 等过滤生效
+                    return;
+                }
+
+                // 降级：按进程名匹配行（优先 SelectionItem，退回 Invoke）
                 var rows = win.FindAll(TreeScope.Descendants, Condition.TrueCondition);
                 foreach (AutomationElement el in rows)
                 {
