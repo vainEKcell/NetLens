@@ -241,7 +241,7 @@ html, body {
   font-size: 13.5px;
   font-weight: 500;
   white-space: nowrap;
-  transition: background-color 0.13s ease, color 0.13s ease;
+  transition: width 0.25s cubic-bezier(0.25, 1, 0.4, 1), background-color 0.13s ease, color 0.13s ease;
 }
 .nav-item:hover { background: var(--accent-soft); color: var(--fg); }
 .nav-item.active {

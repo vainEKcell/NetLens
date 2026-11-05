@@ -189,11 +189,7 @@ function updateNavWidths(): void {
       const extra = (NAV_FOCUS - NAV_BASE) * (navLog2(1 + NAV_REACH - d) / denom);
       w = NAV_BASE + extra;
     }
-    it.style.width = `${w.toFixed(1)}px`;
-    // 紧凑波纹：焦点即时、邻项 30ms、远处 60ms——分层仍在但快速收敛，移动中不叠加振荡
-    const delay = d === 0 ? 0 : d === 1 ? 30 : 60;
-    const dur = d === 0 ? 0.12 : d === 1 ? 0.18 : 0.24;
-    it.style.transition = `width ${dur}s cubic-bezier(0.2, 1.3, 0.3, 1) ${delay}ms, background-color 0.13s ease, color 0.13s ease`;
+    it.style.width = `${w.toFixed(1)}px`; // 过渡统一走 CSS（同步、无分层延迟——自然丝滑）
   });
 }
 
