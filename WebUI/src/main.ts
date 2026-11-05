@@ -49,10 +49,12 @@ const NAV: { id: string; titleKey: string }[] = [
 
 // ===== 布局 =====
 const nav = document.getElementById("nav")!;
-NAV.forEach((item) => {
+NAV.forEach((item, index) => {
   const el = document.createElement("div");
   el.className = "nav-item";
   el.dataset.page = item.id;
+  el.style.setProperty("--i", String(index)); // 交错动画延迟由数据驱动，新增项自动继承
+  el.style.setProperty("--i", String(index)); // 交错动画延迟由数据驱动，新增项自动继承
   el.innerHTML = `<svg class="nav-ico" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[item.id] ?? ""}</svg><span>${t(item.titleKey)}</span>`;
   el.addEventListener("click", () => { location.hash = `#/${item.id}`; });
   nav.appendChild(el);
