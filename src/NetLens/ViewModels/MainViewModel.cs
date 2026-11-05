@@ -258,6 +258,10 @@ public sealed class MainViewModel : VmBase, IDisposable
             Selected = row;
             NavigateToOverviewRequested?.Invoke();
         }
+        else
+        {
+            Selected = null; // pid=-1 或行已消失：清空选中，详情覆盖层随之关闭
+        }
     }
 
     /// 事件流右键：对目标域名（或 IP 的被动反查域名）发起 DNS 体检

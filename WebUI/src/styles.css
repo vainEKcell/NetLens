@@ -477,14 +477,14 @@ input[type="checkbox"]:checked::after {
 /* 总览：单列表格拉满，详情走右侧滑入覆盖层 */
 #overview-wrap { display: block; }
 
-/* 详情打开时的视觉遮挡：其余区域轻微暗化（行点击可切换内容，点空白收起） */
+/* 详情打开时的模态遮挡：拦截下层一切点击（点遮罩任意处=收起详情），Esc/✕ 同效 */
 #detail-shade {
   position: fixed; inset: 0; z-index: 590;
   background: rgba(2, 4, 8, 0.32);
   opacity: 0; pointer-events: none;
   transition: opacity 0.22s ease;
 }
-#detail-shade.open { opacity: 1; }
+#detail-shade.open { opacity: 1; pointer-events: auto; cursor: default; }
 
 /* 详情覆盖层：自右滑入，覆盖于表格之上（不常驻占位） */
 #detail-overlay {

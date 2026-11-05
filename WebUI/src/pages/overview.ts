@@ -91,19 +91,25 @@ export function render(root: HTMLElement): void {
   api = createGrid(document.getElementById("ov-grid")!, gridOptions);
   detailBody = document.getElementById("detail-body")!;
 
-  // 详情打开时：点击行=切换内容；点击覆盖层与表格以外的任何区域=收起；Esc=收起
+  // 详情覆盖层为模态：打开时遮罩拦截下层点击，点遮罩任意处=收起（乐观关闭，不等快照）；
+  // ✕ 与 Esc 同效；行点击被遮罩拦截——先收起再点目标行打开新详情。
+  const closeDetail = (): void => {
+    document.getElementById("detail-overlay")?.classList.remove("open");
+    document.getElementById("detail-shade")?.classList.remove("open");
+    sendCommand("select", { pid: -1 });
+  };
   document.addEventListener("click", (e) => {
     const shade = document.getElementById("detail-shade");
     if (!shade?.classList.contains("open")) return;
     const t = e.target as HTMLElement;
     if (t.closest("#detail-overlay")) return;          // 覆盖层内部（含 ✕）自行处理
-    if (t.closest(".ag-row")) return;                  // 行点击=切换详情内容
-    sendCommand("select", { pid: -1 });                // 其余区域一律收起
+    if (t.closest("#tour-root")) return;               // 教程层自管
+    closeDetail();                                     // 遮罩与其余区域一律收起
   });
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     const shade = document.getElementById("detail-shade");
-    if (shade?.classList.contains("open")) sendCommand("select", { pid: -1 });
+    if (shade?.classList.contains("open")) closeDetail();
   });
 
   // 行悬浮快捷信息（委托：ag-row → rowData 摘要）
@@ -222,6 +228,7 @@ function renderDetail(s: Snapshot): void {
   (detailBody.querySelector("#d-folder") as HTMLButtonElement).onclick = () => sendCommand("openFolder", { pid: d.pid });
   (detailBody.querySelector("#d-close") as HTMLButtonElement).onclick = () => {
     document.getElementById("detail-overlay")!.classList.remove("open");
+    document.getElementById("detail-shade")?.classList.remove("open");
     sendCommand("select", { pid: -1 });
   };
 }
