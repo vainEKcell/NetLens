@@ -2,6 +2,7 @@ import { createGrid, GridOptions, ColDef, ModuleRegistry, AllCommunityModule } f
 import { Snapshot, sendCommand } from "../api";
 import { t, agLocale } from "../i18n";
 import { mountSortControl } from "../sortctl";
+import { show as showMenu } from "../menu";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -43,6 +44,24 @@ const gridOptions: GridOptions = {
   cellFlashDuration: 0,
   cellFadeDuration: 0,
   getRowId: (p) => String(p.data.__i),
+  onCellContextMenu: (e) => {
+    const row = e.data as { pid: number; remote: string; domain: string } | undefined;
+    if (!row) return;
+    (e.event as MouseEvent | undefined)?.preventDefault();
+    const items = [];
+    if (row.remote || row.domain) {
+      items.push({ label: t("ctx.ev.dns"), action: () => sendCommand("runDnsCheckForTarget", { remoteIp: row.remote, domain: row.domain }) });
+    }
+    if (row.pid > 0) {
+      items.push({ label: t("ctx.ev.view"), action: () => sendCommand("select", { pid: row.pid }) });
+      items.push({ label: t("ctx.ev.filter"), action: () => sendCommand("filterEventsByPid", { pid: row.pid }) });
+    }
+    if (items.length) items.push({ label: "", sep: true });
+    if (row.remote) items.push({ label: t("ctx.ev.copyRemote"), action: () => navigator.clipboard.writeText(row.remote) });
+    if (row.domain) items.push({ label: t("ctx.ev.copyDomain"), action: () => navigator.clipboard.writeText(row.domain) });
+    const ev = e.event as MouseEvent | undefined;
+    showMenu(ev?.clientX ?? 0, ev?.clientY ?? 0, items);
+  },
 };
 
 export function render(root: HTMLElement): void {

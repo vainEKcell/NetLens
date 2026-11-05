@@ -105,6 +105,11 @@ public sealed class UiBridge
                     if (fpid > 0) _vm.FilterEventsByPid(fpid);
                     else _vm.ClearEventsFilter();
                     break;
+                case "runDnsCheckForTarget":
+                    _vm.RunDnsCheckForTarget(
+                        root.TryGetProperty("remoteIp", out var rip) ? rip.GetString() : null,
+                        root.TryGetProperty("domain", out var dom) ? dom.GetString() : null);
+                    break;
                 case "unblockApp":
                     _vm.UnblockAppByPath(root.GetProperty("path").GetString());
                     _vm.RefreshBlocked();

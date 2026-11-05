@@ -145,6 +145,8 @@ const zh: Record<string, string> = {
   // AG Grid
   "sort.label": "排序",
   "ctx.taskmgr": "打开任务管理器", "ctx.kill": "结束进程", "ctx.folder": "打开所在文件夹",
+  "ctx.ev.dns": "对该地址发起 DNS 体检", "ctx.ev.view": "在总览中查看该进程", "ctx.ev.filter": "只看此进程的事件",
+  "ctx.ev.copyRemote": "复制远端地址", "ctx.ev.copyDomain": "复制域名",
   "ctx.block": "禁止联网", "ctx.select": "在详情中查看", "ctx.copyPid": "复制 PID",
   "ag.noRows": "暂无数据",
   "cfg.what.dns": "DNS 服务器", "cfg.what.proxy": "系统代理 (WinINET)",
@@ -283,6 +285,8 @@ const en: Record<string, string> = {
   "ph.sub": "Without the --spike argument NetLens still offers the full WPF interface",
   "sort.label": "Sort",
   "ctx.taskmgr": "Open Task Manager", "ctx.kill": "End process", "ctx.folder": "Open folder",
+  "ctx.ev.dns": "Run DNS check on this target", "ctx.ev.view": "Inspect this process in Overview", "ctx.ev.filter": "Show only this process's events",
+  "ctx.ev.copyRemote": "Copy remote address", "ctx.ev.copyDomain": "Copy domain",
   "ctx.block": "Block network", "ctx.select": "Inspect in details", "ctx.copyPid": "Copy PID",
   "ag.noRows": "No data",
   "cfg.what.dns": "DNS servers", "cfg.what.proxy": "System proxy (WinINet)",
