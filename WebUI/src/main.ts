@@ -177,17 +177,28 @@ function updateNavWidths(): void {
     const d = Math.min(Math.abs(i - fi), NAV_WIDTHS.length - 1);
     it.style.width = `${NAV_WIDTHS[d]}px`;
     // 波纹传播：焦点即时快速变化，邻项迟一拍、远处更迟更慢——转轮的运动感
-    const delay = d === 0 ? 0 : d === 1 ? 60 : 110;
-    const dur = d === 0 ? 0.18 : d === 1 ? 0.28 : 0.34;
+    const delay = d === 0 ? 0 : d === 1 ? 40 : 90;
+    const dur = d === 0 ? 0.22 : d === 1 ? 0.3 : 0.38;
     it.style.transition = `width ${dur}s cubic-bezier(0.2, 1.3, 0.3, 1) ${delay}ms, background-color 0.13s ease, color 0.13s ease`;
   });
 }
 
+// 移动中梯度锁定（零抖动）；鼠标在某项停顿 120ms 后，波纹才荡向该项——转轮定格的手感
+let navPending: HTMLElement | null = null;
+let navSettleTimer = 0;
+
 nav.addEventListener("mouseover", (e) => {
   const it = (e.target as HTMLElement).closest<HTMLElement>(".nav-item");
-  if (it && it !== navFocus) { navFocus = it; updateNavWidths(); }
+  if (!it) return;
+  navPending = it;
+  window.clearTimeout(navSettleTimer);
+  navSettleTimer = window.setTimeout(() => {
+    if (navPending && navPending !== navFocus) { navFocus = navPending; updateNavWidths(); }
+  }, 120);
 });
 nav.addEventListener("mouseleave", () => {
+  window.clearTimeout(navSettleTimer);
+  navPending = null;
   if (navFocus) { navFocus = null; updateNavWidths(); }
 });
 
