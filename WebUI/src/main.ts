@@ -159,7 +159,7 @@ const navToggle = document.getElementById("nav-toggle") as HTMLButtonElement;
 
 // 以选中（或悬停）项为焦点：越远的书签越短，焦点满宽——hover 停留 140ms 才转移焦点，
 // 避免鼠标扫过时整列抖动；梯度幅度加大让"动了"看得出来
-const NAV_WIDTHS = [184, 166, 152, 142]; // 距焦点 0/1/2/≥3 档（px，下限仍包住文字）
+const NAV_WIDTHS = [184, 164, 146]; // 距焦点 0/1/≥2 档（px）——只有焦点与邻项伸缩，远处不动
 let navFocus: HTMLElement | null = null;
 let navHoverTimer = 0;
 
