@@ -8,6 +8,7 @@ import * as destinations from "./pages/destinations";
 import * as dns from "./pages/dns";
 import * as ports from "./pages/ports";
 import * as events from "./pages/events";
+import { maybeAutoTour } from "./tour";
 import * as blocking from "./pages/blocking";
 import * as network from "./pages/network";
 import * as netcheck from "./pages/netcheck";
@@ -162,6 +163,7 @@ initSpark();
 initTooltip();
 initContextGuard();
 navigate();
+maybeAutoTour();
 
 onSnapshot((s: Snapshot) => {
   if (s.settings.theme !== lastThemeSetting) {

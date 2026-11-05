@@ -607,3 +607,29 @@ input[type="checkbox"]:checked::after {
 ::-webkit-scrollbar-thumb:hover { background: #45557a; }
 ::-webkit-scrollbar-track { background: transparent; }
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: #c4cee0; }
+
+/* ===== 首次使用教程（coach marks） ===== */
+#tour-root { position: fixed; inset: 0; z-index: 1000; }
+.tour-backdrop { position: fixed; inset: 0; z-index: 1000; }
+.tour-spot {
+  position: fixed; z-index: 1001; pointer-events: none;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(5, 7, 12, 0.55);
+  transition: all 0.25s ease;
+}
+.tour-card {
+  position: fixed; z-index: 1002;
+  width: 372px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 16px 18px 14px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+}
+.tour-backdrop .tour-card { left: 50%; top: 44%; transform: translate(-50%, -50%); }
+.tour-card .tour-title { font-size: 14.5px; font-weight: 800; color: var(--fg); margin-bottom: 6px; }
+.tour-card .tour-text { font-size: 12.5px; line-height: 1.65; color: var(--dim); }
+.tour-nav { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.tour-step-no { font-size: 11px; color: var(--faint); margin-right: auto; }
+.tour-card .btn { padding: 5px 12px; font-size: 12px; }
