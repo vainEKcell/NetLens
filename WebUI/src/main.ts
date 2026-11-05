@@ -73,6 +73,7 @@ function navigate(force = false): void {
 
   document.querySelectorAll(".nav-item").forEach((el) =>
     el.classList.toggle("active", (el as HTMLElement).dataset.page === item.id));
+  updateNavWidths();
 
   content.innerHTML = "";
   const pageEl = document.createElement("div");
@@ -124,6 +125,7 @@ function applyLanguage(setting: string): void {
     const el = nav.querySelector(`[data-page="${item.id}"]`) as HTMLElement | null;
     if (el) (el.querySelector("span") as HTMLElement).textContent = t(item.titleKey);
   });
+  updateNavWidths();
   // 顶栏标签
   const lblUp = document.getElementById("lbl-up");
   const lblDown = document.getElementById("lbl-down");
@@ -151,16 +153,49 @@ darkMedia.addEventListener("change", () => {
   if (lastThemeSetting === "auto") applyTheme(darkMedia.matches ? "light" : "dark");
 });
 
-// ===== 侧栏收放（顶部 « 按钮切换） =====
+// ===== 侧栏收放（顶部 « 按钮切换）+ 书签梯度宽度（转轮效果） =====
 const sidebar = document.getElementById("sidebar")!;
 const navToggle = document.getElementById("nav-toggle") as HTMLButtonElement;
+
+// 以选中（或悬停）项为焦点：越远的书签越短，焦点满宽——hover 移动时呈转轮式滚动
+const NAV_WIDTHS = [184, 172, 162, 154, 148]; // 距焦点 0/1/2/3/≥4 档（px）
+let navFocus: HTMLElement | null = null;
+
+function navItems(): HTMLElement[] {
+  return Array.from(nav.querySelectorAll<HTMLElement>(".nav-item"));
+}
+
+function updateNavWidths(): void {
+  const items = navItems();
+  if (sidebar.classList.contains("collapsed")) {
+    items.forEach((it) => { it.style.width = ""; }); // 收起态交回 CSS（图标满宽书签）
+    return;
+  }
+  const focus = navFocus ?? items.find((it) => it.classList.contains("active")) ?? null;
+  const fi = focus ? items.indexOf(focus) : -1;
+  items.forEach((it, i) => {
+    const d = Math.min(Math.abs(i - fi), NAV_WIDTHS.length - 1);
+    it.style.width = `${NAV_WIDTHS[d]}px`;
+  });
+}
+
+nav.addEventListener("mouseover", (e) => {
+  const it = (e.target as HTMLElement).closest<HTMLElement>(".nav-item");
+  if (it && it !== navFocus) { navFocus = it; updateNavWidths(); }
+});
+nav.addEventListener("mouseleave", () => {
+  if (navFocus) { navFocus = null; updateNavWidths(); }
+});
+
 function setCollapsed(v: boolean): void {
   sidebar.classList.toggle("collapsed", v);
   navToggle.classList.toggle("collapsed", v);
   localStorage.setItem("nl-nav-collapsed", v ? "1" : "0");
+  updateNavWidths();
 }
 navToggle.addEventListener("click", () => setCollapsed(!sidebar.classList.contains("collapsed")));
 if (localStorage.getItem("nl-nav-collapsed") === "1") setCollapsed(true);
+updateNavWidths();
 
 // ===== 启动 =====
 initBridge();
