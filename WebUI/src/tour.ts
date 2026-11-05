@@ -1,20 +1,26 @@
 // 分页交互教程：每个功能页一组气泡步骤（聚光真实控件），完成后返回「使用指南」；
-// 首次启动仅一条 logo 小提示（非模态）。教程引擎支持步骤进入/离开动作（如自动打开详情演示）。
+// 首次启动仅一条 logo 小提示（非模态）。教程引擎支持步骤进入/离开动作（如自动打开详情、弹出右键菜单演示）。
 import { t } from "./i18n";
+import { hide as hideContextMenu } from "./menu";
 
 type TourStep = {
   selector?: string;   // 聚光目标（缺省仅气泡）
+  colId?: string;      // AG Grid 列聚光模式：竖条框住整列（表头至表尾）
   titleKey: string;
   textKey: string;
-  onEnter?: () => void; // 进入步骤动作（如打开详情覆盖层演示）
-  onExit?: () => void;  // 离开步骤动作（如关闭演示）
+  onEnter?: () => void; // 进入步骤动作（如打开详情覆盖层、弹出右键菜单演示）
+  onExit?: () => void;  // 离开步骤动作
 };
 
 const PAGE_TOURS: Record<string, TourStep[]> = {
   overview: [
     { selector: "#page-overview .ag-root-wrapper", titleKey: "tour.ov.table", textKey: "tour.ov.table.text" },
-    { selector: "#page-overview .ag-root-wrapper", titleKey: "tour.ov.verdict", textKey: "tour.ov.verdict.text" },
-    { selector: "#page-overview .ag-root-wrapper", titleKey: "tour.ov.menu", textKey: "tour.ov.menu.text" },
+    { selector: ".ag-header-cell[col-id='risk']", colId: "risk", titleKey: "tour.ov.verdict", textKey: "tour.ov.verdict.text" },
+    {
+      selector: ".nw-context-menu", titleKey: "tour.ov.menu", textKey: "tour.ov.menu.text",
+      onEnter: () => document.querySelector("#page-overview .ag-row")?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, clientX: 500, clientY: 320 })),
+      onExit: () => hideContextMenu(),
+    },
     {
       selector: "#detail-overlay", titleKey: "tour.ov.detail", textKey: "tour.ov.detail.text",
       onEnter: () => document.querySelector<HTMLElement>("#page-overview .ag-row")?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
@@ -127,7 +133,7 @@ function render(): void {
   try { step.onEnter?.(); } catch { /* 演示动作失败不阻断 */ }
 
   const bubbles = `
-    <div class="tour-card">
+    <div class="tour-card" style="visibility:hidden">
       <div class="tour-title">${t(step.titleKey)}</div>
       <div class="tour-text">${t(step.textKey)}</div>
       <div class="tour-nav">
@@ -159,19 +165,31 @@ function render(): void {
 
   if (step.selector) {
     // 切页竞态加固：hashchange/navigate 完成前后各校准一次，AG Grid 晚初始化也有兜底
-    window.setTimeout(() => placeSpot(step.selector!), 60);
-    window.setTimeout(() => placeSpot(step.selector!), 350);
+    window.setTimeout(() => placeSpot(step), 60);
+    window.setTimeout(() => placeSpot(step), 350);
   }
 }
 
-function placeSpot(selector: string): void {
+function placeSpot(step: TourStep): void {
   const spot = root?.querySelector<HTMLElement>(".tour-spot");
   if (!spot) return;
   const masks = root?.querySelectorAll<HTMLElement>(".tour-mask");
-  const target = document.querySelector(selector);
-  const el = ensureRoot();
-  const card = el.querySelector<HTMLElement>(".tour-card");
-  if (!target || !card) {
+  const card = ensureRoot().querySelector<HTMLElement>(".tour-card");
+  if (card) card.style.visibility = "visible"; // 与位置设置同帧完成，不会闪现默认位置
+
+  // AG Grid 列聚光模式：竖条框住整列（列头顶至表格底部）
+  let rect: DOMRect | null = null;
+  const target = document.querySelector(step.selector ?? "");
+  if (step.colId && target) {
+    const hr = target.getBoundingClientRect();
+    const viewport = document.querySelector(".ag-body-viewport");
+    const bottom = viewport ? viewport.getBoundingClientRect().bottom : hr.bottom;
+    rect = new DOMRect(hr.left, hr.top, hr.width, Math.max(hr.height, bottom - hr.top));
+  } else if (target) {
+    rect = target.getBoundingClientRect();
+  }
+
+  if (!rect || !card) {
     const fallback = document.querySelector(".page-head");
     if (fallback && card) { spot.style.display = ""; positionAt(spot, card, fallback.getBoundingClientRect(), masks); return; }
     spot.style.display = "none";
@@ -180,7 +198,7 @@ function placeSpot(selector: string): void {
     return;
   }
   spot.style.display = "";
-  positionAt(spot, card, target.getBoundingClientRect(), masks);
+  positionAt(spot, card, rect, masks);
 }
 
 function positionAt(spot: HTMLElement, card: HTMLElement, rect: DOMRect, masks?: NodeListOf<HTMLElement>): void {
