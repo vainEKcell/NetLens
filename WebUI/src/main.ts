@@ -176,6 +176,10 @@ function updateNavWidths(): void {
   items.forEach((it, i) => {
     const d = Math.min(Math.abs(i - fi), NAV_WIDTHS.length - 1);
     it.style.width = `${NAV_WIDTHS[d]}px`;
+    // 波纹传播：焦点即时快速变化，邻项迟一拍、远处更迟更慢——转轮的运动感
+    const delay = d === 0 ? 0 : d === 1 ? 60 : 110;
+    const dur = d === 0 ? 0.18 : d === 1 ? 0.28 : 0.34;
+    it.style.transition = `width ${dur}s cubic-bezier(0.2, 1.3, 0.3, 1) ${delay}ms, background-color 0.13s ease, color 0.13s ease`;
   });
 }
 
