@@ -82,7 +82,8 @@ function render(): void {
     el.innerHTML = `<div class="tour-backdrop">${bubbles}</div>`;
   } else {
     if (location.hash !== `#/${step.page}`) location.hash = `#/${step.page}`;
-    el.innerHTML = `<div class="tour-spot"></div><div class="tour-backdrop">${bubbles}</div>`;
+    // 四块矩形遮罩（上/左/右/下）：box-shadow 9999px 在 Chrome 有渲染裁剪，远处不暗
+    el.innerHTML = `<div class="tour-backdrop"></div><div class="tour-mask" data-m="top"></div><div class="tour-mask" data-m="left"></div><div class="tour-mask" data-m="right"></div><div class="tour-mask" data-m="bottom"></div><div class="tour-spot"></div>${bubbles}`;
   }
 
   // 事件
@@ -105,27 +106,46 @@ function render(): void {
 function placeSpot(selector: string): void {
   const spot = root?.querySelector<HTMLElement>(".tour-spot");
   if (!spot) return;
+  const masks = root?.querySelectorAll<HTMLElement>(".tour-mask");
   const target = document.querySelector(selector);
   const el = ensureRoot();
   const card = el.querySelector<HTMLElement>(".tour-card");
   if (!target || !card) {
     // 目标缺失：退化为整页标题聚光，再缺失则隐藏聚光只留气泡
     const fallback = document.querySelector(".page-head");
-    if (fallback && card) { spot.style.display = ""; positionAt(spot, card, fallback.getBoundingClientRect()); return; }
+    if (fallback && card) { spot.style.display = ""; positionAt(spot, card, fallback.getBoundingClientRect(), masks); return; }
     spot.style.display = "none";
+    masks?.forEach(m => { m.style.display = "none"; });
     if (card) { card.style.position = "fixed"; card.style.left = "50%"; card.style.top = "50%"; card.style.transform = "translate(-50%, -50%)"; }
     return;
   }
   spot.style.display = "";
-  positionAt(spot, card, target.getBoundingClientRect());
+  positionAt(spot, card, target.getBoundingClientRect(), masks);
 }
 
-function positionAt(spot: HTMLElement, card: HTMLElement, rect: DOMRect): void {
+function positionAt(spot: HTMLElement, card: HTMLElement, rect: DOMRect, masks?: NodeListOf<HTMLElement>): void {
   const pad = 6;
   spot.style.left = `${rect.left - pad}px`;
   spot.style.top = `${rect.top - pad}px`;
   spot.style.width = `${rect.width + pad * 2}px`;
   spot.style.height = `${rect.height + pad * 2}px`;
+
+  // 四块遮罩精确拼合视口，仅聚光框内外露
+  if (masks && masks.length === 4) {
+    const W = window.innerWidth, H = window.innerHeight;
+    const l = Math.max(0, rect.left - pad), t = Math.max(0, rect.top - pad);
+    const r = Math.min(W, rect.right + pad), b = Math.min(H, rect.bottom + pad);
+    const set = (m: HTMLElement, left: number, top: number, width: number, height: number) => {
+      m.style.display = "";
+      m.style.left = `${left}px`; m.style.top = `${top}px`;
+      m.style.width = `${Math.max(0, width)}px`; m.style.height = `${Math.max(0, height)}px`;
+    };
+    const byKey = (k: string) => Array.from(masks).find(m => m.dataset.m === k)!;
+    set(byKey("top"), 0, 0, W, t);
+    set(byKey("left"), 0, t, l, b - t);
+    set(byKey("right"), r, t, W - r, b - t);
+    set(byKey("bottom"), 0, b, W, H - b);
+  }
 
   // 气泡：目标下方优先，空间不足放上方，仍不足放视口下缘
   const bh = card.offsetHeight || 160;
