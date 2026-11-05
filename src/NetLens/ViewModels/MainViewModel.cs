@@ -1083,7 +1083,13 @@ public sealed class MainViewModel : VmBase, IDisposable
 
     public void OpenTaskManager()
     {
-        try { ProcessRunner.ShellOpen("taskmgr.exe"); }
+        OpenTaskManager(_selected?.Pid ?? -1);
+    }
+
+    /// 打开任务管理器并尽力定位到目标进程行（UIA 自动选中，失败退化为普通打开）
+    public void OpenTaskManager(int pid)
+    {
+        try { Services.TaskManagerLauncher.OpenAndLocate(pid); }
         catch (Exception ex) { MessageBox.Show(ex.Message, "NetLens", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
 

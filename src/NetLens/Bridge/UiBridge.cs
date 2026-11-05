@@ -68,8 +68,7 @@ public sealed class UiBridge
                 case "openTaskmgr":
                 {
                     var tm = root.GetProperty("pid").GetInt32();
-                    _vm.SelectProcessByPid(tm);
-                    _vm.OpenTaskManager();
+                    _vm.OpenTaskManager(tm);
                     break;
                 }
                 case "openFolder":
