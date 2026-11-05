@@ -197,7 +197,7 @@ html, body {
 /* ============ 侧栏 ============ */
 /* 书签式导航：无右侧分隔线、与顶栏融合；菜单项自窗口左缘探出、右端大圆弧（书签形） */
 #sidebar {
-  width: 192px;
+  width: 200px;
   flex-shrink: 0;
   background: transparent;
   display: flex;

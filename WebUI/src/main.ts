@@ -157,12 +157,18 @@ darkMedia.addEventListener("change", () => {
 const sidebar = document.getElementById("sidebar")!;
 const navToggle = document.getElementById("nav-toggle") as HTMLButtonElement;
 
-// 以选中（或悬停）项为焦点：越远的书签越短，焦点满宽——即时响应（三档局部梯度无全局抖动）
-const NAV_WIDTHS = [184, 164, 146]; // 距焦点 0/1/≥2 档（px）——只有焦点与邻项伸缩，远处不动
+// 以选中（或悬停）项为焦点：书签宽度按对数曲线随距离衰减（前陡后缓的弧线），
+// 焦点满宽 192、最远收至 150（文字完整）——每一层都有可见变化且渐缓
+const NAV_W_MAX = 192.0;
+const NAV_W_MIN = 150.0;
 let navFocus: HTMLElement | null = null;
 
 function navItems(): HTMLElement[] {
   return Array.from(nav.querySelectorAll<HTMLElement>(".nav-item"));
+}
+
+function navLog2(v: number): number {
+  return Math.log(v) / Math.LN2;
 }
 
 function updateNavWidths(): void {
@@ -173,9 +179,12 @@ function updateNavWidths(): void {
   }
   const focus = navFocus ?? items.find((it) => it.classList.contains("active")) ?? null;
   const fi = focus ? items.indexOf(focus) : -1;
+  const span = navLog2(1 + items.length); // 归一化分母：log2(1+最远距离)
   items.forEach((it, i) => {
-    const d = Math.min(Math.abs(i - fi), NAV_WIDTHS.length - 1);
-    it.style.width = `${NAV_WIDTHS[d]}px`;
+    const d = Math.abs(i - fi);
+    const k = Math.min(navLog2(1 + d) / span, 1); // 对数归一（0~1，前陡后缓）
+    const w = NAV_W_MAX - (NAV_W_MAX - NAV_W_MIN) * k;
+    it.style.width = `${w.toFixed(1)}px`;
     // 紧凑波纹：焦点即时、邻项 30ms、远处 60ms——分层仍在但快速收敛，移动中不叠加振荡
     const delay = d === 0 ? 0 : d === 1 ? 30 : 60;
     const dur = d === 0 ? 0.12 : d === 1 ? 0.18 : 0.24;
