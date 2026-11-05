@@ -661,3 +661,22 @@ input[type="checkbox"]:checked::after {
 .logo-tip-text { font-size: 12.5px; color: var(--fg); white-space: nowrap; }
 .logo-tip-close { background: none; border: none; color: var(--faint); cursor: pointer; font-size: 11px; padding: 2px; }
 .logo-tip-close:hover { color: var(--fg); }
+
+/* ===== 使用指南：子标签 + 概念卡 ===== */
+.guide-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.guide-tab {
+  padding: 7px 14px; font-size: 12.5px; font-family: inherit;
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  background: var(--panel2); color: var(--dim); cursor: pointer;
+  transition: all 0.13s;
+}
+.guide-tab:hover { color: var(--fg); border-color: var(--accent); }
+.guide-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.guide-panel { display: none; }
+.guide-panel.active { display: block; animation: fadein 0.18s ease; }
+.guide-p { font-size: 13px; line-height: 1.85; color: var(--dim); margin: 0 0 12px; }
+.guide-concepts { display: flex; flex-direction: column; gap: 10px; margin: 4px 0 14px; }
+.guide-concept { border-left: 3px solid var(--accent); background: var(--panel2); border-radius: 0 9px 9px 0; padding: 10px 14px; }
+.guide-term { font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 4px; }
+.guide-expl { font-size: 12.5px; line-height: 1.75; color: var(--dim); }
+.guide-tour { margin-top: 4px; }
