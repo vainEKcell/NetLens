@@ -3,7 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <!-- English string table -->
     <sys:String x:Key="tab.overview">Overview</sys:String>
-    <sys:String x:Key="tab.destinations">Destinations</sys:String>
+    <sys:String x:Key="tab.destinations">Traffic</sys:String>
     <sys:String x:Key="tab.dns">DNS Safety</sys:String>
     <sys:String x:Key="tab.netcheck">Network Check</sys:String>
     <sys:String x:Key="tab.ports">Listening Ports</sys:String>
@@ -120,7 +120,7 @@
     <sys:String x:Key="cm.stopService">⏹ Stop hosted services</sys:String>
     <sys:String x:Key="cm.disableService">Disable service auto-start</sys:String>
 
-    <sys:String x:Key="p.dest.title">Destinations</sys:String>
+    <sys:String x:Key="p.dest.title">Traffic</sys:String>
     <sys:String x:Key="dns.servers">DNS servers (changes raise alerts)</sys:String>
     <sys:String x:Key="dns.proxy">System proxy (WinINET)</sys:String>
     <sys:String x:Key="dns.winhttp">WinHTTP proxy</sys:String>
@@ -351,7 +351,7 @@
     <sys:String x:Key="eng.signedTemp">Signed executable in a temp/download directory</sys:String>
     <sys:String x:Key="eng.signedTemp.caveat">Portable tools are common</sys:String>
     <sys:String x:Key="eng.uploadRatio">Session upload ({0}) is ~{2}× download ({1})</sys:String>
-    <sys:String x:Key="eng.uploadRatio.basis">Process-level totals incl. TCP retransmits; per-destination split in "Destinations"</sys:String>
+    <sys:String x:Key="eng.uploadRatio.basis">Process-level totals incl. TCP retransmits; per-destination split in "Traffic"</sys:String>
     <sys:String x:Key="eng.uploadRatio.caveat">Cloud sync / backup / streaming / P2P look the same</sys:String>
     <sys:String x:Key="eng.newBurst">New process uploaded {0} shortly after appearing</sys:String>
     <sys:String x:Key="eng.newBurst.basis">Process seen for ~{0:F0} seconds</sys:String>

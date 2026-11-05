@@ -3,7 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <!-- 中文（简体）字符串表 -->
     <sys:String x:Key="tab.overview">总览</sys:String>
-    <sys:String x:Key="tab.destinations">目的地排行</sys:String>
+    <sys:String x:Key="tab.destinations">流量去向</sys:String>
     <sys:String x:Key="tab.dns">DNS 安全</sys:String>
     <sys:String x:Key="tab.netcheck">网络体检</sys:String>
     <sys:String x:Key="tab.ports">监听端口</sys:String>
@@ -120,7 +120,7 @@
     <sys:String x:Key="cm.stopService">⏹ 停止其承载的服务</sys:String>
     <sys:String x:Key="cm.disableService">禁止其服务自启动</sys:String>
 
-    <sys:String x:Key="p.dest.title">目的地排行</sys:String>
+    <sys:String x:Key="p.dest.title">流量去向</sys:String>
     <sys:String x:Key="dns.servers">DNS 服务器（变更会告警）</sys:String>
     <sys:String x:Key="dns.proxy">系统代理 (WinINET)</sys:String>
     <sys:String x:Key="dns.winhttp">WinHTTP 代理</sys:String>
@@ -350,7 +350,7 @@
     <sys:String x:Key="eng.signedTemp">已签名程序运行于临时/下载类目录</sys:String>
     <sys:String x:Key="eng.signedTemp.caveat">便携版工具常态</sys:String>
     <sys:String x:Key="eng.uploadRatio">会话内上传({0})约为下载({1})的 {2} 倍</sys:String>
-    <sys:String x:Key="eng.uploadRatio.basis">进程级累计口径，含 TCP 重传；按目的地拆分见「目的地排行」</sys:String>
+    <sys:String x:Key="eng.uploadRatio.basis">进程级累计口径，含 TCP 重传；按目的地拆分见「流量去向」</sys:String>
     <sys:String x:Key="eng.uploadRatio.caveat">网盘同步/备份/直播推流/P2P 均为此形态</sys:String>
     <sys:String x:Key="eng.newBurst">新出现的进程短时间内上传 {0}</sys:String>
     <sys:String x:Key="eng.newBurst.basis">进程出现约 {0:F0} 秒</sys:String>
