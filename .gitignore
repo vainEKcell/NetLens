@@ -7,3 +7,4 @@ docs/
 *.user
 .mimosa/
 node_modules/
+archive/verify-history/

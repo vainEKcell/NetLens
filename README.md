@@ -19,6 +19,9 @@
 - **可疑判定**：正常 / 未知 / 值得关注 / 高风险 四档，每条结论都能展开看证据、依据和误报说明，若不能判断或对此方面无过多了解请保持默认与忽略。
 - **处置**：不想让某个程序联网？右键直接断网（防火墙规则，随时可恢复）；也可以结束进程、停掉它挂的服务、禁掉服务自启动；信得过的加进允许名单，之后不再提示
 - **行为基线**：存在本地 SQLite，跨会话记录"这程序以前连过谁"，新面孔一眼就能看出来
+- **使用指南与分页教程**（alpha 界面）：内置图文使用指南，每个功能页一节并解释概念（NAT 类型、行为基线、数据保留）；每个功能页配专属分步气泡教程，聚光精确到具体控件，右键菜单与详情覆盖层带真实演示步骤
+- **事件流右键**（alpha 界面）：对事件行右键可直接对该地址发起 DNS 体检、跳转总览查看进程、按进程过滤事件流、复制远端地址/域名
+- **任务管理器联动**（alpha 界面）：总览右键「打开任务管理器」会自动在任务管理器中定位到该进程（Win11 经其搜索框按 PID 过滤，失败自动退化为普通打开）
 - **系统托盘与关闭行为**（alpha 界面）：常驻托盘图标，左键恢复界面；关闭窗口可询问 / 直接退出 / 最小化到托盘，设置里可改
 
 ## 目录结构
@@ -42,10 +45,10 @@ NetWatch/                     仓库根（项目名沿袭旧名，程序现名 N
 │  ├─ public/brand.png        应用内 logo（与 app.ico 同源，gen-icon.ps1 生成后同步）
 │  └─ dist/                   前端构建产物（npm run build，构建后由 csproj 复制进输出目录）
 ├─ tools/                     长期开发工具
-│  ├─ gen-icon.ps1            应用图标生成器（v11 棱镜设计，四档尺寸独立绘制）
-│  ├─ shot-*.ps1 / ui-shot.ps1  截图工具族（UI 验收）
-│  ├─ sync-to-submit.ps1      同步到 S:\GitSubmitClass 发布目录
-│  └─ oneoff/                 一次性补丁/诊断脚本归档（过程记录，勿删）
+│  ├─ tools/gen-icon.ps1       应用图标生成器（见 tools/ 内各脚本）
+│  ├─ tools/shot-*.ps1 / ui-shot.ps1  截图工具族（UI 验收）
+│  ├─ tools/sync-to-submit.ps1 同步到本地提审仓库（GitSubmitClass）
+│  └─ tools/oneoff/            一次性补丁/诊断脚本归档（过程记录，勿删）
 ├─ build-installer.ps1        打包安装器（Inno Setup，输出 dist/）
 ├─ publish.ps1                发布产物准备（dotnet publish）
 ├─ setup.iss                  Inno Setup 脚本
@@ -60,10 +63,10 @@ NetWatch/                     仓库根（项目名沿袭旧名，程序现名 N
 ### 程序入口（每次更新后的成品位置）
 
 ```
-S:\ZWorker\NetWatch\src\NetLens\bin\Debug\net10.0-windows\NetLens.exe
+src/NetLens/bin/Debug/net10.0-windows/NetLens.exe
 ```
 
-直接启动即为 alpha 新界面（总览页）。启动参数：`--spike:页面名` 直达指定页（destinations / dns / ports / events / blocking / network / netcheck / settings）；`--classic` 进入 classic WPF 旧界面。
+直接启动即为 alpha 新界面（总览页）。启动参数：`--spike:页面名` 直达指定页（destinations / dns / ports / events / blocking / network / netcheck / settings / guide）；`--classic` 进入 classic WPF 旧界面。
 
 ### 更新流程（改完代码后）
 
@@ -75,7 +78,7 @@ cd WebUI; npm run build
 dotnet build src/NetLens
 
 # 3. 运行验证
-S:\ZWorker\NetWatch\src\NetLens\bin\Debug\net10.0-windows\NetLens.exe --spike:overview
+src\NetLens\bin\Debug\net10.0-windows\NetLens.exe --spike:overview
 ```
 
 ### 发布安装包
@@ -86,7 +89,7 @@ powershell -ExecutionPolicy Bypass -File build-installer.ps1
 
 ## 下载
 
-右侧 [Releases](https://github.com/vainEKcell/NetLens/releases) 中找到最新版本 `NetLens-Setup-x.x.x.exe`，双击安装。打开时弹 UAC 点"是"——需要管理员权限，用于读内核网络事件和改防火墙规则，若对此有顾虑请不要下载该项目。
+右侧 [Releases](https://github.com/vainEKcell/NetWatch/releases) 中找到最新版本 `NetWatch-Setup-x.x.x.exe`，双击安装。打开时弹 UAC 点"是"——需要管理员权限，用于读内核网络事件和改防火墙规则，若对此有顾虑请不要下载该项目。
 
 ## 快速开始
 

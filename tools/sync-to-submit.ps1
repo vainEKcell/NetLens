@@ -6,7 +6,7 @@
 param([switch]$PushGitHub)
 $ErrorActionPreference = 'Stop'
 $src = Split-Path $PSScriptRoot
-$dst = "S:\GitSubmitClass\NetLens"
+$dst = "S:\GitSubmitClass\NetWatch"
 
 Write-Output "开发: $src"
 Write-Output "提审: $dst"
@@ -31,13 +31,19 @@ if ($dirty -gt 0) {
 git -C $src push submit main
 if ($LASTEXITCODE -ne 0) { throw "推送失败（如历史分叉，请检查两侧提交）" }
 
+# alpha 分支（当前主开发线）同步推送；首次推送会在提审仓库创建该分支
+git -C $src push submit alpha/0.1.5
+if ($LASTEXITCODE -ne 0) { throw "推送 alpha 分支失败" }
+
 # 可选：同时推送到 GitHub（origin）。默认不推——保留你在 GitHub Desktop 审核后手动推送的流程。
 if ($PushGitHub) {
     $originUrl = git -C $dst remote get-url origin 2>$null
     if ($originUrl) {
         git -C $dst push origin main
         if ($LASTEXITCODE -ne 0) { throw "推送到 GitHub 失败" }
-        Write-Output "已同步推送到 GitHub（origin）。"
+        git -C $dst push origin alpha/0.1.5
+        if ($LASTEXITCODE -ne 0) { throw "推送 alpha 分支到 GitHub 失败" }
+        Write-Output "已同步推送到 GitHub（origin，main + alpha/0.1.5）。"
     } else {
         Write-Output "⚠ 提审仓库未配置 origin，跳过 GitHub 推送。"
     }
