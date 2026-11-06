@@ -1,6 +1,6 @@
-# NetWatch（NetLens）
+# NetLens
 
-一个 Windows 下的进程级网络监控工具。程序名 NetLens，仓库名沿袭项目旧名 NetWatch。
+一个 Windows 下的进程级网络监控工具。程序名 NetLens（仓库与安装目录沿袭项目旧名 NetWatch，经典分支保持兼容）。
 
 > **分支说明**：`main` = classic 界面稳定线（0.1.5 整理版）；`alpha/0.1.5` = 当前主开发线，承载全新 WebView2 界面与近期全部演进（托盘常驻、使用指南与分页教程、事件流右键、任务管理器定位等）。日常开发与功能更新均发生在 alpha 分支。
 
