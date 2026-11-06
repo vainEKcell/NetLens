@@ -18,20 +18,30 @@ const exeFile = join(root, 'src', 'NetLens', 'bin', 'Debug', 'net10.0-windows', 
 const SIZES = [256, 128, 64, 48, 32, 24, 20, 16];
 
 const src = readFileSync(join(here, 'source.svg'), 'utf8');
-let body = src.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+const body = src.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
 
-// 双主题配色映射（切面逐级提亮，保持明暗层次；浅色主题保留原生深青）
+// 双主题扁平配色（无渐变，切面间鲜明深浅对比）：
+//  dark：深底 #07080C + 亮青切面三阶（白/浅青/中青）
+//  light：白底 + 深青切面三阶（深/中/浅）
 const darkMap = {
   '#031928': '#0E2233',
-  '#133a53': '#1E5B85',
-  '#1f5973': '#2E86B0',
-  '#276b88': '#3FA9D4',
-  '#317e9a': '#54C2E8',
-  '#48a8c1': '#74D4F0',
-  '#5abed7': '#96E4F8',
+  '#133a53': '#2E86B0',
+  '#1f5973': '#46A8D0',
+  '#276b88': '#5AC0E4',
+  '#317e9a': '#78D2F0',
+  '#48a8c1': '#9CE2F6',
+  '#5abed7': '#C4F0FC',
+  '#ffffff': '#FFFFFF',
 };
 const lightMap = {
-  '#031928': '#0C1D2E',
+  '#031928': '#12324A',
+  '#133a53': '#1B5E86',
+  '#1f5973': '#2E86B0',
+  '#276b88': '#46A8CC',
+  '#317e9a': '#5AC0DC',
+  '#48a8c1': '#7AD0E4',
+  '#5abed7': '#A0E0F0',
+  '#ffffff': '#FFFFFF',
 };
 
 function applyMap(text, map) {
@@ -41,19 +51,23 @@ function applyMap(text, map) {
 }
 
 function crop(inner) {
+  // 双层裁剪：cr=圆角图标外框；cb=主晶体区域（水印碎线在晶体外，被裁除）
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="518 163 290 290" width="290" height="290">
   <defs>
     <clipPath id="cr"><rect x="518" y="163" width="290" height="290" rx="52"/></clipPath>
+    <clipPath id="cb"><rect x="546" y="174" width="236" height="270"/></clipPath>
   </defs>
   <g clip-path="url(#cr)">
     <rect x="518" y="163" width="290" height="290" fill="${inner.base}"/>
+    <g clip-path="url(#cb)">
 ${inner.body}
+    </g>
   </g>
 </svg>`;
 }
 
 const darkSvg = crop({ base: '#07080C', body: applyMap(body, darkMap) });
-const lightSvg = crop({ base: '#031928', body: applyMap(body, lightMap) });
+const lightSvg = crop({ base: '#FFFFFF', body: applyMap(body, lightMap) });
 
 // ICO 打包
 function packIco(pngs) {
