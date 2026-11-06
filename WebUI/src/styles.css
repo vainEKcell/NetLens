@@ -162,6 +162,10 @@ html, body {
 }
 #nav-toggle:hover { opacity: 1; transform: scale(1.06); }
 #nav-toggle.collapsed { transform: rotate(180deg); }
+/* 双主题 logo：深色主题用提亮晶体，浅色主题用原生深青晶体 */
+.brand-img.light { display: none; }
+[data-theme="light"] .brand-img.dark { display: none; }
+[data-theme="light"] .brand-img.light { display: inline; }
 #brand-name {
   font-size: 16px; font-weight: 800; letter-spacing: 0.4px;
   white-space: nowrap;

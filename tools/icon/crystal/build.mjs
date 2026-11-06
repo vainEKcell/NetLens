@@ -1,4 +1,5 @@
-// 晶体图标构建：candidate-3 裁剪晶体区域（viewBox 特写）→ 多尺寸渲染 → ICO 打包 → 同步部署
+// 晶体图标构建（双主题）：深色主题用提亮晶体（黑底可辨），浅色主题用原生深青晶体
+// 输出：app.ico（深色变体）+ brand.png（深色变体）+ brand-light.png（浅色主题 WebUI 切换用）
 import { Resvg } from 'file:///S:/ZWorker/NetWatch/tools/icon/node_modules/@resvg/resvg-js/index.js';
 import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -6,37 +7,53 @@ import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, '..', '..');
+const root = join(here, '..', '..', '..');
 const outIco = join(root, 'src', 'NetLens', 'Assets', 'app.ico');
 const brandPublic = join(root, 'WebUI', 'public', 'brand.png');
+const brandLightPublic = join(root, 'WebUI', 'public', 'brand-light.png');
 const distBrand = join(root, 'WebUI', 'dist', 'brand.png');
+const distBrandLight = join(root, 'WebUI', 'dist', 'brand-light.png');
 const exeFile = join(root, 'src', 'NetLens', 'bin', 'Debug', 'net10.0-windows', 'NetLens.exe');
 
 const SIZES = [256, 128, 64, 48, 32, 24, 20, 16];
 
-// 晶体特写 SVG：viewBox 直接取晶体区域（含原底色层，一并裁入）
-const src = readFileSync(join(here, 'candidate-3.svg'), 'utf8');
+const src = readFileSync(join(here, 'source.svg'), 'utf8');
 let body = src.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
-// 黑底适配：原设计为白底深色细线——暗色层逐级提亮、细线加粗，保证黑底上清晰
-const colorMap = {
-  '#133A53': '#1E6E92',
-  '#1F5973': '#2E96BE',
-  '#276B88': '#46B4DC',
-  '#317E9A': '#5CC8E8',
-  '#48A8C1': '#82DCF4',
-  '#5ABED7': '#9CE8FA',
+
+// 双主题配色映射（切面逐级提亮，保持明暗层次；浅色主题保留原生深青）
+const darkMap = {
+  '#031928': '#0E2233',
+  '#133a53': '#1E5B85',
+  '#1f5973': '#2E86B0',
+  '#276b88': '#3FA9D4',
+  '#317e9a': '#54C2E8',
+  '#48a8c1': '#74D4F0',
+  '#5abed7': '#96E4F8',
 };
-for (const [a, b] of Object.entries(colorMap)) body = body.split(a).join(b);
-body = body.replace(/stroke-width="0\.1"/g, 'stroke-width="0.6"');
-const cropSvg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="524 110 272 272" width="272" height="272">
+const lightMap = {
+  '#031928': '#0C1D2E',
+};
+
+function applyMap(text, map) {
+  let out = text;
+  for (const [a, b] of Object.entries(map)) out = out.split(a).join(b);
+  return out;
+}
+
+function crop(inner) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="518 163 290 290" width="290" height="290">
   <defs>
-    <clipPath id="cr"><rect x="524" y="110" width="272" height="272" rx="46"/></clipPath>
+    <clipPath id="cr"><rect x="518" y="163" width="290" height="290" rx="52"/></clipPath>
   </defs>
   <g clip-path="url(#cr)">
-    <rect x="524" y="110" width="272" height="272" fill="#07080C"/>
-${body}
+    <rect x="518" y="163" width="290" height="290" fill="${inner.base}"/>
+${inner.body}
   </g>
 </svg>`;
+}
+
+const darkSvg = crop({ base: '#07080C', body: applyMap(body, darkMap) });
+const lightSvg = crop({ base: '#F2F5FA', body: applyMap(body, lightMap) });
 
 // ICO 打包
 function packIco(pngs) {
@@ -57,17 +74,23 @@ function packIco(pngs) {
   return Buffer.concat([header, ...chunks]);
 }
 
-const pngs = SIZES.map((size) => {
-  const r = new Resvg(cropSvg, { fitTo: { mode: 'width', value: size } });
+const darkPngs = SIZES.map((size) => {
+  const r = new Resvg(darkSvg, { fitTo: { mode: 'width', value: size } });
+  return { size, data: r.render().asPng() };
+});
+const lightPngs = SIZES.map((size) => {
+  const r = new Resvg(lightSvg, { fitTo: { mode: 'width', value: size } });
   return { size, data: r.render().asPng() };
 });
 
-writeFileSync(outIco, packIco(pngs));
-writeFileSync(join(here, 'icon-crystal-preview.png'), pngs.find(p => p.size === 256).data);
+writeFileSync(outIco, packIco(darkPngs));
+writeFileSync(join(here, 'icon-crystal-preview.png'), darkPngs.find(p => p.size === 256).data);
+writeFileSync(join(here, 'icon-crystal-light-preview.png'), lightPngs.find(p => p.size === 256).data);
 copyFileSync(join(here, 'icon-crystal-preview.png'), brandPublic);
+copyFileSync(join(here, 'icon-crystal-light-preview.png'), brandLightPublic);
 
 execSync('npm run build', { cwd: join(root, 'WebUI'), stdio: 'pipe' });
-if (!existsSync(distBrand)) throw new Error('dist build failed');
+if (!existsSync(distBrand) || !existsSync(distBrandLight)) throw new Error('dist build failed');
 copyFileSync(distBrand, join(here, '..', 'icon-crystal-dist-check.png'));
 
 const ps = process.env.SystemRoot + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
@@ -79,4 +102,4 @@ if (existsSync(exeFile)) {
   console.log('exe embedded icon extracted');
 }
 console.log('ICO written:', outIco);
-console.log('brand synced (public + dist); shell cache refreshed');
+console.log('brand synced (public + dist, dark + light); shell cache refreshed');
