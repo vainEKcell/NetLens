@@ -142,6 +142,9 @@ function renderStep(): void {
   // 切页（如需）
   if (location.hash !== `#/${step.page}`) location.hash = `#/${step.page}`;
 
+  // 进入本步的演示动作（如真实弹出右键菜单 / 打开详情覆盖层）
+  try { step.onEnter?.(); } catch { /* 演示动作失败不阻断 */ }
+
   // 聚光定位：先立即一次，再两次校准（等切页/表格渲染）
   placeSpot(step);
   window.setTimeout(() => placeSpot(step), 60);
@@ -153,7 +156,7 @@ function placeSpot(step: TourStep): void {
   const masks = masksOf();
   if (card.style.visibility !== "visible") card.style.visibility = "visible"; // 与位置设置同帧，无闪现
 
-  const target = document.querySelector(step.selector ?? "");
+  const target = step.selector ? document.querySelector(step.selector) : null;
   let rect: DOMRect | null = null;
   if (step.colId && target) {
     const hr = target.getBoundingClientRect();

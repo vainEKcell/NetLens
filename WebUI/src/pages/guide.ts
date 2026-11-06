@@ -80,7 +80,7 @@ const EN: Record<string, Content> = {
   overview: {
     paras: ["Overview is where the app lives: per-process live upload/download rates and totals, refreshed every second. Click any row to slide out the detail overlay (path, signature, parent, command line, risk reasons, actions); right-click a row for the action menu."],
     concepts: [
-      { term: "Four verdict tiers", expl: "Normal = valid signature, no suspicious evidence. Unknown = not enough information. Notable = suspicious evidence present (unsigned in a temp dir, ablarge uploads). High risk = multiple strong signals (masqueraded system name, invalid signature). Verdicts are hints, not diagnoses — every one carries evidence and a false-positive note in the detail panel." },
+      { term: "Four verdict tiers", expl: "Normal = valid signature, no suspicious evidence. Unknown = not enough information. Notable = suspicious evidence present (unsigned in a temp dir, abnormally large uploads). High risk = multiple strong signals (masqueraded system name, invalid signature). Verdicts are hints, not diagnoses — every one carries evidence and a false-positive note in the detail panel." },
       { term: "Context menu", expl: "Open Task Manager / End process / Open folder / Block network access (a Windows Firewall rule, reversible) / Inspect in details / Copy PID." },
       { term: "Top-bar filters", expl: "“Hide loopback” filters 127.x inter-process traffic; “Only flagged” shows unknown and above; search filters by name, path, PID." },
     ],
