@@ -18,13 +18,14 @@ public partial class SpikeWindow : Window
     private readonly UiBridge _bridge;
     private readonly MainViewModel _vm;
 
-    public SpikeWindow(MainViewModel vm, string initialPage = "")
+    public SpikeWindow(MainViewModel vm, string initialPage = "", bool topmost = false)
     {
         InitializeComponent();
         _vm = vm;
         var snapshots = new SnapshotBuilder(vm.Agg, vm.Tracker, vm);
         _bridge = new UiBridge(snapshots, vm);
         _initialPage = initialPage;
+        if (topmost) Topmost = true; // 截图/演示模式：置顶避免被覆盖
         LoadCaptionIcon();
         WindowEffects.SetWindowIcon(this);
         ApplyCaptionTheme(ThemeService.CurrentEffective);

@@ -57,6 +57,7 @@ public partial class App : Application
         var vm = new MainViewModel();
         var spikeArg = e.Args.FirstOrDefault(a => a.StartsWith("--spike", StringComparison.Ordinal));
         var classicArg = e.Args.Any(a => a.Equals("--classic", StringComparison.OrdinalIgnoreCase));
+        var wantTopmost = e.Args.Any(a => a.Equals("--spike:topmost", StringComparison.OrdinalIgnoreCase));
         Window main;
         if (classicArg)
         {
@@ -65,7 +66,7 @@ public partial class App : Application
         else
         {
             var page = spikeArg != null && spikeArg.Length > 7 ? spikeArg[8..] : "overview";
-            main = new SpikeWindow(vm, page);
+            main = new SpikeWindow(vm, page, wantTopmost);
         }
         MainWindow = main;
         main.Show();
