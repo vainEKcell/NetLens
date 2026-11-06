@@ -53,7 +53,7 @@ ${inner.body}
 }
 
 const darkSvg = crop({ base: '#07080C', body: applyMap(body, darkMap) });
-const lightSvg = crop({ base: '#F2F5FA', body: applyMap(body, lightMap) });
+const lightSvg = crop({ base: '#031928', body: applyMap(body, lightMap) });
 
 // ICO 打包
 function packIco(pngs) {
