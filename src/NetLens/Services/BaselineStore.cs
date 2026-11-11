@@ -200,8 +200,12 @@ public sealed class BaselineStore
     {
         try
         {
+            // 独立短连接：本方法在线程池线程执行（保留清理定时任务），共享 _conn 归 UI 线程
+            // 的周期刷写，SqliteConnection 非线程安全——与 BackfillIdentity 同一原则
+            using var conn = new SqliteConnection($"Data Source={AppSettings.DbPath};Mode=ReadWriteCreate");
+            conn.Open();
             int total;
-            using (var cmd = _conn.CreateCommand())
+            using (var cmd = conn.CreateCommand())
             {
                 cmd.CommandText = """
                     DELETE FROM identity_dest WHERE last_seen < $c;
@@ -211,7 +215,11 @@ public sealed class BaselineStore
                 cmd.Parameters.AddWithValue("$c", ToUnix(baselineCutoff));
                 total = cmd.ExecuteNonQuery();
             }
-            Exec("PRAGMA wal_checkpoint(TRUNCATE);");
+            using (var ckpt = conn.CreateCommand())
+            {
+                ckpt.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+                ckpt.ExecuteNonQuery();
+            }
             return total;
         }
         catch (Exception ex) { Log.Error("基线清理失败", ex); return 0; }

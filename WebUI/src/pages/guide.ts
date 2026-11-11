@@ -39,7 +39,7 @@ const ZH: Record<string, Content> = {
   dns: {
     paras: ["被动记录每个进程的 DNS 解析流（零额外流量），并做三层劫持检测：公网域名解析到内网地址、有程序绕过系统 DNS 自行发查询、hosts 或代理设置被篡改——命中即提示。"],
     concepts: [
-      { term: "DNS 体检", expl: "拿公共 DoH（加密 DNS）重新解析同一批域名，与系统解析结果对比——不一致即可能被劫持。这是仅有的两处主动联网之一，只在您点击时执行。" },
+      { term: "DNS 体检", expl: "拿公共 DoH（加密 DNS）重新解析同一批域名，与系统解析结果对比——不一致即可能被劫持。属主动联网功能，只在您点击时执行。" },
     ],
     tour: true,
   },
@@ -67,7 +67,7 @@ const ZH: Record<string, Content> = {
     tour: true,
   },
   privacy: {
-    paras: ["NetLens 的所有数据只存在本机 %LOCALAPPDATA%\\NetLens，卸载或删除该目录即彻底清除。程序自身零联网，仅有两处您主动点击才会发起的对外请求（DNS 体检、带宽测速）。"],
+    paras: ["NetLens 的所有数据只存在本机 %LOCALAPPDATA%\\NetLens，卸载或删除该目录即彻底清除。程序自身零联网、零遥测；所有对外请求均由您主动点击触发：DNS 体检（DoH 比对）、网络体检（NAT 探测与带宽测速）、右键的文件情报查询（VirusTotal）、设置里的检查更新。"],
     concepts: [
       { term: "行为基线", expl: "NetLens 会持续记住每个程序“平时都连过哪些服务器”。之后某个程序一旦出现新的联网行为，就能一眼认出这是“新面孔”——这份数据库就是行为基线，默认保留 90 天。" },
       { term: "证据流", expl: "每一条“值得关注/高风险”判定背后都有一份原始记录：哪个进程、何时、连了哪里、证据是什么——供您复核判断，默认保留 7 天。" },
@@ -93,7 +93,7 @@ const EN: Record<string, Content> = {
   dns: {
     paras: ["Passively records every process's DNS lookups (zero extra traffic) and runs three-layer hijack detection: public domains resolving to private addresses, programs bypassing the system DNS, tampered hosts or proxy settings."],
     concepts: [
-      { term: "DNS check", expl: "Re-resolves the same domains via public DoH (encrypted DNS) and compares with the system's answers — mismatches suggest hijacking. One of the two outbound features, runs only when you click." },
+      { term: "DNS check", expl: "Re-resolves the same domains via public DoH (encrypted DNS) and compares with the system's answers — mismatches suggest hijacking. A user-triggered outbound feature, runs only when you click." },
     ],
     tour: true,
   },
@@ -121,7 +121,7 @@ const EN: Record<string, Content> = {
     tour: true,
   },
   privacy: {
-    paras: ["All NetLens data lives in %LOCALAPPDATA%\\NetLens on this machine; uninstalling or deleting that folder removes everything. The app itself makes zero network connections — the only two outbound requests are user-triggered (DNS check, bandwidth test)."],
+    paras: ["All NetLens data lives in %LOCALAPPDATA%\\NetLens on this machine; uninstalling or deleting that folder removes everything. The app has zero telemetry and no background traffic — every outbound request is user-triggered: DNS check (DoH), network check-up (STUN and speed test), file-intel lookup (VirusTotal), and the in-app update check."],
     concepts: [
       { term: "Behavior baseline", expl: "NetLens keeps remembering which servers each process normally talks to; when a process suddenly does something new, it is recognized as a new face. That memory is the baseline, kept for 90 days by default." },
       { term: "Evidence stream", expl: "Every “Notable/High risk” verdict carries a raw record — which process, when, where it connected, and what the evidence was — for your own review. Kept 7 days by default." },

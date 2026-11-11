@@ -10,6 +10,7 @@ public partial class App : Application
 {
     private static Mutex? _mutex;
     private static TrayIconService? _tray;
+    private static bool _errorDialogUp;
 
     /// 托盘“退出”发出的明确退出请求：CloseGuard 放行，不再弹询问窗
     public static bool ForceExitRequested { get; private set; }
@@ -43,9 +44,17 @@ public partial class App : Application
         DispatcherUnhandledException += (_, args) =>
         {
             Log.Error("UI 未处理异常（含内层链）", Flatten(args.Exception));
-            MessageBox.Show(
-                L10n.T("msg.uiError", args.Exception.Message, Log.FilePath),
-                "NetLens", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (!_errorDialogUp) // 防重入：异常高频复发时不连续弹框（每次弹框排队等关闭后再弹）
+            {
+                _errorDialogUp = true;
+                try
+                {
+                    MessageBox.Show(
+                        L10n.T("msg.uiError", args.Exception.Message, Log.FilePath),
+                        "NetLens", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally { _errorDialogUp = false; }
+            }
             args.Handled = true;
         };
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>

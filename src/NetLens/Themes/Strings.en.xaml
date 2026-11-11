@@ -298,7 +298,9 @@
     <sys:String x:Key="sys.auditOn">Firewall block auditing enabled — blocked connections appear live in Events</sys:String>
     <sys:String x:Key="sys.processKilled">Killed process {0} (PID {1})</sys:String>
     <sys:String x:Key="sys.serviceStopped">Stopped service {0}</sys:String>
+    <sys:String x:Key="sys.serviceStopFailed">Failed to stop service {0}</sys:String>
     <sys:String x:Key="sys.serviceDisabled">Disabled auto-start of service {0}</sys:String>
+    <sys:String x:Key="sys.serviceDisableFailed">Failed to disable service {0}</sys:String>
 
     <sys:String x:Key="cfg.what.dns">DNS servers</sys:String>
     <sys:String x:Key="cfg.what.proxy">System proxy (WinINET)</sys:String>
@@ -314,7 +316,8 @@
     <sys:String x:Key="cfg.pac">　(PAC script: {0})</sys:String>
     <sys:String x:Key="cfg.direct">Direct connection (no proxy)</sys:String>
 
-    <sys:String x:Key="doh.idle">Check not run. This is the only feature that actively uses the network: it sends a few queries to the selected public DoH for cross-validation.</sys:String>
+    <sys:String x:Key="doh.idle">Check not run. Sends a few queries to the selected public DoH for cross-validation (a user-triggered outbound feature).</sys:String>
+    <sys:String x:Key="doh.fail">Check failed: {0}</sys:String>
     <sys:String x:Key="doh.running">Checking…</sys:String>
     <sys:String x:Key="doh.trying">Trying reference source: {0}…</sys:String>
     <sys:String x:Key="dns.ali2">Aliyun Public DNS (223.6.6.6)</sys:String>
@@ -385,6 +388,7 @@
     <sys:String x:Key="msg.noIdentity">This process has no stable identity yet (path unresolved); cannot allowlist it.</sys:String>
     <sys:String x:Key="msg.confirmKill">Force-kill process (no child tree):&#10;&#10;{0} (PID {1})&#10;&#10;Unsaved data will be lost. Kill it?</sys:String>
     <sys:String x:Key="msg.killFail">Kill failed: {0}&#10;(system-protected processes cannot be terminated)</sys:String>
+    <sys:String x:Key="msg.killReused">PID {0} has been reused by a new process — the kill was aborted to avoid terminating the wrong one.</sys:String>
     <sys:String x:Key="msg.noServices">This process is not a service host (or enumeration unavailable).</sys:String>
     <sys:String x:Key="msg.confirmStopServices">The following Windows services will be stopped:&#10;&#10;{0}&#10;&#10;Stopping system services may affect related features. Continue?</sys:String>
     <sys:String x:Key="msg.confirmDisableServices">The following services will be set to Disabled (no auto-start):&#10;&#10;{0}&#10;&#10;Disabling may break related features; revert in services.msc anytime. Continue?</sys:String>

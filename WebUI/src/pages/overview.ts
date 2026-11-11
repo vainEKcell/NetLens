@@ -12,6 +12,32 @@ type GridApi = ReturnType<typeof createGrid>;
 let selectedPidEl: HTMLElement;
 let detailBody: HTMLElement;
 
+// ---------- 详情覆盖层：document 级监听只挂一次（页面重渲染不重复挂，防止监听累积） ----------
+function closeDetailOverlay(): void {
+  document.getElementById("detail-overlay")?.classList.remove("open");
+  document.getElementById("detail-shade")?.classList.remove("open");
+  sendCommand("select", { pid: -1 });
+}
+
+let detailGlobalBound = false;
+function bindDetailGlobal(): void {
+  if (detailGlobalBound) return;
+  detailGlobalBound = true;
+  document.addEventListener("click", (e) => {
+    const shade = document.getElementById("detail-shade");
+    if (!shade?.classList.contains("open")) return;
+    const t = e.target as HTMLElement;
+    if (t.closest("#detail-overlay")) return;          // 覆盖层内部（含 ✕）自行处理
+    if (t.closest("#tour-root")) return;               // 教程层自管
+    closeDetailOverlay();                              // 遮罩与其余区域一律收起
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const shade = document.getElementById("detail-shade");
+    if (shade?.classList.contains("open")) closeDetailOverlay();
+  });
+}
+
 const columnDefs: ColDef[] = [
   { headerName: t("ov.col.pid"), headerValueGetter: () => t("ov.col.pid"), field: "pid", width: 84 },
   { headerName: t("ov.col.name"), headerValueGetter: () => t("ov.col.name"), field: "name", flex: 1.7, minWidth: 130, cellRenderer: nameCell },
@@ -93,24 +119,7 @@ export function render(root: HTMLElement): void {
 
   // 详情覆盖层为模态：打开时遮罩拦截下层点击，点遮罩任意处=收起（乐观关闭，不等快照）；
   // ✕ 与 Esc 同效；行点击被遮罩拦截——先收起再点目标行打开新详情。
-  const closeDetail = (): void => {
-    document.getElementById("detail-overlay")?.classList.remove("open");
-    document.getElementById("detail-shade")?.classList.remove("open");
-    sendCommand("select", { pid: -1 });
-  };
-  document.addEventListener("click", (e) => {
-    const shade = document.getElementById("detail-shade");
-    if (!shade?.classList.contains("open")) return;
-    const t = e.target as HTMLElement;
-    if (t.closest("#detail-overlay")) return;          // 覆盖层内部（含 ✕）自行处理
-    if (t.closest("#tour-root")) return;               // 教程层自管
-    closeDetail();                                     // 遮罩与其余区域一律收起
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    const shade = document.getElementById("detail-shade");
-    if (shade?.classList.contains("open")) closeDetail();
-  });
+  bindDetailGlobal();
 
   // 行悬浮快捷信息（委托：ag-row → rowData 摘要）
   const gridEl = document.getElementById("ov-grid")!;

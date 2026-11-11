@@ -16,7 +16,7 @@ public sealed class RemoteStats
     public long Up, Down;
     public DateTime FirstUtc = DateTime.UtcNow;
     public DateTime LastUtc = DateTime.UtcNow;
-    public HashSet<int> Pids = new();
+    public List<int> Pids = new();   // 按首次接触顺序保序（满 24 挤掉最早的一个）
 }
 
 /// 消费 ETW 网络事件：每进程 ↑↓ 速率/累计 + 按远端 IP 聚合 + 大额传输标记
@@ -73,8 +73,11 @@ public sealed class RateAggregator
                 r.LastUtc = e.TimeUtc;
                 lock (r.Pids)
                 {
-                    r.Pids.Add(e.Pid);
-                    if (r.Pids.Count > 24) r.Pids.Remove(r.Pids.First());
+                    if (!r.Pids.Contains(e.Pid))
+                    {
+                        r.Pids.Add(e.Pid);
+                        if (r.Pids.Count > 24) r.Pids.RemoveAt(0);
+                    }
                 }
             }
         }

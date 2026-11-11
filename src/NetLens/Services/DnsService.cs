@@ -58,6 +58,17 @@ public sealed class DnsService
                 _ip2dom[ip] = (d.Domain, d.TimeUtc);
         PruneMap();
 
+        // 解析历史（60 秒滑动窗口）：供"解析波动"启发式；写入时顺带修剪防长会话增长
+        var h = _domHistory.GetOrAdd(d.Domain, _ => new List<(DateTime Utc, string Ip)>());
+        lock (h)
+        {
+            foreach (var ip in d.Ips)
+                if (IPAddress.TryParse(ip, out var a))
+                    h.Add((d.TimeUtc, a.IsIPv4MappedToIPv6 ? a.MapToIPv4().ToString() : a.ToString()));
+            h.RemoveAll(x => (d.TimeUtc - x.Utc).TotalSeconds > 60);
+        }
+        PruneHistory();
+
         // UI 实时流
         _stream.Enqueue(new DnsStreamItem(d.TimeUtc, d.Pid, d.Domain, string.Join(", ", d.Ips), false, ""));
 
@@ -144,5 +155,20 @@ public sealed class DnsService
         foreach (var kv in _ip2dom)
             if (kv.Value.Utc < cutoff)
                 _ip2dom.TryRemove(kv.Key, out _);
+    }
+
+    /// 解析历史按域修剪：窗口外全空且条目过多的域直接移除，防长会话内存增长
+    private void PruneHistory()
+    {
+        if (_domHistory.Count <= 2048) return;
+        var cutoff = DateTime.UtcNow - TimeSpan.FromSeconds(60);
+        foreach (var kv in _domHistory)
+        {
+            lock (kv.Value)
+            {
+                kv.Value.RemoveAll(x => x.Utc < cutoff);
+                if (kv.Value.Count == 0) _domHistory.TryRemove(kv.Key, out _);
+            }
+        }
     }
 }

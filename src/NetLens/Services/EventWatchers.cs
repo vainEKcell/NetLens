@@ -15,6 +15,19 @@ public sealed class FirewallAuditWatcher : IDisposable
 
     private EventLogWatcher? _watcher;
 
+    private static (bool Success, bool Failure, DateTime At) _stateCache;
+
+    /// 审核策略状态极少变化：带缓存查询（5 分钟 TTL，force 立即刷新）。
+    /// 快照每秒读取此状态——直查会让 auditpol.exe 每秒启动一次（约 8.6 万次/天）。
+    public static (bool Success, bool Failure) QueryAuditStateCached(bool force = false)
+    {
+        var (s, f, at) = _stateCache;
+        if (!force && at != default && DateTime.UtcNow - at < TimeSpan.FromMinutes(5)) return (s, f);
+        (s, f) = QueryAuditState();
+        _stateCache = (s, f, DateTime.UtcNow);
+        return (s, f);
+    }
+
     public static (bool Success, bool Failure) QueryAuditState()
     {
         var (ok, output) = ProcessRunner.RunConsole("auditpol.exe", 5000, "/get", "/subcategory:" + SubcategoryGuid);

@@ -297,7 +297,9 @@
     <sys:String x:Key="sys.auditOn">防火墙拦截审计已启用——被拦截的连接将实时出现在事件流</sys:String>
     <sys:String x:Key="sys.processKilled">已结束进程 {0} (PID {1})</sys:String>
     <sys:String x:Key="sys.serviceStopped">已停止服务 {0}</sys:String>
+    <sys:String x:Key="sys.serviceStopFailed">服务 {0} 停止失败</sys:String>
     <sys:String x:Key="sys.serviceDisabled">已禁用服务 {0} 的自启动</sys:String>
+    <sys:String x:Key="sys.serviceDisableFailed">服务 {0} 禁用失败</sys:String>
 
     <sys:String x:Key="cfg.what.dns">DNS 服务器</sys:String>
     <sys:String x:Key="cfg.what.proxy">系统代理 (WinINET)</sys:String>
@@ -313,7 +315,8 @@
     <sys:String x:Key="cfg.pac">　(PAC 脚本: {0})</sys:String>
     <sys:String x:Key="cfg.direct">直接连接（无代理）</sys:String>
 
-    <sys:String x:Key="doh.idle">体检未运行。此功能为唯一的主动联网功能：点击后向所选公共 DoH 发起少量查询做交叉比对。</sys:String>
+    <sys:String x:Key="doh.idle">体检未运行。点击后向所选公共 DoH 发起少量查询做交叉比对（主动联网功能，仅在您点击时发生）。</sys:String>
+    <sys:String x:Key="doh.fail">体检失败：{0}</sys:String>
     <sys:String x:Key="doh.running">体检中…</sys:String>
     <sys:String x:Key="doh.trying">正在尝试参考源：{0}…</sys:String>
     <sys:String x:Key="dns.ali2">阿里公共 DNS（223.6.6.6）</sys:String>
@@ -384,6 +387,7 @@
     <sys:String x:Key="msg.noIdentity">该进程尚无稳定身份（路径未解析），无法加入允许名单。</sys:String>
     <sys:String x:Key="msg.confirmKill">将强制结束进程（不含子进程树）：\n\n{0} (PID {1})\n\n未保存的数据将丢失。确定结束？</sys:String>
     <sys:String x:Key="msg.killFail">结束进程失败：{0}\n（受系统保护的进程无法被终止）</sys:String>
+    <sys:String x:Key="msg.killReused">PID {0} 已被其他新进程复用，为避免误杀已放弃本次结束操作。</sys:String>
     <sys:String x:Key="msg.noServices">该进程不是服务宿主（或服务枚举不可用）。</sys:String>
     <sys:String x:Key="msg.confirmStopServices">将停止以下 Windows 服务：\n\n{0}\n\n停止系统服务可能影响相关功能。继续？</sys:String>
     <sys:String x:Key="msg.confirmDisableServices">将把以下服务设为「禁用」（不再自启动）：\n\n{0}\n\n禁用系统服务可能导致相关功能失效，可随时在 services.msc 恢复。继续？</sys:String>

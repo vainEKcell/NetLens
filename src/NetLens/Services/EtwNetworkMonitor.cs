@@ -14,7 +14,6 @@ public sealed class EtwNetworkMonitor : IDisposable
     public const string SessionName = "NetLens-Realtime";
 
     private TraceEventSession? _session;
-    private CancellationTokenSource? _cts;
     private Task? _task;
 
     public volatile bool Running;
@@ -28,11 +27,10 @@ public sealed class EtwNetworkMonitor : IDisposable
 
     public void Start()
     {
-        _cts = new CancellationTokenSource();
-        _task = Task.Run(() => Run(_cts.Token));
+        _task = Task.Run(Run);
     }
 
-    private void Run(CancellationToken ct)
+    private void Run()
     {
         try
         {
@@ -213,7 +211,6 @@ public sealed class EtwNetworkMonitor : IDisposable
 
     public void Dispose()
     {
-        try { _cts?.Cancel(); } catch { }
         try { _session?.Stop(); } catch { }
         try { _session?.Dispose(); } catch { }
         try { _task?.Wait(2000); } catch { }

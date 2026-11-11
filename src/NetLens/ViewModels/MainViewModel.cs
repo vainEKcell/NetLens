@@ -186,7 +186,7 @@ public sealed class MainViewModel : VmBase, IDisposable
 
     private void InitAudit()
     {
-        var (s, f) = FirewallAuditWatcher.QueryAuditState();
+        var (s, f) = FirewallAuditWatcher.QueryAuditStateCached(force: true); // 启动时填充缓存
         if (s || f) Audit.Start(OnBlockedConnection);
         UpdateAuditStatus();
     }
@@ -200,7 +200,7 @@ public sealed class MainViewModel : VmBase, IDisposable
 
     private void UpdateAuditStatus()
     {
-        var (s, f) = FirewallAuditWatcher.QueryAuditState();
+        var (s, f) = FirewallAuditWatcher.QueryAuditStateCached();
         AuditStatusText = (s || f) ? L10n.T("cfg.auditOn") : L10n.T("cfg.auditOff");
         SysmonStatusText = Sysmon.Available ? L10n.T("cfg.sysmonOn") : L10n.T("cfg.sysmonOff");
         RaiseAll(nameof(AuditStatusText), nameof(SysmonStatusText));
@@ -214,6 +214,7 @@ public sealed class MainViewModel : VmBase, IDisposable
         if (FirewallAuditWatcher.EnableAudit())
         {
             Audit.Start(OnBlockedConnection);
+            FirewallAuditWatcher.QueryAuditStateCached(force: true); // 启用成功立即刷新缓存
             UpdateAuditStatus();
             AddSystemEvent(L10n.T("sys.auditOn"));
         }
@@ -1070,6 +1071,20 @@ public sealed class MainViewModel : VmBase, IDisposable
         try
         {
             using var p = Process.GetProcessById(pid);
+            // 复核 PID 复用：确认框期间目标可能退出、PID 被新进程顶替——启动时间不一致则放弃
+            if (entry.StartTimeUtc != null)
+            {
+                try
+                {
+                    if (Math.Abs((p.StartTime.ToUniversalTime() - entry.StartTimeUtc.Value).TotalSeconds) > 1)
+                    {
+                        MessageBox.Show(L10n.T("msg.killReused", pid), "NetLens",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                }
+                catch { /* 进程已退出：交给下面的 Kill 抛错走统一提示 */ }
+            }
             p.Kill();
             p.WaitForExit(3000);
             AddSystemEvent(L10n.T("sys.processKilled", entry.Name, pid));
@@ -1117,8 +1132,13 @@ public sealed class MainViewModel : VmBase, IDisposable
         foreach (var s in svcs)
         {
             var (ok, _) = RunSc("stop", s.Name);
-            if (ok) stopped.Add(s.Name);
-            AddSystemEvent(L10n.T("sys.serviceStopped", s.Name));
+            if (ok)
+            {
+                stopped.Add(s.Name);
+                AddSystemEvent(L10n.T("sys.serviceStopped", s.Name));
+            }
+            else
+                AddSystemEvent(L10n.T("sys.serviceStopFailed", s.Name));
         }
         if (stopped.Count > 0)
             MessageBox.Show(L10n.T("sys.serviceStopped", string.Join(", ", stopped)), "NetLens",
@@ -1141,8 +1161,9 @@ public sealed class MainViewModel : VmBase, IDisposable
             return;
         foreach (var s in svcs)
         {
-            RunSc("config", s.Name, "start=", "disabled");
-            AddSystemEvent(L10n.T("sys.serviceDisabled", s.Name));
+            var (ok, _) = RunSc("config", s.Name, "start=", "disabled");
+            AddSystemEvent(ok ? L10n.T("sys.serviceDisabled", s.Name)
+                              : L10n.T("sys.serviceDisableFailed", s.Name));
         }
     }
 
@@ -1710,7 +1731,7 @@ public sealed class MainViewModel : VmBase, IDisposable
         }
         catch (Exception ex)
         {
-            DohStatusText = L10n.T("msg.exportFail", ex.Message);
+            DohStatusText = L10n.T("doh.fail", ex.Message);
         }
         finally
         {

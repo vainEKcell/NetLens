@@ -25,6 +25,7 @@ public sealed class SnapshotBuilder
 
     public string BuildSnapshotJson()
     {
+        // 总量与总览行单次遍历合并计算（原两处各遍历一遍，热路径每秒浪费一倍）
         double up = 0, down = 0, upAll = 0, downAll = 0;
         var rows = new List<object>();
         foreach (var (pid, s) in _agg.Stats)
@@ -55,7 +56,7 @@ public sealed class SnapshotBuilder
             type = "snapshot",
             paused = _vm.Paused,
             totals = new { up = Math.Round(up, 0), down = Math.Round(down, 0), upAll, downAll },
-            overview = BuildOverview(),
+            overview = new { rows, selectedPid = _selectedPid },
             detail = BuildDetail(),
             dns = BuildDns(),
             netcheck = BuildNetCheck(),
@@ -87,35 +88,18 @@ public sealed class SnapshotBuilder
                 onlyFlagged = _vm.OnlyFlagged,
                 searchText = _vm.SearchText,
             },
+            update = new
+            {
+                phase = UpdateService.Current.Phase,
+                progress = UpdateService.Current.Progress,
+                currentVersion = UpdateService.Current.CurrentVersion,
+                latestVersion = UpdateService.Current.LatestVersion,
+                notes = UpdateService.Current.Notes,
+                error = UpdateService.Current.Error,
+                assetSize = UpdateService.Current.AssetSize,
+            },
         };
         return JsonSerializer.Serialize(payload);
-    }
-
-    private object BuildOverview()
-    {
-        double up = 0, down = 0;
-        var rows = new List<object>();
-        foreach (var (pid, s) in _agg.Stats)
-        {
-            up += s.UpSpeed;
-            down += s.DownSpeed;
-            var pinfo = _tracker.Get(pid);
-            rows.Add(new
-            {
-                pid,
-                name = pinfo.Name,
-                down = Math.Round(s.DownSpeed, 0),
-                up = Math.Round(s.UpSpeed, 0),
-                downTotal = s.DownTotal,
-                upTotal = s.UpTotal,
-                conns = _vm.ConnectionsOf(pid).Count,
-                risk = _vm.GetVerdictFor(pid)?.RiskByte ?? 0,
-                path = pinfo.Path,
-                vendor = pinfo.Company,
-                signature = pinfo.SignatureSubject ?? pinfo.Signature.ToString(),
-            });
-        }
-        return new { rows, selectedPid = _selectedPid };
     }
 
     /// 选中进程的详情卡：对照旧 WPF 详情面板的全部信息区块
@@ -242,7 +226,8 @@ public sealed class SnapshotBuilder
 
     private static bool AuditOn()
     {
-        var (success, failure) = FirewallAuditWatcher.QueryAuditState();
+        // 带缓存查询：此方法每秒执行，直查会每秒启动一个 auditpol.exe 进程
+        var (success, failure) = FirewallAuditWatcher.QueryAuditStateCached();
         return success || failure;
     }
 

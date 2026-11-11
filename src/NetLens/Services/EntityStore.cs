@@ -143,7 +143,8 @@ public sealed class EntityStore
     {
         string key = string.IsNullOrEmpty(domain) ? $"ip:{ip}" : $"d:{domain.ToLowerInvariant()}";
         var d = _destinations.GetOrAdd(key, _ => new DestinationEntity { Key = key, Domain = domain });
-        if (!string.IsNullOrEmpty(ip)) d.Ips.Add(ip);
+        // Ips 设上限：CDN 大域名长会话会持续累积不同解析结果，64 个足够展示与反查
+        if (!string.IsNullOrEmpty(ip) && (d.Ips.Contains(ip) || d.Ips.Count < 64)) d.Ips.Add(ip);
         d.LastSeenUtc = utc;
         if (d.FirstSeenUtc == default) d.FirstSeenUtc = utc;
         return d;

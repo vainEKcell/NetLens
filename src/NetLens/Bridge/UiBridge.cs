@@ -13,6 +13,7 @@ public sealed class UiBridge
     private readonly MainViewModel _vm;
     private CoreWebView2? _web;
     private DispatcherTimer? _push;
+    private string? _expectedOrigin; // 消息来源白名单：仅接受本应用虚拟主机页面的命令
 
     public UiBridge(SnapshotBuilder snapshots, MainViewModel vm)
     {
@@ -24,6 +25,7 @@ public sealed class UiBridge
     public void Attach(CoreWebView2 web)
     {
         _web = web;
+        try { _expectedOrigin = new Uri(web.Source).GetLeftPart(UriPartial.Authority); } catch { }
         web.WebMessageReceived += OnMessage;
         _push = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _push.Tick += (_, _) =>
@@ -36,6 +38,10 @@ public sealed class UiBridge
 
     private void OnMessage(object? s, CoreWebView2WebMessageReceivedEventArgs e)
     {
+        // 来源校验：导航到外部页面（若有）时其 postMessage 一律忽略
+        if (!string.IsNullOrEmpty(_expectedOrigin) &&
+            (string.IsNullOrEmpty(e.Source) || !e.Source.StartsWith(_expectedOrigin, StringComparison.OrdinalIgnoreCase)))
+            return;
         try
         {
             using var doc = JsonDocument.Parse(e.WebMessageAsJson);
@@ -156,6 +162,18 @@ public sealed class UiBridge
                     break;
                 case "setBaselinePaused":
                     _vm.SetBaselinePaused(root.GetProperty("value").GetBoolean());
+                    break;
+                case "update.check":
+                    _ = UpdateService.CheckAsync(_vm.Settings);
+                    break;
+                case "update.download":
+                    _ = UpdateService.DownloadAsync(_vm.Settings);
+                    break;
+                case "update.install":
+                    UpdateService.LaunchInstaller();
+                    break;
+                case "update.openPage":
+                    UpdateService.OpenInBrowser(root.GetProperty("which").GetString() ?? "releases");
                     break;
                 case "setHideLoopback":
                     _vm.HideLoopback = root.GetProperty("value").GetBoolean();
