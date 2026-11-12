@@ -96,6 +96,26 @@ export function render(root: HTMLElement): void {
           </div>
           <div class="hint">${t("set.clear.hint")}</div>
         </div>
+        <div class="card">
+          <h2>${t("set.about")}</h2>
+          <div class="sub" style="margin-top:2px;">${t("set.about.sub")}</div>
+          <div class="kv" style="grid-template-columns: 90px 220px; row-gap: 10px; margin-top: 10px;">
+            <span class="k">${t("set.upd.current")}</span>
+            <span id="upd-current">—</span>
+          </div>
+          <div class="hint" id="upd-state" style="margin-top:8px;">—</div>
+          <div id="upd-progress" style="display:none; margin-top:8px; height:6px; border-radius:3px; background:rgba(128,128,128,.25); overflow:hidden;">
+            <div id="upd-bar" style="height:100%; width:0%; background:#4d8dff; border-radius:3px; transition: width .3s;"></div>
+          </div>
+          <div id="upd-notes" style="display:none; margin-top:10px; white-space:pre-wrap; font-size:12px; line-height:1.6; opacity:.85; max-height:180px; overflow:auto; border-top:1px solid rgba(128,128,128,.2); padding-top:8px;"></div>
+          <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+            <button class="btn" id="upd-check">${t("set.upd.check")}</button>
+            <button class="btn" id="upd-dl" style="display:none;">${t("set.upd.download")}</button>
+            <button class="btn" id="upd-releases">${t("set.upd.releases")}</button>
+            <button class="btn" id="upd-repo">${t("set.upd.repo")}</button>
+          </div>
+          <div class="hint">${t("set.upd.err.hint")}</div>
+        </div>
       </div>
     </div>`;
   rootEl = root;
@@ -121,6 +141,13 @@ export function render(root: HTMLElement): void {
     sendCommand("setHideLoopback", { value: (e.target as HTMLInputElement).checked });
   (document.getElementById("set-export") as HTMLButtonElement).onclick = () => sendCommand("exportEvents");
   (document.getElementById("set-clearev") as HTMLButtonElement).onclick = () => sendCommand("clearEvents");
+  (document.getElementById("upd-check") as HTMLButtonElement).onclick = () => sendCommand("update.check");
+  (document.getElementById("upd-releases") as HTMLButtonElement).onclick = () =>
+    sendCommand("update.openPage", { which: "releases" });
+  (document.getElementById("upd-repo") as HTMLButtonElement).onclick = () =>
+    sendCommand("update.openPage", { which: "repo" });
+  (document.getElementById("upd-dl") as HTMLButtonElement).onclick = () =>
+    sendCommand(updDlAction === "install" ? "update.install" : "update.download");
   let searchTimer = 0;
   (document.getElementById("set-search") as HTMLInputElement).oninput = (e) => {
     window.clearTimeout(searchTimer);
@@ -130,9 +157,11 @@ export function render(root: HTMLElement): void {
 }
 
 let lastSettingsApplied = "";
+let updDlAction = "download"; // download / install（随阶段切换）
 
 export function onSnapshot(s: Snapshot): void {
   if (!rootEl) return;
+  renderUpdate(s.update); // 更新状态每次快照都渲染（自带去重门），必须在设置项早退门之前
   const st = s.settings;
   const state = JSON.stringify([st.language, st.theme, st.closeAction, st.baselineDays, st.evidenceDays, st.evidenceCap, st.baselinePaused, st.hideLoopback]);
   if (state === lastSettingsApplied) return;
@@ -162,4 +191,69 @@ export function onSnapshot(s: Snapshot): void {
 
   const auditBtn = document.getElementById("set-audit") as HTMLButtonElement;
   auditBtn.style.display = st.auditEnabled ? "none" : "";
+
+  renderUpdate(s.update);
+}
+
+// ---- 关于与更新：随快照渲染状态 ----
+let lastUpdRender = "";
+function renderUpdate(up: Snapshot["update"]): void {
+  const state = JSON.stringify([up.phase, up.progress, up.latestVersion, up.error, up.notes]);
+  if (state === lastUpdRender) return;
+  lastUpdRender = state;
+
+  const curEl = document.getElementById("upd-current")!;
+  if (curEl.textContent !== up.currentVersion) curEl.textContent = up.currentVersion;
+
+  const stateEl = document.getElementById("upd-state")!;
+  const dlBtn = document.getElementById("upd-dl") as HTMLButtonElement;
+  const prog = document.getElementById("upd-progress")!;
+  const bar = document.getElementById("upd-bar")!;
+  const notes = document.getElementById("upd-notes")!;
+  const checkBtn = document.getElementById("upd-check") as HTMLButtonElement;
+
+  let stateText = "—";
+  let dlLabel = "";
+  updDlAction = "download";
+  let showNotes = false;
+
+  switch (up.phase) {
+    case "checking":
+      stateText = t("set.upd.checking");
+      break;
+    case "available":
+      stateText = `${t("set.upd.available")}：v${up.latestVersion}`;
+      dlLabel = t("set.upd.download");
+      showNotes = true;
+      break;
+    case "upToDate":
+      stateText = `${t("set.upd.uptodate")}（v${up.latestVersion}）`;
+      break;
+    case "downloading":
+      stateText = `${t("set.upd.downloading")} ${up.progress}%`;
+      showNotes = true;
+      break;
+    case "ready":
+      stateText = t("set.upd.ready");
+      dlLabel = t("set.upd.install");
+      updDlAction = "install";
+      showNotes = true;
+      break;
+    case "error":
+      stateText = `${t("set.upd.error")}：${up.error}`;
+      dlLabel = t("set.upd.redownload");
+      break;
+    default:
+      stateText = "—";
+  }
+
+  stateEl.textContent = stateText;
+  const busy = up.phase === "checking" || up.phase === "downloading";
+  checkBtn.disabled = busy;
+  dlBtn.style.display = dlLabel ? "" : "none";
+  if (dlBtn.textContent !== dlLabel) dlBtn.textContent = dlLabel;
+  prog.style.display = up.phase === "downloading" ? "" : "none";
+  bar.style.width = up.progress + "%";
+  notes.style.display = showNotes && up.notes ? "" : "none";
+  if (showNotes && notes.textContent !== up.notes) notes.textContent = up.notes;
 }

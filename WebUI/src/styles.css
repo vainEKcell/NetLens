@@ -157,15 +157,13 @@ html, body {
   padding: 2px;
   border-radius: 8px;
   display: flex; align-items: center;
-  transition: transform 0.15s, opacity 0.15s;
+  transition: transform 0.32s cubic-bezier(0.3, 1.15, 0.4, 1), opacity 0.2s;
   opacity: 0.95;
 }
 #nav-toggle:hover { opacity: 1; transform: scale(1.06); }
-#nav-toggle.collapsed { transform: rotate(180deg); }
-/* 双主题 logo：深色主题用提亮晶体，浅色主题用原生深青晶体 */
-.brand-img.light { display: none; }
-[data-theme="light"] .brand-img.dark { display: none; }
-[data-theme="light"] .brand-img.light { display: inline; }
+#nav-toggle.collapsed { transform: rotate(60deg); }
+/* 说明：收放按钮的旋转幅度 60°——正六边形的自对称角，旋转后轮廓与原位重合，仅内部晶面图案移动一格 */
+/* 品牌 logo：单资产（透明底晶石），深浅主题共用 */
 #brand-name {
   font-size: 16px; font-weight: 800; letter-spacing: 0.4px;
   white-space: nowrap;
@@ -207,15 +205,15 @@ html, body {
   display: flex;
   flex-direction: column;
   padding: 10px 8px 8px 0;
-  transition: width 0.26s cubic-bezier(0.3, 1.15, 0.4, 1);
+  transition: width 0.32s cubic-bezier(0.3, 1.15, 0.4, 1);
   overflow: hidden;
 }
-#sidebar.collapsed { width: 60px; padding: 10px 8px 8px 0; }
+#sidebar.collapsed { width: 46px; padding: 10px 6px 8px 0; }
 #sidebar.collapsed .nav-item {
   width: 100%; min-width: 0;
   justify-content: center;
   padding: 12px 0;
-  border-radius: 0 22px 22px 0;
+  border-radius: 0 18px 18px 0;
 }
 #sidebar.collapsed .nav-item span,
 #sidebar.collapsed .ver { display: none; }

@@ -8,6 +8,8 @@
     "verify": "node build.mjs --verify-only"
   },
   "dependencies": {
-    "@resvg/resvg-js": "^2.6.2"
+    "@resvg/resvg-js": "^2.6.2",
+    "ag-psd": "^34.1.0",
+    "pngjs": "^7.0.0"
   }
 }

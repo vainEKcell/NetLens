@@ -57,6 +57,7 @@ let cardText: HTMLElement | null = null;
 let cardNav: HTMLElement | null = null;
 let pageId = "";
 let stepIndex = 0;
+let spotTimers: number[] = []; // 聚光校准定时器（切步/关闭时清理，防新旧目标来回跳）
 
 const masksOf = () => Array.from(root?.querySelectorAll<HTMLElement>(".tour-mask") ?? []);
 
@@ -73,7 +74,13 @@ export function startPageTour(id: string): boolean {
   return true;
 }
 
+function clearSpotTimers(): void {
+  spotTimers.forEach(t => window.clearTimeout(t));
+  spotTimers = [];
+}
+
 function closeTour(): void {
+  clearSpotTimers();
   const step = TOUR_GROUPS[pageId]?.[stepIndex];
   try { step?.onExit?.(); } catch { /* 演示动作失败不阻断 */ }
   root?.remove();
@@ -145,10 +152,10 @@ function renderStep(): void {
   // 进入本步的演示动作（如真实弹出右键菜单 / 打开详情覆盖层）
   try { step.onEnter?.(); } catch { /* 演示动作失败不阻断 */ }
 
-  // 聚光定位：先立即一次，再两次校准（等切页/表格渲染）
+  // 聚光定位：先立即一次，再多次校准（等切页/表格渲染/详情覆盖层异步滑入）；切步时清理旧定时器
+  clearSpotTimers();
   placeSpot(step);
-  window.setTimeout(() => placeSpot(step), 60);
-  window.setTimeout(() => placeSpot(step), 350);
+  spotTimers = [60, 350, 800, 1400, 2000].map(ms => window.setTimeout(() => placeSpot(step), ms));
 }
 
 function placeSpot(step: TourStep): void {
@@ -199,6 +206,14 @@ function positionSpot(rect: DOMRect, card: HTMLElement, masks: HTMLElement[]): v
 
   // 气泡：目标下方优先，空间不足放上方，仍不足贴视口下缘
   const bh = card.offsetHeight || 160;
+  if (b - tp > H * 0.7) {
+    // 全高目标（如详情覆盖层）：卡片移到目标左侧空白区，避免遮住目标内容
+    const lw = card.offsetWidth || 372;
+    const leftPos = l - lw - 12;
+    card.style.left = `${leftPos >= 12 ? leftPos : Math.max(12, Math.min(l, W - lw - 12))}px`;
+    card.style.top = `${Math.max(12, Math.min(tp + 40, H - bh - 12))}px`;
+    return;
+  }
   if (b + 12 + bh < H - 12) card.style.top = `${b + 12}px`;
   else if (tp - 12 - bh > 12) card.style.top = `${tp - 12 - bh}px`;
   else card.style.top = `${Math.min(H - bh - 12, b + 12)}px`;

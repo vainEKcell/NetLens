@@ -65,7 +65,7 @@ export const TOUR_GROUPS: Record<string, TourStep[]> = {
         en: "The overlay aggregates everything about the process: path, vendor, signature, parent, first seen, full command line, software identity and SHA256, risk reasons and evidence, services, live connections, recent DNS; actions at the bottom (End / Block / Trust / Open folder). The panel is <b>modal</b>: dim area, ✕ or Esc closes it; clicking another row collapses first, then opens the new one.",
       },
       onEnter: () => document.querySelector("#page-overview .ag-row")?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
-      onExit: () => (document.getElementById("detail-overlay") as HTMLElement)?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
+      onExit: () => document.body.dispatchEvent(new MouseEvent("click", { bubbles: true })),
     },
   ],
 

@@ -29,6 +29,9 @@ public sealed class AppSettings
     /// 允许名单的展示名（键 → 名称）
     public Dictionary<string, string> TrustedIdentityNames { get; set; } = new();
 
+    /// 已确认过的发布时间戳（热修复版本号不变的约定下，以此判定同版本的新发布）
+    public string SeenReleaseStamp { get; set; } = "";
+
     public static string Dir { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NetLens");
     public static string SettingsPath { get; } = Path.Combine(Dir, "settings.json");

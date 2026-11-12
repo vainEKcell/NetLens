@@ -148,6 +148,10 @@ export interface Snapshot {
     baselinePaused: boolean; storageInfo: string; auditEnabled: boolean;
     hideLoopback: boolean; onlyFlagged: boolean; searchText: string;
   };
+  update: {
+    phase: string; progress: number; currentVersion: string;
+    latestVersion: string; notes: string; error: string; assetSize: number;
+  };
 }
 
 type Listener = (s: Snapshot) => void;
