@@ -26,11 +26,14 @@ public partial class SpikeWindow : Window
         _bridge = new UiBridge(snapshots, vm);
         _initialPage = initialPage;
         if (topmost) Topmost = true; // 截图/演示模式：置顶避免被覆盖
+        // WebView2 初始化/渲染间隙显示主题底色而非默认白/纯黑（深浅主题初始化时同步覆盖）
+        Web.DefaultBackgroundColor = System.Drawing.Color.FromArgb(0x0A, 0x0C, 0x12);
         LoadCaptionIcon();
         WindowEffects.SetWindowIcon(this);
         ApplyCaptionTheme(ThemeService.CurrentEffective);
         ThemeService.ThemeApplied += OnThemeChanged;
         Loaded += async (_, _) => await InitWeb();
+        IsVisibleChanged += OnVisibleChanged; // 显示路径统一兜底（见 OnVisibleChanged 注释）
         Closed += (_, _) => { ThemeService.ThemeApplied -= OnThemeChanged; _bridge.Detach(); };
     }
 
@@ -95,24 +98,127 @@ public partial class SpikeWindow : Window
     protected override void OnStateChanged(EventArgs e)
     {
         base.OnStateChanged(e);
-        if (WindowState == WindowState.Minimized) Hide(); // 最小化进托盘，由托盘恢复
+        if (WindowState == WindowState.Minimized)
+        {
+            // 最小化行为可选：tray=缩入系统托盘（窗口隐藏，由托盘恢复）；taskbar=最小化到任务栏（图标保留）
+            if (_vm.Settings.MinimizeAction == "taskbar") return;
+            Hide();
+            return;
+        }
+        // 从最小化还原（任务栏模式）：最小化期间 Chrome 合成同样挂起，恢复时强制重绘防黑屏
+        if (WindowState == WindowState.Normal || WindowState == WindowState.Maximized)
+        {
+            foreach (var delay in new[] { 150, 600 })
+                Dispatcher.BeginInvoke(new Action(async () =>
+                {
+                    await Task.Delay(delay);
+                    if (IsVisible) PokeRender();
+                }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+    }
+
+    /// 窗口显示（含启动首显）后延迟强制重绘：Hide/Show 往返（最小化进托盘、关闭进托盘、
+    /// 外部 ShowWindow 还原等一切显示路径）后 WebView2 偶发不重绘、内容停留于挂起帧即全黑——
+    /// 两时点各触发一次重排（幂等），等渲染进程从挂起中恢复。
+    private void OnVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is not true) return;
+        foreach (var delay in new[] { 150, 600 })
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                await Task.Delay(delay);
+                if (IsVisible) PokeRender();
+            }), System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private async Task InitWeb()
     {
-        // 提权进程的 userDataFolder 显式指到用户目录，避免写入 Program Files
-        var dataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NetLens", "WebView2");
-        var env = await CoreWebView2Environment.CreateAsync(
-            userDataFolder: dataDir,
-            options: new CoreWebView2EnvironmentOptions { AdditionalBrowserArguments = "--disable-features=msSmartScreenProtection" });
-        await Web.EnsureCoreWebView2Async(env);
+        try
+        {
+            // 提权进程的 userDataFolder 显式指到用户目录，避免写入 Program Files
+            var dataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NetLens", "WebView2");
+            var env = await CoreWebView2Environment.CreateAsync(
+                userDataFolder: dataDir,
+                options: new CoreWebView2EnvironmentOptions
+                {
+                    // 禁用窗口遮挡检测：窗口隐藏（托盘）期间 Chrome 合成器会暂停输出，
+                    // 恢复显示时偶发不恢复导致黑屏（WebView2 已知问题）；与 SmartScreen 禁用项合并为同一开关
+                    AdditionalBrowserArguments = "--disable-features=msSmartScreenProtection,CalculateNativeWinOcclusion"
+                });
+            await Web.EnsureCoreWebView2Async(env);
 
-        // dist 目录映射为 https://app.local，离线加载前端产物
-        var dist = Path.Combine(AppContext.BaseDirectory, "WebUI");
-        Web.CoreWebView2.SetVirtualHostNameToFolderMapping(
-            "app.local", dist, CoreWebView2HostResourceAccessKind.Allow);
-        Web.CoreWebView2.NavigationCompleted += (_, _) => _bridge.Attach(Web.CoreWebView2);
-        Web.Source = new Uri("https://app.local/index.html#/" + _initialPage);
+            // dist 目录映射为 https://app.local，离线加载前端产物
+            var dist = Path.Combine(AppContext.BaseDirectory, "WebUI");
+            Web.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                "app.local", dist, CoreWebView2HostResourceAccessKind.Allow);
+            Web.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
+            Web.CoreWebView2.ProcessFailed += OnProcessFailed;
+            Web.Source = new Uri("https://app.local/index.html#/" + _initialPage);
+        }
+        catch (Exception ex)
+        {
+            // 初始化失败（userDataFolder 被锁/运行时异常等）不再静默黑窗：遮罩层显示原因
+            Log.Error("WebView2 初始化失败", ex);
+            ShowVeil("界面组件初始化失败：" + ex.Message);
+        }
+    }
+
+    private void OnNavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    {
+        _bridge.Attach(Web.CoreWebView2);
+        if (e.IsSuccess)
+        {
+            // 宽限一次布局帧再收遮罩，避免首帧绘制前闪底色
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                await Task.Delay(400);
+                LoadVeil.Visibility = Visibility.Collapsed;
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+        else
+        {
+            ShowVeil("界面加载失败：" + e.WebErrorStatus);
+        }
+    }
+
+    private void OnProcessFailed(object? sender, CoreWebView2ProcessFailedEventArgs e)
+    {
+        // 渲染进程等崩溃会黑屏不自愈：显示恢复提示并整页重载（重载完成触发 NavigationCompleted 收遮罩）
+        Log.Error($"WebView2 进程异常：{e.ProcessFailedKind} / {e.Reason}", null);
+        Dispatcher.Invoke(() =>
+        {
+            ShowVeil("界面进程异常，正在恢复…");
+            try { Web.CoreWebView2?.Reload(); }
+            catch { try { Web.Source = new Uri("https://app.local/index.html#/overview"); } catch { /* 放弃恢复，遮罩保留 */ } }
+        });
+    }
+
+    private void ShowVeil(string message)
+    {
+        VeilText.Text = message;
+        VeilText.Foreground = new System.Windows.Media.SolidColorBrush(
+            System.Windows.Media.Color.FromRgb(0xD9, 0x8A, 0x7A));
+        LoadVeil.Visibility = Visibility.Visible;
+    }
+
+    /// Hide/Show 往返（托盘恢复）后 WebView2 偶发不重绘（组合内容停留于挂起帧）；
+    /// 先做控件可见性往返（同步到浏览器控制器的 IsVisible，通知渲染恢复输出），
+    /// 再强制一次实际布局变化触发 Chrome 子窗口重排，最后恢复原边距。
+    public void PokeRender()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (Web.CoreWebView2 != null)
+            {
+                Web.Visibility = Visibility.Hidden;
+                Web.Visibility = Visibility.Visible;
+            }
+            Web.InvalidateVisual();
+            var m = Web.Margin;
+            Web.Margin = new Thickness(m.Left, m.Top, m.Right, m.Bottom - 1);
+            Web.UpdateLayout();
+            Web.Margin = m;
+        });
     }
 }

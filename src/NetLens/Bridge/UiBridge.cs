@@ -21,11 +21,14 @@ public sealed class UiBridge
         _vm = vm;
     }
 
-    /// WebView2 就绪后调用：开始每秒推送
+    /// WebView2 就绪后调用：开始每秒推送。幂等——恢复性重载（ProcessFailed→Reload）会再次
+    /// 触发 NavigationCompleted，重复 Attach 必须防住，否则消息重复订阅、推送 Timer 翻倍。
     public void Attach(CoreWebView2 web)
     {
+        if (_push != null) { _push.Stop(); _push = null; } // 停掉旧推送（若整页重载则同实例复用）
         _web = web;
         try { _expectedOrigin = new Uri(web.Source).GetLeftPart(UriPartial.Authority); } catch { }
+        web.WebMessageReceived -= OnMessage; // 先解后订：整页重载同实例再 Attach 时防重复订阅
         web.WebMessageReceived += OnMessage;
         _push = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _push.Tick += (_, _) =>
@@ -149,6 +152,10 @@ public sealed class UiBridge
                     break;
                 case "setCloseAction":
                     _vm.Settings.CloseAction = root.GetProperty("value").GetString() ?? _vm.Settings.CloseAction;
+                    _vm.Settings.Save();
+                    break;
+                case "setMinimizeAction":
+                    _vm.Settings.MinimizeAction = root.GetProperty("value").GetString() ?? _vm.Settings.MinimizeAction;
                     _vm.Settings.Save();
                     break;
                 case "setBaselineDays":

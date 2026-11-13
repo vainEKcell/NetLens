@@ -51,6 +51,20 @@
                         Foreground="{DynamicResource CapFg}" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
             </StackPanel>
         </Grid>
-        <wv2:WebView2 x:Name="Web"/>
+        <Grid>
+            <wv2:WebView2 x:Name="Web"/>
+            <!-- 加载遮罩：WebView2 初始化/导航期间覆盖窗口背景（消灭近黑空窗期）；失败时显示原因 -->
+            <Border x:Name="LoadVeil" Background="#0A0C12" Panel.ZIndex="10">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Image Source="/Assets/app.ico" Width="64" Height="64"
+                           RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center"/>
+                    <TextBlock Text="NetLens" Margin="0 16 0 0" FontSize="24" FontWeight="Bold"
+                               Foreground="#7FA8D9" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="VeilText" Margin="0 10 0 0" FontSize="13"
+                               Foreground="#5A6478" HorizontalAlignment="Center"
+                               Text="正在加载界面组件…"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </DockPanel>
 </Window>

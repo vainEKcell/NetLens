@@ -44,6 +44,8 @@ public sealed class TrayIconService : IDisposable
         _owner.Show();
         _owner.WindowState = WindowState.Normal;
         _owner.Activate();
+        // 托盘 Hide/Show 往返后 WebView2 偶发不重绘（内容黑屏）：强制触发一次重排
+        if (_owner is SpikeWindow sp) sp.PokeRender();
     }
 
     public void Dispose() => _tray.Dispose();

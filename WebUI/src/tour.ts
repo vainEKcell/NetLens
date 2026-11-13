@@ -58,6 +58,7 @@ let cardNav: HTMLElement | null = null;
 let pageId = "";
 let stepIndex = 0;
 let spotTimers: number[] = []; // 聚光校准定时器（切步/关闭时清理，防新旧目标来回跳）
+let spotRaf: number | null = null; // follow 模式逐帧跟踪句柄
 
 const masksOf = () => Array.from(root?.querySelectorAll<HTMLElement>(".tour-mask") ?? []);
 
@@ -77,6 +78,8 @@ export function startPageTour(id: string): boolean {
 function clearSpotTimers(): void {
   spotTimers.forEach(t => window.clearTimeout(t));
   spotTimers = [];
+  if (spotRaf !== null) { window.cancelAnimationFrame(spotRaf); spotRaf = null; }
+  root?.classList.remove("following"); // 恢复聚光/遮罩/气泡的 CSS 滑动
 }
 
 function closeTour(): void {
@@ -143,7 +146,8 @@ function renderStep(): void {
     renderStep();
   });
 
-  // 卡片轻脉动（内容切换的呼吸感）
+  // 卡片轻脉动（内容切换的呼吸感）；居中板块卡片加宽
+  card.classList.toggle("card-center", !!step.centered);
   card.animate([{ opacity: 0.45 }, { opacity: 1 }], { duration: 160, easing: "ease-out" });
 
   // 切页（如需）
@@ -156,12 +160,43 @@ function renderStep(): void {
   clearSpotTimers();
   placeSpot(step);
   spotTimers = [60, 350, 800, 1400, 2000].map(ms => window.setTimeout(() => placeSpot(step), ms));
+  if (step.follow) startFollow(step);
+}
+
+// 详情覆盖层等异步滑入目标（点击→快照→滑入约 1s，滑入动画 0.22s）：
+// 逐帧贴住目标当前位置，聚光与目标同步就位——固定时点校准会"框比面板慢"。
+function startFollow(step: TourStep): void {
+  if (!root) return;
+  root.classList.add("following"); // 跟踪期间关掉聚光/遮罩/气泡的 transition，逐帧直贴
+  const t0 = performance.now();
+  const tick = () => {
+    if (!root || !spot) return;
+    placeSpot(step);
+    if (performance.now() - t0 > 2600) { // 目标已稳定，恢复滑动交给常规校准
+      root.classList.remove("following");
+      spotRaf = null;
+      return;
+    }
+    spotRaf = window.requestAnimationFrame(tick);
+  };
+  spotRaf = window.requestAnimationFrame(tick);
 }
 
 function placeSpot(step: TourStep): void {
   if (!spot || !card) return;
   const masks = masksOf();
   if (card.style.visibility !== "visible") card.style.visibility = "visible"; // 与位置设置同帧，无闪现
+
+  // 居中介绍板块：无聚光框，遮罩全屏（无洞），气泡居中偏上——用于开场欢迎
+  if (step.centered) {
+    spot.style.display = "none";
+    const W = window.innerWidth, H = window.innerHeight;
+    masks.forEach(m => { m.style.display = ""; m.style.left = "0px"; m.style.top = "0px"; m.style.width = `${W}px`; m.style.height = `${H}px`; });
+    const cw = card.offsetWidth || 440;
+    card.style.left = `${Math.max(12, Math.round((W - cw) / 2))}px`;
+    card.style.top = `${Math.max(80, Math.round(H * 0.34))}px`;
+    return;
+  }
 
   const target = step.selector ? document.querySelector(step.selector) : null;
   let rect: DOMRect | null = null;

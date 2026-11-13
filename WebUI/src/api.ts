@@ -143,7 +143,7 @@ export interface Snapshot {
     configHistory: { TimeText: string; WhatKey: string; OldRaw: string; NewRaw: string; Serious: boolean }[];
   };
   settings: {
-    language: string; theme: string; closeAction: string;
+    language: string; theme: string; closeAction: string; minimizeAction: string;
     baselineDays: number; evidenceDays: number; evidenceCap: number;
     baselinePaused: boolean; storageInfo: string; auditEnabled: boolean;
     hideLoopback: boolean; onlyFlagged: boolean; searchText: string;

@@ -151,9 +151,12 @@ export function render(root: HTMLElement): void {
   }).join("");
 
   root.innerHTML = `
-    <div class="page-head">
-      <h1>${t("guide.title")}</h1>
-      <div class="sub">${t("guide.sub")}</div>
+    <div class="page-head" style="display:flex; align-items:flex-start; gap:16px;">
+      <div>
+        <h1>${t("guide.title")}</h1>
+        <div class="sub">${t("guide.sub")}</div>
+      </div>
+      <button class="btn guide-tour" data-tour="intro" style="margin-left:auto; flex:none; margin-top:2px;">${t("guide.replayIntro")}</button>
     </div>
     <div class="guide-tabs">${tabs}</div>
     <div class="guide-panels">${panels}</div>`;

@@ -24,6 +24,9 @@ public sealed class AppSettings
     /// 关闭主窗口时的行为：ask（每次询问）/ exit（直接退出）/ tray（最小化到系统托盘）
     public string CloseAction { get; set; } = "ask";
 
+    /// 最小化按钮的行为：tray（缩入系统托盘，任务栏不保留）/ taskbar（最小化到任务栏，图标保留）
+    public string MinimizeAction { get; set; } = "tray";
+
     /// 用户允许名单（SoftwareIdentity 键）。处置层：用户的信任决定优先于引擎判定。
     public List<string> TrustedIdentityKeys { get; set; } = new();
     /// 允许名单的展示名（键 → 名称）

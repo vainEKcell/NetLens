@@ -4,6 +4,8 @@ export type TourStep = {
   page: string;
   selector?: string;   // 聚光目标（缺省仅气泡）
   colId?: string;      // AG Grid 列聚光模式
+  centered?: boolean;  // 居中介绍板块：无聚光框、全屏遮罩、气泡居中（用于开场）
+  follow?: boolean;    // 逐帧跟踪聚光目标（异步滑入的详情覆盖层等，防"框比面板慢"）
   title: { zh: string; en: string };
   text: { zh: string; en: string };
   onEnter?: () => void;
@@ -13,6 +15,50 @@ export type TourStep = {
 const copy = (pid: string) => () => navigator.clipboard.writeText(pid);
 
 export const TOUR_GROUPS: Record<string, TourStep[]> = {
+  // ================= 新手总教程（首次启动自动开始；轻量覆盖基础使用） =================
+  intro: [
+    {
+      page: "overview", centered: true,
+      title: { zh: "欢迎使用 NetLens", en: "Welcome to NetLens" },
+      text: {
+        zh: "<b>NetLens</b> 是一个进程级网络监控分析台，回答一个问题——「我的电脑正在和谁通信」：每个进程的上传 / 下载实时可见；可疑行为给出判定与证据；DNS 劫持、对外监听、网络配置异常一目了然；禁止联网等处置一键直达系统层。<br><br>接下来几步认识基础操作，随时可以点「完成」跳过；之后可随时在「使用指南」重放本教程。",
+        en: "<b>NetLens</b> is a per-process network monitoring workbench answering one question — “who is my computer talking to?”: live per-process upload / download; suspicious behavior with verdicts and evidence; DNS hijacking, listening ports, and network config anomalies at a glance; one-click system-level actions like blocking.<br><br>A few quick steps next — feel free to finish anytime; replay this tour from the User Guide.",
+      },
+    },
+    {
+      page: "overview", selector: "#nav-toggle",
+      title: { zh: "收放导航", en: "Collapse or expand the sidebar" },
+      text: {
+        zh: "点击左上角<b>晶石按钮</b>收起或展开侧边导航，图标会随之旋转一格；快捷键 <b>Ctrl+B</b> 同效。收起后侧栏只留图标，内容区更宽。",
+        en: "Click the <b>crystal button</b> (top-left) to collapse or expand the sidebar — the icon rotates one notch; <b>Ctrl+B</b> does the same. Collapsed, the sidebar shows icons only and the content gets wider.",
+      },
+    },
+    {
+      page: "overview", selector: "#sidebar",
+      title: { zh: "动态菜单", en: "The navigation menu" },
+      text: {
+        zh: "侧栏是<b>动态菜单</b>：总览看进程流量；流量去向看远端服务器排行；DNS 安全查劫持；监听端口看对外服务；事件流是实时流水；拦截名单管理防火墙规则；网络配置 / 网络体检查网络本身；设置调整语言与主题；使用指南是详细手册。",
+        en: "The sidebar is the <b>navigation menu</b>: Overview for per-process traffic; Traffic for remote rankings; DNS Security for hijack detection; Ports for listening services; Events for the live stream; Blocking for firewall rules; Network / Net check for the network itself; Settings for language and theme; the User Guide is the full manual.",
+      },
+    },
+    {
+      page: "settings", selector: "#page-settings .card",
+      title: { zh: "设置：语言、主题与更新", en: "Settings: language, theme, updates" },
+      text: {
+        zh: "语言（中/英）、主题（深/浅/跟随系统）、关闭与最小化行为都在设置里，即改即存。底部「<b>关于与更新</b>」可检查新版本并应用内下载安装。",
+        en: "Language (zh/en), theme (dark/light/system), close and minimize behavior — all in Settings, applied instantly. “<b>About & updates</b>” at the bottom checks for new versions and installs in-app.",
+      },
+    },
+    {
+      page: "guide", selector: "#page-guide .page-head",
+      title: { zh: "遇到不懂？随时来指南", en: "Need details? Open the guide" },
+      text: {
+        zh: "使用指南有<b>每个页面的专属教程</b>（像刚才那样的逐步演示）与概念讲解（判定分级、NAT 类型、DNS 劫持等）。新手引导到此结束，祝使用顺利。",
+        en: "The User Guide has a <b>dedicated tour for every page</b> (step-by-step like this one) plus concept notes (verdict tiers, NAT types, DNS hijacking). That's it for the basics — enjoy!",
+      },
+    },
+  ],
+
   // ================= 总览 =================
   overview: [
     {
@@ -58,7 +104,7 @@ export const TOUR_GROUPS: Record<string, TourStep[]> = {
       onExit: () => document.querySelector(".nw-context-menu")?.classList.remove("open"),
     },
     {
-      page: "overview", selector: "#detail-overlay",
+      page: "overview", selector: "#detail-overlay", follow: true,
       title: { zh: "详情覆盖层", en: "Detail overlay" },
       text: {
         zh: "详情覆盖层汇总该进程的一切：路径、厂商与描述、数字签名、父进程、首次出现、完整命令行、软件身份与 SHA256、风险原因与判定证据、承载服务、实时连接、最近 DNS；底部是处置按钮组（结束进程 / 禁止联网 / 信任 / 打开文件夹）。面板为<b>模态</b>：点暗区、✕ 或 Esc 收起；打开时点其他行会先收起再开新详情。",

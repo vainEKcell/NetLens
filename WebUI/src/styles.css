@@ -243,7 +243,9 @@ html, body {
   font-size: 13.5px;
   font-weight: 500;
   white-space: nowrap;
-  transition: width 0.25s cubic-bezier(0.25, 1, 0.4, 1), background-color 0.13s ease, color 0.13s ease;
+  /* width 过渡 0.18s 利落到位；起始延迟由 JS 按鼠标移动方向写入 --nd（去向侧先动、离开侧后动），
+     背景与颜色即时响应不延迟 */
+  transition: width 0.18s cubic-bezier(0.25, 1, 0.4, 1) var(--nd, 0ms), background-color 0.13s ease, color 0.13s ease;
 }
 .nav-item:hover { background: var(--accent-soft); color: var(--fg); }
 .nav-item.active {
@@ -251,7 +253,7 @@ html, body {
   color: var(--accent);
   font-weight: 700;
 }
-/* 左缘锚条：书签直角端钉在窗口骨架上的视觉锚点（仅选中项） */
+/* 左缘锚条：书签直角端钉在窗口骨架上的视觉锚点（仅选中项）；切换选中时自上而下展开=落定动画 */
 .nav-item.active::before {
   content: "";
   position: absolute;
@@ -259,6 +261,12 @@ html, body {
   width: 4px;
   border-radius: 0 3px 3px 0;
   background: var(--accent-line);
+  transform-origin: top;
+  animation: anchor-in 0.26s cubic-bezier(0.25, 1, 0.4, 1);
+}
+@keyframes anchor-in {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
 }
 .nav-ico { flex: 0 0 auto; opacity: 0.8; }
 .nav-item:hover .nav-ico { opacity: 1; }
@@ -628,6 +636,9 @@ input[type="checkbox"]:checked::after {
 
 /* ===== 首次使用教程（coach marks） ===== */
 #tour-root { position: fixed; inset: 0; z-index: 1000; }
+.tour-card.card-center { width: 460px; } /* 开场居中介绍板块 */
+/* follow 跟踪期间（详情覆盖层等异步滑入目标）：逐帧直贴位置，关闭三者的 CSS 滑动 */
+#tour-root.following .tour-spot, #tour-root.following .tour-mask, #tour-root.following .tour-card { transition: none; }
 .tour-backdrop { position: fixed; inset: 0; z-index: 1000; }
 .tour-spot {
   position: fixed; z-index: 1001; pointer-events: none;

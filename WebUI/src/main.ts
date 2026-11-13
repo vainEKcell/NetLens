@@ -1,4 +1,23 @@
 import { initBridge, onSnapshot, sendCommand, fmtSpeed, fmtBytes, Snapshot } from "./api";
+
+// 全局错误兜底：未捕获异常/拒绝在页面顶部显示错误条——前端异常不再表现为"空内容黑屏"且原因可见（点击关闭）
+function showFatalBanner(msg: string): void {
+  let bar = document.getElementById("fatal-banner");
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = "fatal-banner";
+    bar.style.cssText =
+      "position:fixed;top:0;left:0;right:0;z-index:99999;background:#7a2718;color:#ffd9d0;" +
+      "font:12px/1.6 Consolas,monospace;padding:6px 12px;white-space:pre-wrap;word-break:break-all;cursor:pointer;";
+    bar.addEventListener("click", () => bar?.remove());
+    document.body.appendChild(bar);
+  }
+  bar.textContent += (bar.textContent ? "\n" : "") + msg;
+}
+window.addEventListener("error", (e) =>
+  showFatalBanner("JS 错误: " + ((e.error && e.error.stack) || e.message)));
+window.addEventListener("unhandledrejection", (e) =>
+  showFatalBanner("Promise 拒绝: " + String((e as PromiseRejectionEvent).reason)));
 import { initSpark, pushPoint } from "./chart";
 import { initTooltip } from "./tooltip";
 import { initContextGuard } from "./menu";
@@ -9,7 +28,7 @@ import * as dns from "./pages/dns";
 import * as ports from "./pages/ports";
 import * as events from "./pages/events";
 import * as guide from "./pages/guide";
-import { maybeShowLogoTip } from "./tour";
+import { maybeShowLogoTip, startPageTour } from "./tour";
 import * as blocking from "./pages/blocking";
 import * as network from "./pages/network";
 import * as netcheck from "./pages/netcheck";
@@ -55,7 +74,10 @@ NAV.forEach((item, index) => {
   el.dataset.page = item.id;
   el.style.setProperty("--i", String(index)); // 交错动画延迟由数据驱动，新增项自动继承
   el.innerHTML = `<svg class="nav-ico" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[item.id] ?? ""}</svg><span>${t(item.titleKey)}</span>`;
-  el.addEventListener("click", () => { location.hash = `#/${item.id}`; });
+  el.addEventListener("click", () => {
+    navFocus = null; // 点击落定：清除悬停态，navigate 后其余标签全部缩回基准，仅选中项满宽
+    location.hash = `#/${item.id}`;
+  });
   nav.appendChild(el);
 });
 
@@ -156,46 +178,59 @@ darkMedia.addEventListener("change", () => {
 const sidebar = document.getElementById("sidebar")!;
 const navToggle = document.getElementById("nav-toggle") as HTMLButtonElement;
 
-// 以选中（或悬停）项为焦点：书签宽度按对数曲线在焦点附近衰减——
-// 焦点"伸出"24px（192 满宽），超出基准的量在 3 层内按对数弧归零；
-// 距焦点 ≥4 的项保持基准宽 168，完全不受影响
-const NAV_BASE = 168.0;   // 基准宽（远离焦点的正常书签）
+// 以选中（或悬停）项为焦点：书签宽度从焦点向两侧**等差递减**——
+// 焦点满宽 192，相邻层 170，2 层即落回基准 148（每层差 22px，层间差值均匀且明显）；
+// 距焦点 ≥3 的项保持基准宽 148，完全不受影响。
+const NAV_BASE = 148.0;   // 基准宽（远离焦点的正常书签）
 const NAV_FOCUS = 192.0;  // 焦点满宽
-const NAV_REACH = 3;      // 影响半径（层）
+const NAV_REACH = 2;      // 影响半径（层）
 let navFocus: HTMLElement | null = null;
 
 function navItems(): HTMLElement[] {
   return Array.from(nav.querySelectorAll<HTMLElement>(".nav-item"));
 }
 
-function navLog2(v: number): number {
-  return Math.log(v) / Math.LN2;
-}
-
 function updateNavWidths(): void {
   const items = navItems();
   if (sidebar.classList.contains("collapsed")) {
-    items.forEach((it) => { it.style.width = ""; }); // 收起态交回 CSS（图标满宽书签）
+    items.forEach((it) => {
+      it.style.width = ""; // 收起态交回 CSS（图标满宽书签）
+      it.style.removeProperty("--nd");
+    });
     return;
   }
-  const focus = navFocus ?? items.find((it) => it.classList.contains("active")) ?? null;
-  const fi = focus ? items.indexOf(focus) : -1;
-  const denom = navLog2(1 + NAV_REACH);
+  const hi = navFocus ? items.indexOf(navFocus) : -1;
+  const ai = items.findIndex((it) => it.classList.contains("active"));
   items.forEach((it, i) => {
-    const d = Math.abs(i - fi);
+    // 选中态（无悬停）：只保留选中项满宽，其余全部落回基准——点击后"收拢落定"；
+    // 悬停态：悬停项临时满宽，其余按悬停焦点等差梯度；选中项在悬停期间恒满宽不被挤压
     let w = NAV_BASE;
-    if (d <= NAV_REACH) {
-      const extra = (NAV_FOCUS - NAV_BASE) * (navLog2(1 + NAV_REACH - d) / denom);
-      w = NAV_BASE + extra;
+    let center = ai;
+    if (i === ai) {
+      w = NAV_FOCUS;
+    } else if (hi >= 0) {
+      const d = Math.abs(i - hi);
+      if (d <= NAV_REACH) w = NAV_FOCUS - (NAV_FOCUS - NAV_BASE) * (d / (NAV_REACH + 1));
+      if (i === hi) w = NAV_FOCUS;
+      center = hi;
     }
-    it.style.width = `${w.toFixed(1)}px`; // 过渡统一走 CSS（同步、无分层延迟——自然丝滑）
+    it.style.width = `${w.toFixed(1)}px`; // 宽度过渡统一走 CSS
+    // 相邻层 12ms 均匀微差：变化近乎同步、又有涟漪式的微妙时差——无方向偏置，不产生钝感
+    it.style.setProperty("--nd", `${Math.min(Math.abs(i - center), 6) * 12}ms`);
   });
 }
 
 nav.addEventListener("mouseover", (e) => {
   const it = (e.target as HTMLElement).closest<HTMLElement>(".nav-item");
-  if (it && it !== navFocus) { navFocus = it; updateNavWidths(); } // 即时跟随（无停顿门控）
+  if (it) {
+    if (it !== navFocus) { navFocus = it; updateNavWidths(); } // 即时跟随（无停顿门控）
+  } else if (navFocus) {
+    // 滑入标签页以外的区域（项间空隙/导航区下方空白）：即脱离悬停态，梯度立即收拢
+    navFocus = null;
+    updateNavWidths();
+  }
 });
+// 离开侧栏：悬停焦点清除，全部落回基准——滑过菜单不想选也不会丢失"当前页"的标识
 nav.addEventListener("mouseleave", () => {
   if (navFocus) { navFocus = null; updateNavWidths(); }
 });
@@ -216,7 +251,18 @@ initSpark();
 initTooltip();
 initContextGuard();
 navigate();
-maybeShowLogoTip();
+// 首次启动自动开始新手总教程（intro；已完成或中途关闭都不再自动弹），老用户保持 logo 小提示
+let introDone = false;
+try { introDone = localStorage.getItem("nl-intro-done") === "1"; } catch { /* 忽略 */ }
+if (introDone) {
+  maybeShowLogoTip();
+} else {
+  window.setTimeout(() => {
+    if (startPageTour("intro")) {
+      try { localStorage.setItem("nl-intro-done", "1"); } catch { /* 忽略 */ }
+    }
+  }, 900); // 等首帧表格渲染完成，聚光校准链路才能命中
+}
 
 // Ctrl+B：收起 / 展开左侧导航（与 logo 等效）
 window.addEventListener("keydown", (e) => {
